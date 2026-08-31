@@ -34,6 +34,29 @@ export function generateHighTrafficFallback(): string {
   return "We're experiencing high traffic right now. Please try again in a moment — your query should go through shortly. Feel free to ask about any properties, builders, or specific project details."
 }
 
+/**
+ * True when a reply is an outage notice rather than an answer.
+ *
+ * There are two of these strings in two files — this one, and
+ * `fallbackChain.ts`'s "Our AI services are currently experiencing high
+ * traffic…" — and the answer-cache write guard knew only the first, matching it
+ * with `startsWith("We're experiencing high traffic")`. So the OTHER one was
+ * cached, and cached under `is_verified: true`: measured live, "which is the
+ * best project in Noida" returned in 1.6 seconds with
+ * `[CHAT:CACHE_HIT] Serving verified advisory response from cache` and an outage
+ * message as the body. Every buyer asking that question got the outage for the
+ * whole TTL, long after the chain recovered.
+ *
+ * A predicate here rather than a longer string comparison at the call site: the
+ * next variant of this message will be written next to the others, and this is
+ * where it has to be added. Substring, not prefix — `fallbackChain` also embeds
+ * the notice as a parenthetical after a real database fact.
+ */
+export function isServiceFailureReply(text: string): boolean {
+  if (!text) return true
+  return /experiencing high traffic|are out of service/i.test(text)
+}
+
 export type CacheDecision = {
   reuse: boolean
   reason: 'CACHE_REUSED' | 'CACHE_REJECTED' | 'CACHE_PROJECT_MISS' | 'CACHE_SECTOR_MISS'

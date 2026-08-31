@@ -1201,16 +1201,106 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
   // so we can still push our own inventory instead of a dead end.
   // NOTE: This fallback is ONLY for BROAD scope queries (region-level searches)
   const fallbackWhere = { city: { equals: DISCOVERY.DEFAULT_CITY, mode: 'insensitive' as const } }
+
+  /**
+   * `orderBy: { created_at: 'desc' }` is what this used to be, and it is the
+   * whole reason "which is the best project in Noida" came back looking random:
+   * the 20 most recently SEEDED rows, scored against an intent that is empty by
+   * definition on this branch. Seed order is not a ranking, and the buyer read it
+   * as one.
+   *
+   * A citywide question with no sector and no budget has no single right answer,
+   * so this returns a SPREAD across price bands instead of a winner — the shelf
+   * `renderCityBandShelf` prints and the model frames. Nobody has to defend a
+   * crowned project for a buyer we know nothing about, and the buyer sees our
+   * actual range rather than our newest imports.
+   *
+   * Two passes on purpose: the ordering rule needs the builder relation and the
+   * unit prices, and pulling PROJECT_INCLUDE for every row in the city to sort it
+   * is 280 rows of relations to keep 20. Pass one is ids and prices.
+   */
+  const bandCandidates = await prisma.project.findMany({
+    where: fallbackWhere,
+    select: {
+      id: true,
+      price_min_cr: true,
+      litigation_count: true,
+      rera_number: true,
+      unit_types: { select: { price_min_cr: true, price_max_cr: true } },
+      builder: { select: { delivery_score: true, average_delay_months: true } },
+    },
+  })
+
+  /** Lowest real asking price we hold for a project, in crore. */
+  const entryPrice = (p: (typeof bandCandidates)[number]): number | null => {
+    const unit = p.unit_types
+      .map((u) => u.price_min_cr ?? u.price_max_cr)
+      .filter((n): n is number => typeof n === 'number' && n > 0)
+    if (unit.length > 0) return Math.min(...unit)
+    return typeof p.price_min_cr === 'number' && p.price_min_cr > 0 ? p.price_min_cr : null
+  }
+
+  /**
+   * The rule, stated once here and printed to the buyer by the renderer.
+   *
+   * RERA on record first — it is the one binary the product refuses to be vague
+   * about. Then the builder's own delivery record, then recorded litigation. All
+   * three come from columns; none is a computed confidence score, which this
+   * codebase forbids elsewhere and would forbid here.
+   */
+  const bandRank = (p: (typeof bandCandidates)[number]): number => {
+    let score = 0
+    if (p.rera_number) score += 1000
+    score += Math.min(p.builder?.delivery_score ?? 0, 100) * 5
+    score -= Math.min(p.builder?.average_delay_months ?? 0, 60) * 4
+    score -= Math.min(p.litigation_count ?? 0, 20) * 25
+    return score
+  }
+
+  const BAND_EDGES: Array<[number, number]> = [[0, 1], [1, 2], [2, Number.POSITIVE_INFINITY]]
+
+  const bands = BAND_EDGES.map(([lo, hi]) =>
+    bandCandidates
+      .map((p) => ({ p, price: entryPrice(p) }))
+      .filter((x) => x.price !== null && x.price >= lo && x.price < hi)
+      .sort((a, b) => bandRank(b.p) - bandRank(a.p))
+      .map((x) => x.p.id),
+  )
+
+  // Interleaved round-robin, so page one is one from each band rather than the
+  // whole cheap band. Ordering the full list rather than just the page keeps
+  // `offset` meaning what it means on every other branch — paging through the
+  // shelf must not reshuffle it.
+  const ordered: string[] = []
+  for (let i = 0; ordered.length < bandCandidates.length; i += 1) {
+    let addedThisRound = false
+    for (const band of bands) {
+      if (i < band.length) {
+        ordered.push(band[i])
+        addedThisRound = true
+      }
+    }
+    if (!addedThisRound) break
+  }
+  // A project with no price on record cannot be placed in a band. It is still
+  // inventory, so it goes to the end rather than being dropped — it never
+  // displaces a project we can actually quote a price for.
+  const inBands = new Set(ordered)
+  for (const p of bandCandidates) if (!inBands.has(p.id)) ordered.push(p.id)
+
+  const picked = ordered.slice(offset, offset + RESULTS_PER_PAGE)
+
   const [fallbackTotalCount, fallbackRaw] = await Promise.all([
     prisma.project.count({ where: fallbackWhere }),
     prisma.project.findMany({
-      where: fallbackWhere,
+      where: { id: { in: picked } },
       include: PROJECT_INCLUDE,
-      skip: offset,
-      take: RESULTS_PER_PAGE,
-      orderBy: { created_at: 'desc' },
     }),
   ])
+  // `findMany` returns in its own order; the band spread is the whole point, so
+  // restore it before scoring.
+  const pickedOrder = new Map(picked.map((id, i) => [id, i]))
+  fallbackRaw.sort((a, b) => (pickedOrder.get(a.id) ?? 0) - (pickedOrder.get(b.id) ?? 0))
 
   const scoredFallback = scoreAndSort(fallbackRaw as RawProject[], effectiveIntent, 0)
   const hasMore = offset + RESULTS_PER_PAGE < fallbackTotalCount
@@ -1222,7 +1312,10 @@ export async function discoverProjects(intent: Intent, offset: number = 0): Prom
     expansion: {
       requestedSector: effectiveIntent.sector || 'Unknown',
       searchedSectors: ['Noida Citywide Top Properties'],
-      reason: 'no_results_in_requested_sector',
+      // A citywide question is not a failed sector search, and reporting it as
+      // one is why this branch's answers read as an apology for something the
+      // buyer never asked for.
+      reason: effectiveIntent.sector ? 'no_results_in_requested_sector' : 'citywide_band_spread',
     },
     pageIndex,
     totalCount: fallbackTotalCount,

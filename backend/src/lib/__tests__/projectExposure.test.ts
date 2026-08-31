@@ -178,3 +178,47 @@ describe('redactProject', () => {
     assert.deepEqual(redactProject(row), row)
   })
 })
+
+describe('the forward-projection columns cannot reach a buyer', () => {
+  /**
+   * `projectDataGateway.ts` selected all three of these and built buyer-facing
+   * facts from them — "5-Year Appreciation Potential: 48.5% estimated", with a
+   * confidence score attached — while this file's policy said none of them may
+   * leave the server. Two files disagreed about policy and the one without the
+   * policy won: asked how much Godrej Woods had appreciated, the live answer
+   * closed with "Financial projections estimate an additional 25-35% capital
+   * appreciation over a 3-year horizon".
+   *
+   * The column is also a bucket, not an estimate: populated on 280 of 280
+   * projects with seven distinct values, 48.5 shared by 95 of them.
+   */
+  for (const field of [
+    'appreciation_potential_5yr',
+    'rental_yield_annual_percent',
+    'market_demand_score',
+  ]) {
+    it(`${field} is classified internal-only, with a stated reason`, () => {
+      assert.ok(field in INTERNAL_ONLY_FIELDS, `${field} is no longer classified internal`)
+      assert.ok(
+        INTERNAL_ONLY_FIELDS[field].length > 10,
+        `${field} is internal but nothing says why`,
+      )
+    })
+
+    it(`${field} is absent from the public select`, () => {
+      assert.ok(
+        !(field in (PROJECT_PUBLIC_SELECT as Record<string, unknown>)),
+        `${field} reached PROJECT_PUBLIC_SELECT`,
+      )
+    })
+  }
+
+  it('the gateway filters on the policy rather than on a hand-kept list', () => {
+    // A field added to the gateway's select blocks tomorrow must be dropped by
+    // the same mechanism, not by someone remembering. The guard keys off
+    // INTERNAL_ONLY_FIELDS, so this asserts the coupling exists in the source.
+    const src = readFileSync(join(process.cwd(), 'src', 'lib', 'projectDataGateway.ts'), 'utf8')
+    assert.match(src, /INTERNAL_ONLY_FIELDS/, 'gateway no longer reads the exposure policy')
+    assert.match(src, /dropInternalFacts\(/, 'gateway no longer applies the filter')
+  })
+})

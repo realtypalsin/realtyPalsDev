@@ -1,7 +1,6 @@
 // backend/src/lib/ai/compression.ts
 import Groq from 'groq-sdk'
 import { meteredClient } from './geminiMeter'
-import OpenAI from 'openai'
 import { GoogleGenAI } from '@google/genai'
 import { MODELS } from '../config'
 
@@ -38,7 +37,7 @@ export async function maybeCompress(
   const toCompress = messages.slice(0, messages.length - KEEP_RECENT)
   const recent = messages.slice(messages.length - KEEP_RECENT)
 
-  if (!process.env.GEMINI_API_KEY && !process.env.OPENAI_API_KEY && !process.env.GROQ_API_KEY) {
+  if (!process.env.GEMINI_API_KEY && !process.env.GROQ_API_KEY) {
     return { messages: recent, newSummary: existingSummary ?? null }
   }
 
@@ -61,31 +60,15 @@ export async function maybeCompress(
       return { messages: recent, newSummary: sanitizeSummary(combined) }
     }
   } catch (err) {
-    console.warn('[compression] Gemini failed, trying OpenAI:', (err as Error).message)
+    console.warn('[compression] Gemini failed, trying Groq:', (err as Error).message)
   }
 
-  try {
-    if (process.env.OPENAI_API_KEY) {
-      const client = new OpenAI({ 
-        apiKey: process.env.OPENAI_API_KEY,
-        baseURL: 'https://models.inference.ai.azure.com',
-      })
-      const res = await client.chat.completions.create({
-        model: MODELS.FALLBACK,
-        messages: [
-          { role: 'system', content: COMPRESSION_PROMPT },
-          { role: 'user', content: context },
-        ],
-        max_tokens: 256,
-        temperature: 0.1,
-      })
-      const rawSummary = res.choices[0]?.message?.content?.trim() ?? ''
-      const combined = existingSummary ? `${existingSummary}\n\n${rawSummary}` : rawSummary
-      return { messages: recent, newSummary: sanitizeSummary(combined) }
-    }
-  } catch (err) {
-    console.warn('[compression] OpenAI failed, trying Groq:', (err as Error).message)
-  }
+  // The OpenAI branch that used to sit here is gone. It pointed at
+  // `models.inference.ai.azure.com`, a host that stopped resolving in DNS, and
+  // authenticated with a GitHub PAT for GitHub Models, which retired on
+  // 30 Jul 2026. It could only ever fail — and it failed BETWEEN Gemini and
+  // Groq, so every compression that got past Gemini paid a DNS timeout before
+  // reaching a provider that works.
 
   try {
     if (process.env.GROQ_API_KEY) {

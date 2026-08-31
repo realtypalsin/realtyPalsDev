@@ -3,9 +3,6 @@
 import { GoogleGenAI } from '@google/genai'
 import { recordUsage, spentTodayUsd, priceFor, CACHED_INPUT_RATIO } from './cost'
 
-/** Hard ceiling on Gemini spend per UTC day, across every caller. */
-const DAILY_BUDGET_USD = Number(process.env.GEMINI_DAILY_BUDGET_USD ?? '2')
-
 /** Refresh interval for the spend figure. A DB read per call would be absurd. */
 const SPEND_TTL_MS = 30_000
 
@@ -22,23 +19,29 @@ export class GeminiBudgetExceededError extends Error {
   }
 }
 
+function getDailyBudgetUsd(): number {
+  return Number(process.env.GEMINI_DAILY_BUDGET_USD ?? '10')
+}
+
 /** Throws once the day's Gemini spend is over budget. */
 export async function assertWithinGeminiBudget(): Promise<void> {
-  if (DAILY_BUDGET_USD <= 0) return
+  const budget = getDailyBudgetUsd()
+  if (budget <= 0) return
 
   const now = Date.now()
   if (now - cachedAt > SPEND_TTL_MS) {
     cachedSpend = await spentTodayUsd('gemini')
     cachedAt = now
   }
-  if (cachedSpend >= DAILY_BUDGET_USD) {
-    throw new GeminiBudgetExceededError(cachedSpend, DAILY_BUDGET_USD)
+  if (cachedSpend >= budget) {
+    throw new GeminiBudgetExceededError(cachedSpend, budget)
   }
 }
 
 /** Spend recorded so far today, for the health check and for logging. */
 export function geminiBudgetStatus(): { spentUsd: number; budgetUsd: number; staleMs: number } {
-  return { spentUsd: cachedSpend, budgetUsd: DAILY_BUDGET_USD, staleMs: Date.now() - cachedAt }
+  const budget = getDailyBudgetUsd()
+  return { spentUsd: cachedSpend, budgetUsd: budget, staleMs: Date.now() - cachedAt }
 }
 
 /** Test seam, and a way to force a fresh read after a manual budget change. */

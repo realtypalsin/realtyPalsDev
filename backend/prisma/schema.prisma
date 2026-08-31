@@ -620,6 +620,20 @@ model SectorIntelligence {
   utilities_profile     Json?    // {"water_source": "Ganga Pipeline", "tds_ppm": 250, "power_grid": "PVVNL", "dg_cost_unit": 17}
   statutory_rates       Json?    // {"circle_rate_sqm": 55000, "amenity_surcharge_pct": 3, "floor_relief_pct": 2}
   infrastructure_pipeline Json?
+
+  // Environmental & Livability Macro Data
+  aqi_annual_avg             Float?
+  aqi_winter_peak            Float?
+  aqi_monsoon_low            Float?
+  monitoring_station_name    String?
+  flood_waterlogging_risk    String?   // "LOW" | "MODERATE" | "HIGH" | "BUFFER_ZONE"
+  flood_zone_description     String?
+  drainage_network_quality   String?   // "EXCELLENT" | "SATISFACTORY" | "DEVELOPING"
+  airport_distance_km        Float?
+  nearest_metro_station      String?
+  metro_distance_km          Float?
+  expressway_proximity_km    Float?
+
   last_verified_at      DateTime?
   verified_by           String?
   created_at            DateTime @default(now())
@@ -757,6 +771,7 @@ model ChatMessage {
   edited_at             DateTime?
   artifacts             Json?
   chips                 Json?       @default("[]")
+  is_verified           Boolean?    @default(false)
   session               ChatSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
   @@index([session_id, created_at])
@@ -1771,4 +1786,5 @@ model AuditLog {
   @@index([created_at])
   @@map("audit_logs")
 }
+
 

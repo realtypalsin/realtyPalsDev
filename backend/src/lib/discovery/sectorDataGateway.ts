@@ -195,14 +195,48 @@ export async function getSectorFullIntelligence(city: string, sector: string): P
   }
 }
 
+/** "Sector 74", "sector-74" and "74" are the same place. */
+function sameSectorKey(a: string, b: string): boolean {
+  const key = (s: string) => s.toLowerCase().replace(/sector/g, '').replace(/[^a-z0-9]/g, '')
+  return key(a) === key(b)
+}
+
 /**
  * Format a dynamic, database-grounded micro-markets overview string for system prompt injection.
+ *
+ * `focusSectors` scopes the block to the micro-markets those sectors fall in.
+ *
+ * Scoping the RENDERED table alone was not enough, and the second manual run
+ * proved it: "which is better for a family: Sector 74, 75, 76 or 78" still
+ * opened with the full six-row city table, because the model was transcribing
+ * THIS block. The prompt rule against drawing tables cannot beat six
+ * micro-markets sitting in context in tabular shape. Both the block and the
+ * renderer now take the same scope, so they cannot disagree — and when the
+ * buyer names sectors, neither one mentions the twenty they did not ask about.
  */
-export async function buildCityMicroMarketsContext(city: string = 'Noida'): Promise<string> {
-  const markets = await getCityMicroMarkets(city)
-  if (!markets || markets.length === 0) return ''
+export async function buildCityMicroMarketsContext(
+  city: string = 'Noida',
+  focusSectors: string[] = [],
+): Promise<string> {
+  const all = await getCityMicroMarkets(city)
+  if (!all || all.length === 0) return ''
+
+  const markets = focusSectors.length
+    ? all.filter((m) => m.sectors?.some((s) => focusSectors.some((f) => sameSectorKey(s, f))))
+    : all
+  // Fewer than two matches is the same "nothing to compare" case the renderer
+  // suppresses on, and the two MUST agree: the model transcribes whatever is
+  // in this block, so a block the renderer would have refused to draw comes
+  // out as a table anyway. Measured 31 Aug — with only `< 1` here, "which is
+  // better for a family: Sector 74, 75, 76 or 78" still opened with a
+  // one-row micro-market table that the renderer had correctly declined.
+  if (focusSectors.length && markets.length < 2) return ''
+  if (!markets.length) return ''
 
   let text = `## VERIFIED CITY MICRO-MARKETS (${city.toUpperCase()})\n`
+  if (focusSectors.length) {
+    text += `_Scoped to the sectors the buyer named: ${focusSectors.join(', ')}._\n`
+  }
   for (const m of markets) {
     text += `### ${m.microMarket} (Sectors: ${m.sectors.join(', ')})\n`
     text += `- **Pricing**: Avg ₹${m.avgPricePerSqft.toLocaleString('en-IN')}/sqft (Range: ₹${m.priceRange.min.toLocaleString('en-IN')} – ₹${m.priceRange.max.toLocaleString('en-IN')})\n`

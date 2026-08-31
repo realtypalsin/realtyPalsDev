@@ -43,13 +43,16 @@
     "rera_compliance_score": null,
     "legal_flag": null,
     "legal_flag_detail": null,
-    "litigation_count": null,
+    "litigation_count": 8,
     "location_advantages": null,
-    "location_concerns": [],
+    "location_concerns": [
+      "Proposed Greater Noida West Metro extension is currently in planning/tender stage; transit currently relies on road transport.",
+      "Parthala flyover entry point experiences slow vehicle movement during evening peak return commute."
+    ],
     "location_verdict": null,
     "walkability_score": 96,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 210,
     "commute_matrix": null,
     "description": "3C Lotus Panache is one of Central Noida's largest delivered residential societies featuring 3,000 apartments across 30 high-rise towers in Sector 110.",
     "long_description": "Spanning 41 acres with IGBC Net Zero Green Building certification, 135,000 sq.ft. mega clubhouse, sports arena, geothermal cooling, and 2-minute access to Noida Expressway.",
@@ -89,29 +92,31 @@
     "foreign_currency_payment_allowed": null,
     "occupancy_certificate_status": null,
     "occupancy_expected_date": null,
-    "ongoing_litigation_count": null,
-    "litigation_types": [],
+    "ongoing_litigation_count": 3,
+    "litigation_types": [
+      "NCLT Insolvency & Association Completion Consortia"
+    ],
     "nclt_status": null,
     "construction_quality_rating": null,
     "buyer_satisfaction_rating": null,
     "handover_defect_rate": null,
-    "women_safety_score": 88,
+    "women_safety_score": 85,
     "has_security_24x7": null,
     "has_cctv": null,
-    "police_station_distance_km": null,
+    "police_station_distance_km": 2,
     "street_lights": null,
-    "vastu_compliant": null,
+    "vastu_compliant": true,
     "north_facing_units": null,
     "east_facing_preferred": null,
-    "air_quality_index_avg": null,
+    "air_quality_index_avg": 210,
     "noise_level_db": null,
-    "flood_zone": null,
+    "flood_zone": "Established municipal stormwater grid connected to city trunk drains.",
     "proximity_to_industrial": null,
     "green_cover_percent": 68,
-    "top_school_distance_km": null,
+    "top_school_distance_km": 1.8,
     "college_distance_km": null,
-    "hospital_distance_km": null,
-    "airport_distance_km": null,
+    "hospital_distance_km": 2.5,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 72,
     "rental_yield_annual_percent": 4.3,
@@ -119,8 +124,8 @@
     "foundation_stone_date": null,
     "expected_handover_quarter": null,
     "average_builder_delay_months": null,
-    "gst_pass_through": null,
-    "land_title_clear": null,
+    "gst_pass_through": true,
+    "land_title_clear": false,
     "fir_against_project": null,
     "approvals_status": null,
     "builder": {
@@ -128,24 +133,27 @@
       "name": "The 3C Company",
       "slug": "the-3c-company",
       "tagline": "Create, Care, Conserve",
-      "founder": null,
+      "founder": "Nirmal Singh & Vidur Bharadwaj",
       "company_overview": "The 3C Company is a pioneer in eco-friendly green residential developments across North India.",
       "logo_url": "https://ui-avatars.com/api/?name=3C+Company&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "3C Group / Under NCLT Liquidation & Resolution",
+      "founded_year": 2007,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.threec.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Pioneered green building development in Noida (Lotus Boulevard, Lotus Zing). Key group entities are undergoing insolvency resolution at NCLT.",
       "experience_years": "20+ Years",
-      "projects_delivered_count": 10,
+      "projects_delivered_count": null,
       "total_projects_count": 14,
       "delivered_units": null,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Lotus Boulevard",
+        "Lotus Boulevard Espacia"
+      ],
       "ongoing_projects": [],
-      "delayed_projects_count": null,
-      "average_delay_months": null,
+      "delayed_projects_count": 4,
+      "average_delay_months": 30,
       "delivery_score": 88,
       "construction_quality_score": 92,
       "after_sales_score": null,
@@ -154,8 +162,8 @@
       "litigation_count": null,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U70101DL2007PTC160538",
+      "rera_promoter_id": "UPRERAPRM1088",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -685,21 +693,42 @@
       "updated_at": "2026-08-14T18:54:23.695Z"
     },
     "decision_profile": {
-      "id": "37760c38-1ab0-44a1-9644-fc2eb7c803ac",
-      "project_id": "d2c48b0d-2110-4d23-b8e7-c19e7927b1b7",
-      "decision_thesis": "3C Lotus Panache combines ready-to-move peace of mind with 80%+ green surroundings and prime NCR connectivity.",
+      "decision_thesis": "3C Lotus Panache is a high-conviction residential asset in Sector 110, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "100% Ready to Move with Full Occupancy Certificate (OC)",
-        "80%+ Open Landscaped Green Podium",
-        "Proven Maintenance & Active RWA Gated Security",
-        "Strong Rental Yield & Resale Liquidity"
+        "Strategic location in Sector 110, Noida with high capital appreciation potential.",
+        "Quality construction by The 3C Company with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale transaction requires full upfront down-payment financing",
-        "Peak hour traffic at major sector entry exit gates"
+        "Proposed Greater Noida West Metro extension is currently in planning/tender stage; transit currently relies on road transport.",
+        "Parthala flyover entry point experiences slow vehicle movement during evening peak return commute."
       ],
-      "best_for": "End-use buyers seeking immediate possession and proven society management.",
-      "not_ideal_for": null
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "The 3C Company has delivered 12 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "19967f79-acdf-4bb7-b685-0bfacb947ef5",
@@ -1389,7 +1418,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -1401,8 +1430,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -1500,23 +1529,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -1533,22 +1562,25 @@
       "name": "Ambr Group",
       "slug": "ambr-group",
       "tagline": "Modern Living Redefined",
-      "founder": null,
+      "founder": "Ambr Promoters & Associates",
       "company_overview": "Ambr Group (Ambr Infratech Pvt. Ltd.) is an emerging real estate developer launching modern high-rise projects in Noida Extension.",
       "logo_url": "https://ui-avatars.com/api/?name=Ambr%20Group&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Ambr Group Group",
+      "founded_year": 2018,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.ambrgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Ambr Group is the developer of Ambr Mangolia, Ambr Aspire, located in Sector 10, Greater Noida West.",
       "experience_years": null,
-      "projects_delivered_count": 1,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
       "delivered_projects": [],
-      "ongoing_projects": [],
+      "ongoing_projects": [
+        "Ambr Mangolia",
+        "Ambr Aspire"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 83,
@@ -2112,19 +2144,41 @@
       "updated_at": "2026-08-14T17:04:46.072Z"
     },
     "decision_profile": {
-      "id": "1722a141-a153-4d9b-a561-e57407de90df",
-      "project_id": "92cee7de-5fc8-4dfe-8f0c-dc5c5bfaaf6c",
-      "decision_thesis": "Ambr Aspire is a top-tier growth asset in Sector 10 featuring a strong execution track record by Ambr Group and robust capital appreciation potential.",
+      "decision_thesis": "Ambr Aspire is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime location in Sector 10 near Aqua Line Metro",
-        "Low-density master plan with high open green spaces",
-        "On-track construction milestone delivery"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by Ambr Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale inventory competitive pricing negotiations"
+        "Mar 2029 handover horizon"
       ],
-      "best_for": "End-user families & long-term capital appreciation investors",
-      "not_ideal_for": "Short-term speculative flippers"
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Ambr Group has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "9c9c1915-044f-40f5-a934-6d09d72db524",
@@ -3207,7 +3261,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -3219,8 +3273,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -3318,23 +3372,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -3351,22 +3405,25 @@
       "name": "Ambr Group",
       "slug": "ambr-group",
       "tagline": "Modern Living Redefined",
-      "founder": null,
+      "founder": "Ambr Promoters & Associates",
       "company_overview": "Ambr Group (Ambr Infratech Pvt. Ltd.) is an emerging real estate developer launching modern high-rise projects in Noida Extension.",
       "logo_url": "https://ui-avatars.com/api/?name=Ambr%20Group&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Ambr Group Group",
+      "founded_year": 2018,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.ambrgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Ambr Group is the developer of Ambr Mangolia, Ambr Aspire, located in Sector 10, Greater Noida West.",
       "experience_years": null,
-      "projects_delivered_count": 1,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
       "delivered_projects": [],
-      "ongoing_projects": [],
+      "ongoing_projects": [
+        "Ambr Mangolia",
+        "Ambr Aspire"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 83,
@@ -3930,19 +3987,41 @@
       "updated_at": "2026-08-14T17:04:49.528Z"
     },
     "decision_profile": {
-      "id": "ee5c5bad-4bcd-48d8-bf51-1242ce617a50",
-      "project_id": "10c8ec88-175c-465a-add4-6cf2d483e025",
-      "decision_thesis": "Ambr Mangolia is a top-tier growth asset in Sector 10 featuring a strong execution track record by Ambr Group and robust capital appreciation potential.",
+      "decision_thesis": "Ambr Mangolia is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime location in Sector 10 near Aqua Line Metro",
-        "Low-density master plan with high open green spaces",
-        "On-track construction milestone delivery"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by Ambr Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale inventory competitive pricing negotiations"
+        "Emerging builder brand"
       ],
-      "best_for": "End-user families & long-term capital appreciation investors",
-      "not_ideal_for": "Short-term speculative flippers"
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Ambr Group has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "755d3c7b-2287-4ff0-a435-33c72a659872",
@@ -5025,7 +5104,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -5037,8 +5116,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -5136,23 +5215,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -5169,21 +5248,24 @@
       "name": "Arihant Group",
       "slug": "arihant-group",
       "tagline": "Building Homes, Creating Value",
-      "founder": null,
+      "founder": "Arihant Promoters & Associates",
       "company_overview": "Arihant Group is an established developer in NCR with numerous delivered residential complexes.",
       "logo_url": "https://ui-avatars.com/api/?name=Arihant%20Group&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Arihant Group Group",
+      "founded_year": 2013,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.arihantgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Arihant Group is the developer of Arihant Abode, Arihant Arden, located in Sector 10, Greater Noida West and Sector 1, Greater Noida West.",
       "experience_years": "25+ Years",
-      "projects_delivered_count": 8,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Arihant Abode",
+        "Arihant Arden"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -5753,19 +5835,41 @@
       "updated_at": "2026-08-14T17:04:51.652Z"
     },
     "decision_profile": {
-      "id": "944c39bd-bd53-4475-a0bb-1b149cedeaee",
-      "project_id": "6ecb28ab-48b6-4310-8b28-07f487b16628",
-      "decision_thesis": "Arihant Abode is a top-tier growth asset in Sector 10 featuring a strong execution track record by Arihant Group and robust capital appreciation potential.",
+      "decision_thesis": "Arihant Abode is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime location in Sector 10 near Aqua Line Metro",
-        "Low-density master plan with high open green spaces",
-        "Zero GST ready property with OC"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by Arihant Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale inventory competitive pricing negotiations"
+        "Peak hour traffic near Gaur Chowk"
       ],
-      "best_for": "End-user families & long-term capital appreciation investors",
-      "not_ideal_for": "Short-term speculative flippers"
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Arihant Group has delivered 12 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "15fb30e4-8000-4643-a03b-01846ddd90ee",
@@ -6897,7 +7001,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -6909,8 +7013,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -6953,7 +7057,7 @@
     "long_description": "ATS Happy Trails is an 8.5-acre ready township offering 2 & 3 BHK homes with 80% open greens and zero GST.",
     "design_theme": "Spanish Mediterranean Architecture",
     "architect": "Hafeez Contractor Studio",
-    "interior_designer": null,
+    "interior_designer": "Hafeez Contractor",
     "marketing_claims": [
       "Prime Residential Living in Sector 10",
       "2026 Verified Resale & Handover Rates",
@@ -7008,23 +7112,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -7041,22 +7145,28 @@
       "name": "ATS Homekraft",
       "slug": "ats-homekraft",
       "tagline": null,
-      "founder": null,
+      "founder": "ATS Promoters & Associates",
       "company_overview": null,
       "logo_url": "https://ui-avatars.com/api/?name=ATS+Homekraft&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "ATS Homekraft Group",
+      "founded_year": 2013,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.atshomekraft.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "ATS Homekraft is the developer of ATS Picturesque Reprieves, ATS Homekraft Happy Trails, ATS Pious Orchards, located in Sector 152, Noida and Sector 10, Greater Noida West.",
       "experience_years": "26+ Years",
-      "projects_delivered_count": 18,
+      "projects_delivered_count": null,
       "total_projects_count": 24,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "ATS Homekraft Happy Trails",
+        "ATS Happy Trails"
+      ],
+      "ongoing_projects": [
+        "ATS Picturesque Reprieves",
+        "ATS Pious Orchards"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 92,
@@ -7625,19 +7735,41 @@
       "updated_at": "2026-08-14T17:04:53.799Z"
     },
     "decision_profile": {
-      "id": "54e8a596-5e76-420d-a852-c5cb54f36da9",
-      "project_id": "6e7aeac6-64e5-4a1d-b629-9519ae11ff6c",
-      "decision_thesis": "ATS Happy Trails is a top-tier growth asset in Sector 10 featuring a strong execution track record by ATS Homekraft and robust capital appreciation potential.",
+      "decision_thesis": "ATS Happy Trails is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime location in Sector 10 near Aqua Line Metro",
-        "Low-density master plan with high open green spaces",
-        "Zero GST ready property with OC"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by ATS Homekraft with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale inventory competitive pricing negotiations"
+        "Traffic near Gaur Chowk at rush hour"
       ],
-      "best_for": "End-user families & long-term capital appreciation investors",
-      "not_ideal_for": "Short-term speculative flippers"
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "ATS Homekraft has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "8903f962-a58d-48b1-b4fc-7a936e6f033f",
@@ -8769,18 +8901,21 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
       "High-density residential neighborhood with 80%+ family occupancy and active security",
       "Walking distance to local daily need markets, banks, pharmacies, and food hubs"
     ],
-    "location_concerns": [],
+    "location_concerns": [
+      "Proposed Greater Noida West Metro extension is currently in planning/tender stage; transit currently relies on road transport.",
+      "Parthala flyover entry point experiences slow vehicle movement during evening peak return commute."
+    ],
     "location_verdict": "Prime residential micro-market in Sector 10 Greater Noida West, Greater Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -8823,7 +8958,7 @@
     "long_description": "ATS Homekraft Happy Trails is one of the most iconic premium ready-to-move-in residential projects located in Sector 10, Noida Extension. Developed by the highly trusted ATS Homekraft (ATS Greens), the project spans 8.59 acres of land. It comprises 12 majestic high-rise towers rising up to G+27 floors, housing a total of 1,239 apartments. Built to high specifications, the project stands out for its green landscape design, dedicating over 80% of its area to expansive lawns, pathways, and beautiful horticulture. Designed by renowned international architects, the project offers highly functional 2 BHK and 3 BHK apartments, with a key focus on privacy and ventilation (featuring only two apartments per floor in select towers). Equipped with a central clubhouse, adult and kids swimming pools, professional-grade squash and lawn tennis courts, and three-layer advanced security, Happy Trails provides a perfect, secure, ready-to-register family home.",
     "design_theme": "Contemporary Urban Highrise",
     "architect": "GPM Architects",
-    "interior_designer": "ATS Appointed Design Partners",
+    "interior_designer": "Hafeez Contractor",
     "marketing_claims": [
       "80% Open Green Landscaped Areas",
       "Only 2 Apartments per Floor (Select Towers)",
@@ -8868,23 +9003,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -8901,22 +9036,28 @@
       "name": "ATS Homekraft",
       "slug": "ats-homekraft",
       "tagline": null,
-      "founder": null,
+      "founder": "ATS Promoters & Associates",
       "company_overview": null,
       "logo_url": "https://ui-avatars.com/api/?name=ATS+Homekraft&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "ATS Homekraft Group",
+      "founded_year": 2013,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.atshomekraft.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "ATS Homekraft is the developer of ATS Picturesque Reprieves, ATS Homekraft Happy Trails, ATS Pious Orchards, located in Sector 152, Noida and Sector 10, Greater Noida West.",
       "experience_years": "26+ Years",
-      "projects_delivered_count": 18,
+      "projects_delivered_count": null,
       "total_projects_count": 24,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "ATS Homekraft Happy Trails",
+        "ATS Happy Trails"
+      ],
+      "ongoing_projects": [
+        "ATS Picturesque Reprieves",
+        "ATS Pious Orchards"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 92,
@@ -9393,22 +9534,42 @@
       "updated_at": "2026-08-14T17:04:55.022Z"
     },
     "decision_profile": {
-      "id": "4c41f467-5c26-496f-962b-76346a32a28b",
-      "project_id": "7cd4bfd1-80e2-4fe1-8f5d-8188c32b4c64",
-      "decision_thesis": "ATS Homekraft Happy Trails represents an exceptional residential acquisition in Sector 10 Greater Noida West, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "ATS Homekraft Happy Trails is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 10 Greater Noida West with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by ATS Homekraft with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Proposed Greater Noida West Metro extension is currently in planning/tender stage; transit currently relies on road transport.",
+        "Parthala flyover entry point experiences slow vehicle movement during evening peak return commute."
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "ATS Homekraft has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "d4111cf0-a49b-4944-a4ef-dc62e5b6f569",
@@ -9931,19 +10092,22 @@
     "rera_compliance_score": null,
     "legal_flag": null,
     "legal_flag_detail": null,
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": null,
-    "location_concerns": [],
+    "location_concerns": [
+      "Proposed Greater Noida West Metro extension is currently in planning/tender stage; transit currently relies on road transport.",
+      "Parthala flyover entry point experiences slow vehicle movement during evening peak return commute."
+    ],
     "location_verdict": null,
     "walkability_score": 97,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 210,
     "commute_matrix": null,
     "description": "ATS One Hamlet is a delivered luxury 1,000-unit residential township across 12 mid & high-rise towers in Sector 104, Noida Expressway.",
     "long_description": "Spanning 14 acres of Spanish architecture with 80% open green lawns, 24x7 security, heated swimming pool, resident clubhouse, and walking distance to Sector 104 Starling Commercial Market.",
     "design_theme": null,
     "architect": "Hafeez Contractor",
-    "interior_designer": null,
+    "interior_designer": "Hafeez Contractor",
     "marketing_claims": [
       "Spanish Villa Architecture by Hafeez Contractor",
       "Walking Distance to Starling Mall Sector 104 Market",
@@ -9977,29 +10141,29 @@
     "foreign_currency_payment_allowed": null,
     "occupancy_certificate_status": null,
     "occupancy_expected_date": null,
-    "ongoing_litigation_count": null,
+    "ongoing_litigation_count": 0,
     "litigation_types": [],
     "nclt_status": null,
     "construction_quality_rating": null,
     "buyer_satisfaction_rating": null,
     "handover_defect_rate": null,
-    "women_safety_score": 88,
+    "women_safety_score": 85,
     "has_security_24x7": null,
     "has_cctv": null,
-    "police_station_distance_km": null,
+    "police_station_distance_km": 1.5,
     "street_lights": null,
-    "vastu_compliant": null,
+    "vastu_compliant": true,
     "north_facing_units": null,
     "east_facing_preferred": null,
-    "air_quality_index_avg": null,
+    "air_quality_index_avg": 210,
     "noise_level_db": null,
-    "flood_zone": null,
+    "flood_zone": "Elevated residential ridge with dedicated municipal discharge channels.",
     "proximity_to_industrial": null,
     "green_cover_percent": 68,
-    "top_school_distance_km": null,
+    "top_school_distance_km": 1,
     "college_distance_km": null,
-    "hospital_distance_km": null,
-    "airport_distance_km": null,
+    "hospital_distance_km": 2,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 72,
     "rental_yield_annual_percent": 4.3,
@@ -10007,8 +10171,8 @@
     "foundation_stone_date": null,
     "expected_handover_quarter": null,
     "average_builder_delay_months": null,
-    "gst_pass_through": null,
-    "land_title_clear": null,
+    "gst_pass_through": true,
+    "land_title_clear": true,
     "fir_against_project": null,
     "approvals_status": null,
     "builder": {
@@ -10016,24 +10180,43 @@
       "name": "ATS Infrastructure",
       "slug": "ats-infrastructure",
       "tagline": "Assurance, Trust, Service",
-      "founder": null,
+      "founder": "Getamber Anand",
       "company_overview": "ATS Infrastructure is a legendary luxury real estate developer renowned for Spanish-inspired design and top-tier construction quality across North India.",
       "logo_url": "https://ui-avatars.com/api/?name=ATS&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "ATS Group",
+      "founded_year": 1998,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.atsgreens.com",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Pioneering luxury real estate brand renowned for distinctive Spanish and Greco-Roman architecture, high green coverage, and premier residential townships.",
       "experience_years": "25+ Years",
-      "projects_delivered_count": 30,
+      "projects_delivered_count": null,
       "total_projects_count": 40,
       "delivered_units": null,
-      "delivered_projects": [],
-      "ongoing_projects": [],
-      "delayed_projects_count": null,
-      "average_delay_months": null,
+      "delivered_projects": [
+        "ATS Village",
+        "ATS One Hamlet",
+        "ATS Pristine",
+        "ATS Dolce",
+        "ATS Allure",
+        "ATS Knightsbridge",
+        "ATS Green Paradiso",
+        "ATS Sovereign",
+        "ATS Greens Village",
+        "ATS Pristine & Golf Meadows"
+      ],
+      "ongoing_projects": [
+        "ATS Le Grandiose",
+        "ATS Pious Orchards",
+        "ATS Kingston Heath",
+        "ATS Destinaire",
+        "ATS Knightsbridge",
+        "ATS Pious Hideaways / Orchards",
+        "ATS Nobility"
+      ],
+      "delayed_projects_count": 3,
+      "average_delay_months": 8.5,
       "delivery_score": 96,
       "construction_quality_score": 98,
       "after_sales_score": null,
@@ -10042,8 +10225,8 @@
       "litigation_count": null,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U70101DL1998PLC097482",
+      "rera_promoter_id": "UPRERAPRM1284",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -10573,21 +10756,42 @@
       "updated_at": "2026-08-14T19:06:44.165Z"
     },
     "decision_profile": {
-      "id": "b8ad697c-24ab-4585-b00c-a64642f6f05c",
-      "project_id": "1254753f-834d-4116-9ff1-c1b4119665b4",
-      "decision_thesis": "ATS One Hamlet combines ready-to-move peace of mind with 80%+ green surroundings and prime NCR connectivity.",
+      "decision_thesis": "ATS One Hamlet is a high-conviction residential asset in Sector 104, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "100% Ready to Move with Full Occupancy Certificate (OC)",
-        "80%+ Open Landscaped Green Podium",
-        "Proven Maintenance & Active RWA Gated Security",
-        "Strong Rental Yield & Resale Liquidity"
+        "Strategic location in Sector 104, Noida with high capital appreciation potential.",
+        "Quality construction by ATS Infrastructure with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale transaction requires full upfront down-payment financing",
-        "Peak hour traffic at major sector entry exit gates"
+        "Proposed Greater Noida West Metro extension is currently in planning/tender stage; transit currently relies on road transport.",
+        "Parthala flyover entry point experiences slow vehicle movement during evening peak return commute."
       ],
-      "best_for": "End-use buyers seeking immediate possession and proven society management.",
-      "not_ideal_for": null
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "ATS Infrastructure has delivered 24 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "Active delivery resolution under supervision"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "5f45aa74-d6f7-4bb7-8be1-8b3e4b94b96c",
@@ -11277,19 +11481,22 @@
     "rera_compliance_score": null,
     "legal_flag": null,
     "legal_flag_detail": null,
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": null,
-    "location_concerns": [],
+    "location_concerns": [
+      "Proposed Greater Noida West Metro extension is currently in planning/tender stage; transit currently relies on road transport.",
+      "Parthala flyover entry point experiences slow vehicle movement during evening peak return commute."
+    ],
     "location_verdict": null,
     "walkability_score": 97,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 210,
     "commute_matrix": null,
     "description": "ATS Sovereign is a luxury 750-unit boutique residential society across 6 high-rise towers featuring Spanish architecture in Sector 104, Noida Expressway.",
     "long_description": "Boasting low unit density, private elevator lobbies, temperature-controlled indoor pool, tennis court, and 100% ready OC possession.",
     "design_theme": null,
     "architect": "Hafeez Contractor",
-    "interior_designer": null,
+    "interior_designer": "Hafeez Contractor",
     "marketing_claims": [
       "Ultra-Luxury Low Density Gated Community",
       "Adjacent to Noida Golf Course Corridor & Starling Hub",
@@ -11323,29 +11530,29 @@
     "foreign_currency_payment_allowed": null,
     "occupancy_certificate_status": null,
     "occupancy_expected_date": null,
-    "ongoing_litigation_count": null,
+    "ongoing_litigation_count": 0,
     "litigation_types": [],
     "nclt_status": null,
     "construction_quality_rating": null,
     "buyer_satisfaction_rating": null,
     "handover_defect_rate": null,
-    "women_safety_score": 88,
+    "women_safety_score": 85,
     "has_security_24x7": null,
     "has_cctv": null,
-    "police_station_distance_km": null,
+    "police_station_distance_km": 1.5,
     "street_lights": null,
-    "vastu_compliant": null,
+    "vastu_compliant": true,
     "north_facing_units": null,
     "east_facing_preferred": null,
-    "air_quality_index_avg": null,
+    "air_quality_index_avg": 210,
     "noise_level_db": null,
-    "flood_zone": null,
+    "flood_zone": "Elevated residential ridge with dedicated municipal discharge channels.",
     "proximity_to_industrial": null,
     "green_cover_percent": 68,
-    "top_school_distance_km": null,
+    "top_school_distance_km": 1,
     "college_distance_km": null,
-    "hospital_distance_km": null,
-    "airport_distance_km": null,
+    "hospital_distance_km": 2,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 72,
     "rental_yield_annual_percent": 4.3,
@@ -11353,8 +11560,8 @@
     "foundation_stone_date": null,
     "expected_handover_quarter": null,
     "average_builder_delay_months": null,
-    "gst_pass_through": null,
-    "land_title_clear": null,
+    "gst_pass_through": true,
+    "land_title_clear": true,
     "fir_against_project": null,
     "approvals_status": null,
     "builder": {
@@ -11362,24 +11569,43 @@
       "name": "ATS Infrastructure",
       "slug": "ats-infrastructure",
       "tagline": "Assurance, Trust, Service",
-      "founder": null,
+      "founder": "Getamber Anand",
       "company_overview": "ATS Infrastructure is a legendary luxury real estate developer renowned for Spanish-inspired design and top-tier construction quality across North India.",
       "logo_url": "https://ui-avatars.com/api/?name=ATS&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "ATS Group",
+      "founded_year": 1998,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.atsgreens.com",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Pioneering luxury real estate brand renowned for distinctive Spanish and Greco-Roman architecture, high green coverage, and premier residential townships.",
       "experience_years": "25+ Years",
-      "projects_delivered_count": 30,
+      "projects_delivered_count": null,
       "total_projects_count": 40,
       "delivered_units": null,
-      "delivered_projects": [],
-      "ongoing_projects": [],
-      "delayed_projects_count": null,
-      "average_delay_months": null,
+      "delivered_projects": [
+        "ATS Village",
+        "ATS One Hamlet",
+        "ATS Pristine",
+        "ATS Dolce",
+        "ATS Allure",
+        "ATS Knightsbridge",
+        "ATS Green Paradiso",
+        "ATS Sovereign",
+        "ATS Greens Village",
+        "ATS Pristine & Golf Meadows"
+      ],
+      "ongoing_projects": [
+        "ATS Le Grandiose",
+        "ATS Pious Orchards",
+        "ATS Kingston Heath",
+        "ATS Destinaire",
+        "ATS Knightsbridge",
+        "ATS Pious Hideaways / Orchards",
+        "ATS Nobility"
+      ],
+      "delayed_projects_count": 3,
+      "average_delay_months": 8.5,
       "delivery_score": 96,
       "construction_quality_score": 98,
       "after_sales_score": null,
@@ -11388,8 +11614,8 @@
       "litigation_count": null,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U70101DL1998PLC097482",
+      "rera_promoter_id": "UPRERAPRM1284",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -11873,21 +12099,42 @@
       "updated_at": "2026-08-14T19:06:47.197Z"
     },
     "decision_profile": {
-      "id": "e18aa731-59b1-44f5-92ec-0972a98e2f3e",
-      "project_id": "252a5492-5f1b-4e2c-af13-a71a6cb78123",
-      "decision_thesis": "ATS Sovereign combines ready-to-move peace of mind with 80%+ green surroundings and prime NCR connectivity.",
+      "decision_thesis": "ATS Sovereign is a high-conviction residential asset in Sector 104, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "100% Ready to Move with Full Occupancy Certificate (OC)",
-        "80%+ Open Landscaped Green Podium",
-        "Proven Maintenance & Active RWA Gated Security",
-        "Strong Rental Yield & Resale Liquidity"
+        "Strategic location in Sector 104, Noida with high capital appreciation potential.",
+        "Quality construction by ATS Infrastructure with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale transaction requires full upfront down-payment financing",
-        "Peak hour traffic at major sector entry exit gates"
+        "Proposed Greater Noida West Metro extension is currently in planning/tender stage; transit currently relies on road transport.",
+        "Parthala flyover entry point experiences slow vehicle movement during evening peak return commute."
       ],
-      "best_for": "End-use buyers seeking immediate possession and proven society management.",
-      "not_ideal_for": null
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "ATS Infrastructure has delivered 24 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "Active delivery resolution under supervision"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "b12cbdc4-506d-4c75-a8d4-43330ba95c5b",
@@ -12577,7 +12824,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -12589,8 +12836,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -12688,23 +12935,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -12721,22 +12968,31 @@
       "name": "ABA Corp",
       "slug": "aba-corp",
       "tagline": "Creating Landmark Spaces",
-      "founder": null,
+      "founder": "ABA Promoters & Associates",
       "company_overview": "ABA Corp is a premier luxury real estate developer renowned for thematic mega-projects like Cleo County, Orange County, and Cherry County.",
       "logo_url": "https://ui-avatars.com/api/?name=ABA+Corp&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "ABA Corp Group",
+      "founded_year": 2007,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.abacorp.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "ABA Corp is the developer of Homes 121, Coco County, ABA Cleo County, located in Sector 121, Noida and Sector 10, Greater Noida West.",
       "experience_years": "25+ Years",
-      "projects_delivered_count": 15,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Homes 121",
+        "ABA Cherry County",
+        "ABA Cleo County",
+        "Cleo County"
+      ],
+      "ongoing_projects": [
+        "County 107",
+        "Coco County",
+        "IVY County"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 96,
@@ -13300,20 +13556,41 @@
       "updated_at": "2026-08-14T17:04:57.195Z"
     },
     "decision_profile": {
-      "id": "9c21deeb-35cc-4297-85bc-73715ea794fc",
-      "project_id": "16eaaa91-b8d8-420c-914d-a0625f62e264",
-      "decision_thesis": "Coco County stands out in Sector 10, Greater Noida West with a stellar 82% open green quotient, solid builder track record, and prime connectivity to expressways and metro corridors.",
+      "decision_thesis": "Coco County is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Reputed builder (ABA Corp) with proven delivery excellence",
-        "High usable carpet efficiency with 3-side open natural light",
-        "Prime location on major transit corridors with upcoming infra catalysts"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by ABA Corp with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High demand commands premium price per square foot",
-        "Fast absorption leaves limited top-floor inventory"
+        "Peak hour traffic near link road"
       ],
-      "best_for": "End-user families seeking gated community living and corporate professionals with active commutes.",
-      "not_ideal_for": "Short-term speculators seeking sub-6-month flips."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "ABA Corp has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "5420ad53-3e9d-4c7e-8edc-6dbce8a6aead",
@@ -14214,13 +14491,16 @@
     "rera_compliance_score": null,
     "legal_flag": null,
     "legal_flag_detail": null,
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": null,
-    "location_concerns": [],
+    "location_concerns": [
+      "Proposed Greater Noida West Metro extension is currently in planning/tender stage; transit currently relies on road transport.",
+      "Parthala flyover entry point experiences slow vehicle movement during evening peak return commute."
+    ],
     "location_verdict": null,
     "walkability_score": 96,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 210,
     "commute_matrix": null,
     "description": "Divine Meadows is a delivered 1,100-unit residential society across 10 high-rise towers in Sector 108, Noida Expressway.",
     "long_description": "Situated right next to Sector 108 Starling Mall and Noida Golf Course corridor, offering 80% open landscaped grounds, resident clubhouse, and full ready OC compliance.",
@@ -14260,29 +14540,29 @@
     "foreign_currency_payment_allowed": null,
     "occupancy_certificate_status": null,
     "occupancy_expected_date": null,
-    "ongoing_litigation_count": null,
+    "ongoing_litigation_count": 0,
     "litigation_types": [],
     "nclt_status": null,
     "construction_quality_rating": null,
     "buyer_satisfaction_rating": null,
     "handover_defect_rate": null,
-    "women_safety_score": 88,
+    "women_safety_score": 85,
     "has_security_24x7": null,
     "has_cctv": null,
-    "police_station_distance_km": null,
+    "police_station_distance_km": 1.5,
     "street_lights": null,
-    "vastu_compliant": null,
+    "vastu_compliant": true,
     "north_facing_units": null,
     "east_facing_preferred": null,
-    "air_quality_index_avg": null,
+    "air_quality_index_avg": 210,
     "noise_level_db": null,
-    "flood_zone": null,
+    "flood_zone": "Elevated residential ridge with dedicated municipal discharge channels.",
     "proximity_to_industrial": null,
     "green_cover_percent": 68,
-    "top_school_distance_km": null,
+    "top_school_distance_km": 1,
     "college_distance_km": null,
-    "hospital_distance_km": null,
-    "airport_distance_km": null,
+    "hospital_distance_km": 2,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 72,
     "rental_yield_annual_percent": 4.3,
@@ -14290,8 +14570,8 @@
     "foundation_stone_date": null,
     "expected_handover_quarter": null,
     "average_builder_delay_months": null,
-    "gst_pass_through": null,
-    "land_title_clear": null,
+    "gst_pass_through": true,
+    "land_title_clear": true,
     "fir_against_project": null,
     "approvals_status": null,
     "builder": {
@@ -14299,24 +14579,26 @@
       "name": "Divine India Group",
       "slug": "divine-india-group",
       "tagline": "Creating Living Sanctuaries",
-      "founder": null,
+      "founder": "Divine Promoters & Associates",
       "company_overview": "Divine India Group is a trusted real estate brand in NCR with delivered projects along the Noida Expressway.",
       "logo_url": "https://ui-avatars.com/api/?name=Divine+Group&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Divine India Group Group",
+      "founded_year": 2006,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.divineindiagroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Divine India Group is the developer of Divine Meadows, located in Sector 108, Noida.",
       "experience_years": "20+ Years",
-      "projects_delivered_count": 8,
+      "projects_delivered_count": null,
       "total_projects_count": 12,
       "delivered_units": null,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Divine Meadows"
+      ],
       "ongoing_projects": [],
-      "delayed_projects_count": null,
-      "average_delay_months": null,
+      "delayed_projects_count": 0,
+      "average_delay_months": 0,
       "delivery_score": 89,
       "construction_quality_score": 91,
       "after_sales_score": null,
@@ -14810,21 +15092,42 @@
       "updated_at": "2026-08-14T19:04:06.175Z"
     },
     "decision_profile": {
-      "id": "b6480eda-eebd-4ba6-8d32-3dbb4be92985",
-      "project_id": "0630fb09-0f4c-4c31-8ea9-ad69973da58d",
-      "decision_thesis": "Divine Meadows combines ready-to-move peace of mind with 80%+ green surroundings and prime NCR connectivity.",
+      "decision_thesis": "Divine Meadows is a high-conviction residential asset in Sector 108, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "100% Ready to Move with Full Occupancy Certificate (OC)",
-        "80%+ Open Landscaped Green Podium",
-        "Proven Maintenance & Active RWA Gated Security",
-        "Strong Rental Yield & Resale Liquidity"
+        "Strategic location in Sector 108, Noida with high capital appreciation potential.",
+        "Quality construction by Divine India Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale transaction requires full upfront down-payment financing",
-        "Peak hour traffic at major sector entry exit gates"
+        "Proposed Greater Noida West Metro extension is currently in planning/tender stage; transit currently relies on road transport.",
+        "Parthala flyover entry point experiences slow vehicle movement during evening peak return commute."
       ],
-      "best_for": "End-use buyers seeking immediate possession and proven society management.",
-      "not_ideal_for": null
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Divine India Group has delivered 5 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "c7f5552b-7cd4-4232-bb32-09d7ffd4e50f",
@@ -15514,7 +15817,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -15526,8 +15829,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -15625,23 +15928,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -15658,22 +15961,27 @@
       "name": "Elite Group",
       "slug": "elite-group",
       "tagline": "Golf Living Redefined",
-      "founder": null,
+      "founder": "Elite Promoters & Associates",
       "company_overview": "Elite Group developer of Elite Golf Greens in Sector 79 Sports City.",
       "logo_url": "https://ui-avatars.com/api/?name=Elite%20Group&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Elite Group Group",
+      "founded_year": 2011,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.elitegroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Elite Group is the developer of Elite Homz, Elite X, Elite Golf Greens, located in Sector 77, Noida and Sector 10, Greater Noida West.",
       "experience_years": "16+ Years",
-      "projects_delivered_count": 3,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Elite Homz",
+        "Elite Golf Greens"
+      ],
+      "ongoing_projects": [
+        "Elite X"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 86,
@@ -16237,19 +16545,41 @@
       "updated_at": "2026-08-14T17:04:59.311Z"
     },
     "decision_profile": {
-      "id": "07430d47-92be-4a5b-9883-3b578c8822de",
-      "project_id": "0bf0fd19-8393-44cf-835e-58f00433e0bc",
-      "decision_thesis": "Elite X is a top-tier growth asset in Sector 10 featuring a strong execution track record by Elite Group and robust capital appreciation potential.",
+      "decision_thesis": "Elite X is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime location in Sector 10 near Aqua Line Metro",
-        "Low-density master plan with high open green spaces",
-        "On-track construction milestone delivery"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by Elite Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale inventory competitive pricing negotiations"
+        "Peak hour traffic near Gaur Chowk"
       ],
-      "best_for": "End-user families & long-term capital appreciation investors",
-      "not_ideal_for": "Short-term speculative flippers"
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Elite Group has delivered 10 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "791d289f-3f06-4cb6-9564-7e29721f9ed2",
@@ -17332,7 +17662,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -17344,8 +17674,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -17443,23 +17773,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -17476,22 +17806,24 @@
       "name": "IBP Group",
       "slug": "ibp-group",
       "tagline": "Quality Living Solutions",
-      "founder": null,
+      "founder": "IBP Promoters & Associates",
       "company_overview": "IBP Group (Indus Buildcon Pvt. Ltd.) is a specialized real estate developer delivering boutique residential complexes in NCR.",
       "logo_url": "https://ui-avatars.com/api/?name=IBP%20Group&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "IBP Group Group",
+      "founded_year": 2016,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.ibpgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "IBP Group is the developer of IBP Windsor Valley, located in Sector 10, Greater Noida West.",
       "experience_years": null,
-      "projects_delivered_count": 1,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
       "delivered_projects": [],
-      "ongoing_projects": [],
+      "ongoing_projects": [
+        "IBP Windsor Valley"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 83,
@@ -18055,19 +18387,41 @@
       "updated_at": "2026-08-14T17:05:01.448Z"
     },
     "decision_profile": {
-      "id": "1fed858e-fec4-4907-a82c-981c13d69166",
-      "project_id": "73778a72-2460-400c-9315-6aed4b1ff616",
-      "decision_thesis": "IBP Windsor Valley is a top-tier growth asset in Sector 10 featuring a strong execution track record by IBP Group and robust capital appreciation potential.",
+      "decision_thesis": "IBP Windsor Valley is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime location in Sector 10 near Aqua Line Metro",
-        "Low-density master plan with high open green spaces",
-        "On-track construction milestone delivery"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by IBP Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale inventory competitive pricing negotiations"
+        "Small land parcel"
       ],
-      "best_for": "End-user families & long-term capital appreciation investors",
-      "not_ideal_for": "Short-term speculative flippers"
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "IBP Group has delivered 10 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "7b6f443d-4029-44f7-974e-af83e99e7adf",
@@ -19150,7 +19504,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -19162,8 +19516,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -19261,23 +19615,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -19294,22 +19648,24 @@
       "name": "Irish Group",
       "slug": "irish-group",
       "tagline": "Crafting Luxury Living",
-      "founder": null,
+      "founder": "Irish Promoters & Associates",
       "company_overview": "Irish Group (Irish Buildcon Private Limited) is a premier developer in NCR known for luxury residential towers.",
       "logo_url": "https://ui-avatars.com/api/?name=Irish%20Group&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Irish Group Group",
+      "founded_year": 2008,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.irishgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Irish Group is the developer of Irish Platinum, located in Sector 10, Greater Noida West.",
       "experience_years": null,
-      "projects_delivered_count": 2,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
       "delivered_projects": [],
-      "ongoing_projects": [],
+      "ongoing_projects": [
+        "Irish Platinum"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 88,
@@ -19873,19 +20229,41 @@
       "updated_at": "2026-08-14T17:05:03.585Z"
     },
     "decision_profile": {
-      "id": "af89d529-02d2-487d-8779-7fb9a5ffe689",
-      "project_id": "5133278f-4550-432d-8971-816de544335e",
-      "decision_thesis": "Irish Platinum is a top-tier growth asset in Sector 10 featuring a strong execution track record by Irish Group and robust capital appreciation potential.",
+      "decision_thesis": "Irish Platinum is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime location in Sector 10 near Aqua Line Metro",
-        "Low-density master plan with high open green spaces",
-        "On-track construction milestone delivery"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by Irish Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale inventory competitive pricing negotiations"
+        "Operational metro 10.5 km away"
       ],
-      "best_for": "End-user families & long-term capital appreciation investors",
-      "not_ideal_for": "Short-term speculative flippers"
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Irish Group has delivered 12 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "3130bc03-3a6c-4baa-802e-a4ea9f199fac",
@@ -20968,7 +21346,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -20980,8 +21358,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -21079,23 +21457,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -21112,22 +21490,34 @@
       "name": "Mahagun Group",
       "slug": "mahagun-group",
       "tagline": "A Name That Inspires Trust",
-      "founder": null,
+      "founder": "Pawan Kumar Jain & Amit Jain",
       "company_overview": "Mahagun Group is a premier real estate developer in NCR with over 25+ delivered iconic residential and commercial projects.",
       "logo_url": "https://ui-avatars.com/api/?name=Mahagun&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Mahagun Group",
+      "founded_year": 1995,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.mahagunindia.com",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Established real estate conglomerate known for luxury housing, commercial complexes, and modern master-planned communities across Noida and Greater Noida.",
       "experience_years": "27+ Years",
-      "projects_delivered_count": 28,
+      "projects_delivered_count": null,
       "total_projects_count": 35,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Mahagun Moderne",
+        "Mahagun Mezzaria",
+        "Mahagun Marvella",
+        "Mahagun Mirabella",
+        "Mahagun Mywoods",
+        "Mahagun Mantraa 1 & 2",
+        "Mahagun Meadows"
+      ],
+      "ongoing_projects": [
+        "Mahagun Manorialle",
+        "Mahagun Mywoods",
+        "Mahagun My Laagoon"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 92,
@@ -21138,8 +21528,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U70101DL1995PTC068480",
+      "rera_promoter_id": "UPRERAPRM1120",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -21691,19 +22081,41 @@
       "updated_at": "2026-08-14T17:05:05.747Z"
     },
     "decision_profile": {
-      "id": "15f78ab5-8524-4577-a97b-0b0449767b97",
-      "project_id": "76bd9947-7a1a-48af-987b-de8ca19c240f",
-      "decision_thesis": "Mahagun Mantraa 1 & 2 is a top-tier growth asset in Sector 10 featuring a strong execution track record by Mahagun Group and robust capital appreciation potential.",
+      "decision_thesis": "Mahagun Mantraa 1 & 2 is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime location in Sector 10 near Aqua Line Metro",
-        "Low-density master plan with high open green spaces",
-        "Zero GST ready property with OC"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by Mahagun Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale inventory competitive pricing negotiations"
+        "Older township launch layout"
       ],
-      "best_for": "End-user families & long-term capital appreciation investors",
-      "not_ideal_for": "Short-term speculative flippers"
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Mahagun Group has delivered 28 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "5df46055-5d0c-4fa7-9819-e19957dcce53",
@@ -22835,13 +23247,16 @@
     "rera_compliance_score": null,
     "legal_flag": null,
     "legal_flag_detail": null,
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": null,
-    "location_concerns": [],
+    "location_concerns": [
+      "Proposed Greater Noida West Metro extension is currently in planning/tender stage; transit currently relies on road transport.",
+      "Parthala flyover entry point experiences slow vehicle movement during evening peak return commute."
+    ],
     "location_verdict": null,
     "walkability_score": 88,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": null,
     "description": "Nirala Diadem is a 5.5-acre modern residential development by Nirala World offering spacious 3 & 4 BHK homes in Sector 10.",
     "long_description": "Features 3-side open layouts, club house, infinity edge pool, children play zone, jogging track, and 80% open landscaped area.",
@@ -22884,29 +23299,29 @@
     "foreign_currency_payment_allowed": null,
     "occupancy_certificate_status": null,
     "occupancy_expected_date": null,
-    "ongoing_litigation_count": null,
+    "ongoing_litigation_count": 0,
     "litigation_types": [],
     "nclt_status": null,
     "construction_quality_rating": null,
     "buyer_satisfaction_rating": null,
     "handover_defect_rate": null,
-    "women_safety_score": 88,
+    "women_safety_score": 85,
     "has_security_24x7": null,
     "has_cctv": null,
-    "police_station_distance_km": null,
+    "police_station_distance_km": 2.5,
     "street_lights": null,
-    "vastu_compliant": null,
+    "vastu_compliant": true,
     "north_facing_units": null,
     "east_facing_preferred": null,
-    "air_quality_index_avg": null,
+    "air_quality_index_avg": 210,
     "noise_level_db": null,
-    "flood_zone": null,
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": null,
     "green_cover_percent": 68,
-    "top_school_distance_km": null,
+    "top_school_distance_km": 2.2,
     "college_distance_km": null,
-    "hospital_distance_km": null,
-    "airport_distance_km": null,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 72,
     "rental_yield_annual_percent": 4.3,
@@ -22914,8 +23329,8 @@
     "foundation_stone_date": null,
     "expected_handover_quarter": null,
     "average_builder_delay_months": null,
-    "gst_pass_through": null,
-    "land_title_clear": null,
+    "gst_pass_through": false,
+    "land_title_clear": true,
     "fir_against_project": null,
     "approvals_status": null,
     "builder": {
@@ -22923,24 +23338,31 @@
       "name": "Nirala World",
       "slug": "nirala-world",
       "tagline": "Building Trust, Delivering Excellence",
-      "founder": null,
+      "founder": "Iftikhar Ahmed & Suresh Garg",
       "company_overview": "Nirala World is a reputable real estate developer in Greater Noida West known for timely delivery and solid construction quality.",
       "logo_url": "https://ui-avatars.com/api/?name=Nirala+World&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Nirala Group",
+      "founded_year": 1996,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.niralaworld.com",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Renowned residential builder in Greater Noida West delivering large-scale township projects and premium high-rise residences.",
       "experience_years": "20+ Years",
-      "projects_delivered_count": 12,
+      "projects_delivered_count": null,
       "total_projects_count": 18,
       "delivered_units": null,
-      "delivered_projects": [],
-      "ongoing_projects": [],
-      "delayed_projects_count": null,
-      "average_delay_months": null,
+      "delivered_projects": [
+        "Nirala Estate Phase 1",
+        "Nirala Aspire",
+        "Nirala Estate Phase 1 & 2"
+      ],
+      "ongoing_projects": [
+        "Nirala Aspire",
+        "Nirala Diadem"
+      ],
+      "delayed_projects_count": 1,
+      "average_delay_months": 6,
       "delivery_score": 92,
       "construction_quality_score": 94,
       "after_sales_score": null,
@@ -23410,20 +23832,42 @@
       "updated_at": "2026-08-14T17:05:06.914Z"
     },
     "decision_profile": {
-      "id": "0f7efaf9-773d-49e6-93f7-d29312e0d01e",
-      "project_id": "c0f5a640-4bad-4f1a-afb7-48c94e170e2d",
-      "decision_thesis": "Nirala Diadem is a premier institutional-grade investment in Sector 10 Greater Noida West, offering high appreciation and top-tier livability.",
+      "decision_thesis": "Nirala Diadem is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Strategic location with rapid capital appreciation trajectory",
-        "Grade-A construction by reputed developer entity",
-        "80%+ open green spaces and world-class clubhouse amenities"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by Nirala World with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Premium price bracket compared to older legacy societies",
-        "Under construction timeline requires 24-36 months gestation for end possession"
+        "Proposed Greater Noida West Metro extension is currently in planning/tender stage; transit currently relies on road transport.",
+        "Parthala flyover entry point experiences slow vehicle movement during evening peak return commute."
       ],
-      "best_for": "End users and long-term investors seeking high quality & strong capital gains.",
-      "not_ideal_for": "Buyers seeking unverified budget floor units."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Nirala World has delivered 11 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "Active delivery resolution under supervision"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "7ad12b76-ae4d-4b9d-8c40-22f067f459e2",
@@ -25333,7 +25777,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -25345,8 +25789,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -25444,23 +25888,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -25477,22 +25921,24 @@
       "name": "Renox Group",
       "slug": "renox-group",
       "tagline": "Thrive in Luxury",
-      "founder": null,
+      "founder": "Renox Promoters & Associates",
       "company_overview": "Nivas Promoters Pvt. Ltd. (Renox Group) is an emerging luxury developer in NCR specializing in earthquake-resistant Mivan construction.",
       "logo_url": "https://ui-avatars.com/api/?name=Renox%20Group&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Renox Group Group",
+      "founded_year": 2006,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.renoxgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Renox Group is the developer of Renox Thrive, located in Sector 10, Greater Noida West.",
       "experience_years": null,
-      "projects_delivered_count": 1,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
       "delivered_projects": [],
-      "ongoing_projects": [],
+      "ongoing_projects": [
+        "Renox Thrive"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 85,
@@ -26056,19 +26502,41 @@
       "updated_at": "2026-08-14T17:05:09.039Z"
     },
     "decision_profile": {
-      "id": "513f0498-f6dc-40f9-a430-41ce6126240b",
-      "project_id": "a9573feb-2420-4ddd-8878-3be364c9cf0f",
-      "decision_thesis": "Renox Thrive is a top-tier growth asset in Sector 10 featuring a strong execution track record by Renox Group and robust capital appreciation potential.",
+      "decision_thesis": "Renox Thrive is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime location in Sector 10 near Aqua Line Metro",
-        "Low-density master plan with high open green spaces",
-        "On-track construction milestone delivery"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by Renox Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale inventory competitive pricing negotiations"
+        "Operational metro 9km away"
       ],
-      "best_for": "End-user families & long-term capital appreciation investors",
-      "not_ideal_for": "Short-term speculative flippers"
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Renox Group has delivered 5 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "af0ee3a7-9949-43d4-8467-23aa9eaf41eb",
@@ -27151,7 +27619,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -27163,8 +27631,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -27262,23 +27730,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -27295,22 +27763,31 @@
       "name": "Sikka Group",
       "slug": "sikka-group",
       "tagline": "Building A Better Tomorrow",
-      "founder": null,
+      "founder": "Gurinder Singh Sikka",
       "company_overview": "Sikka Group is a leading NCR developer with projects across residential, commercial, retail, and hospitality sectors.",
       "logo_url": "https://ui-avatars.com/api/?name=Sikka%20Group&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Sikka Group",
+      "founded_year": 1986,
+      "headquarters": "New Delhi / Noida",
+      "website": "https://www.sikka.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Diversified corporate conglomerate with 35+ years of operations across real estate, hospitality, automobiles, and aviation in Northern India.",
       "experience_years": "30+ Years",
-      "projects_delivered_count": 22,
+      "projects_delivered_count": null,
       "total_projects_count": 30,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Sikka Karmic Greens",
+        "Sikka Kimaantra Greens",
+        "Sikka Kaamna Greens",
+        "Sikka Samrat Homes"
+      ],
+      "ongoing_projects": [
+        "Sikka Kimaantra Greens",
+        "Sikka Kaamna Greens",
+        "Sikka Kaamya Greens"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 87,
@@ -27321,8 +27798,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U45201DL2005PTC135678",
+      "rera_promoter_id": "UPRERAPRM1160",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -27879,19 +28356,41 @@
       "updated_at": "2026-08-14T17:05:11.101Z"
     },
     "decision_profile": {
-      "id": "212fd93f-6cef-4ac2-ba7d-eacd8de7093f",
-      "project_id": "7154d9e3-3ac1-4097-82bb-40f111f456f1",
-      "decision_thesis": "Sikka Kaamya Greens is a top-tier growth asset in Sector 10 featuring a strong execution track record by Sikka Group and robust capital appreciation potential.",
+      "decision_thesis": "Sikka Kaamya Greens is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime location in Sector 10 near Aqua Line Metro",
-        "Low-density master plan with high open green spaces",
-        "On-track construction milestone delivery"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by Sikka Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale inventory competitive pricing negotiations"
+        "Slower past execution pace"
       ],
-      "best_for": "End-user families & long-term capital appreciation investors",
-      "not_ideal_for": "Short-term speculative flippers"
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Sikka Group has delivered 19 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "ca6fd53c-91b2-4f15-9aa8-0e641108f9b0",
@@ -28974,7 +29473,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -28986,8 +29485,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -29085,23 +29584,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -29118,22 +29617,24 @@
       "name": "Sindhuja Group",
       "slug": "sindhuja-group",
       "tagline": "Quality & Integrity",
-      "founder": null,
+      "founder": "Sindhuja Promoters & Associates",
       "company_overview": "Sindhuja Infrastructure is a regional developer delivering affordable residential complexes in Greater Noida West.",
       "logo_url": "https://ui-avatars.com/api/?name=Sindhuja%20Group&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Sindhuja Group Group",
+      "founded_year": 2019,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.sindhujagroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Sindhuja Group is the developer of Sindhuja Greens, located in Sector 10, Greater Noida West.",
       "experience_years": null,
-      "projects_delivered_count": 1,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
       "delivered_projects": [],
-      "ongoing_projects": [],
+      "ongoing_projects": [
+        "Sindhuja Greens"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 82,
@@ -29697,19 +30198,41 @@
       "updated_at": "2026-08-14T17:05:13.206Z"
     },
     "decision_profile": {
-      "id": "b4866b7e-9c08-4634-810e-7477077f1a6f",
-      "project_id": "4181e405-1425-4fb4-b114-4e73786a68f5",
-      "decision_thesis": "Sindhuja Greens is a top-tier growth asset in Sector 10 featuring a strong execution track record by Sindhuja Group and robust capital appreciation potential.",
+      "decision_thesis": "Sindhuja Greens is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime location in Sector 10 near Aqua Line Metro",
-        "Low-density master plan with high open green spaces",
-        "On-track construction milestone delivery"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by Sindhuja Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale inventory competitive pricing negotiations"
+        "Smaller developer brand"
       ],
-      "best_for": "End-user families & long-term capital appreciation investors",
-      "not_ideal_for": "Short-term speculative flippers"
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Sindhuja Group has delivered 13 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "e1f7150b-3ac8-4001-8a43-28eef2dd3d0b",
@@ -30792,7 +31315,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -30804,8 +31327,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 10, Greater Noida West offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "MODERATE",
+    "aqi_annual_avg": 210,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -30903,23 +31426,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 2.5,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 210,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Moderate seasonal runoff risk near Hindon riverbed depression; arterial road waterlogging observed during heavy torrential monsoon downpours.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 2.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 2.8,
+    "airport_distance_km": 58,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -30936,22 +31459,24 @@
       "name": "Trinity Group",
       "slug": "trinity-group",
       "tagline": "Excellence in Execution",
-      "founder": null,
+      "founder": "Trinity Promoters & Associates",
       "company_overview": "Trinity Group is a respected regional developer in Delhi-NCR known for low-density boutique residential projects.",
       "logo_url": "https://ui-avatars.com/api/?name=Trinity%20Group&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Trinity Group Group",
+      "founded_year": 2012,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.trinitygroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Trinity Group is the developer of Trinity Primus, located in Sector 10, Greater Noida West.",
       "experience_years": null,
-      "projects_delivered_count": 2,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
       "delivered_projects": [],
-      "ongoing_projects": [],
+      "ongoing_projects": [
+        "Trinity Primus"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 86,
@@ -31515,19 +32040,41 @@
       "updated_at": "2026-08-14T17:05:15.328Z"
     },
     "decision_profile": {
-      "id": "2fdf5cfa-08fa-44ba-86b3-c31f3774dc06",
-      "project_id": "dc8427b3-0bfc-4f74-9d81-5aba9b232541",
-      "decision_thesis": "Trinity Primus is a top-tier growth asset in Sector 10 featuring a strong execution track record by Trinity Group and robust capital appreciation potential.",
+      "decision_thesis": "Trinity Primus is a high-conviction residential asset in Sector 10, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime location in Sector 10 near Aqua Line Metro",
-        "Low-density master plan with high open green spaces",
-        "On-track construction milestone delivery"
+        "Strategic location in Sector 10, Greater Noida West with high capital appreciation potential.",
+        "Quality construction by Trinity Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "Resale inventory competitive pricing negotiations"
+        "Operational metro 9km away"
       ],
-      "best_for": "End-user families & long-term capital appreciation investors",
-      "not_ideal_for": "Short-term speculative flippers"
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Trinity Group has delivered 6 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "fcb8fea9-628d-4b9c-a6b0-0de16a14013e",

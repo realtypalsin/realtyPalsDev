@@ -48,9 +48,26 @@ const INVESTMENT_CLAIM_PATTERNS = [
   /\b(?:guaranteed|assured)\s+returns?|returns?\s+guaranteed\b/i,
 ]
 
+/**
+ * Only our own domain. `up-rera.in` used to be allow-listed here, which is why
+ * prompt rule 17 — "NEVER redirect the user to leave the platform" — never
+ * held: the rule forbade it in words while the guard that enforces the rule
+ * explicitly permitted it, and the model followed the permission. Every answer
+ * about an under-construction project ended by sending the buyer to the state
+ * portal to check filings we already hold and display.
+ *
+ * The RERA number, its validity date and the construction timeline are all in
+ * our own rows and on the project's Construction tab. Sending someone to a
+ * government portal to read what we can show them is the one behaviour that
+ * turns an advisor back into a directory.
+ */
 const EXTERNAL_URL_PATTERNS = [
-  /https?:\/\/(?!(?:[\w-]+\.)?uirealtypals\.com|(?:[\w-]+\.)?up-rera\.in)[^\s"]+/i,
-  /www\.(?!uirealtypals\.com|up-rera\.in)[^\s"]+/i
+  /https?:\/\/(?!(?:[\w-]+\.)?uirealtypals\.com)[^\s"]+/i,
+  /www\.(?!uirealtypals\.com)[^\s"]+/i,
+  // Bare domains, which is how the model actually wrote it — "verify at
+  // up-rera.in" carries no scheme and no www, so neither pattern above saw it.
+  /\b(?:up-?rera|rera\.up\.gov)\.(?:in|gov\.in)\b/i,
+  /\b(?:99acres|magicbricks|nobroker|housing|proptiger|squareyards|makaan)\.com\b/i,
 ]
 
 /**

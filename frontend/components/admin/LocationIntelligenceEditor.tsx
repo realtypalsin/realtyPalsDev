@@ -17,8 +17,17 @@ interface LocationIntelligenceData {
   walkability_score?: number | string
   green_cover_percent?: number | string
   air_quality_index_avg?: number | string
+  aqi_annual_avg?: number | string
   women_safety_score?: number | string
   noise_level_db?: number | string
+  top_school_distance_km?: number | string
+  hospital_distance_km?: number | string
+  airport_distance_km?: number | string
+  flood_waterlogging_risk?: string
+  flood_zone?: string
+  location_concerns?: string[]
+  litigation_count?: number | string
+  interior_designer?: string
   market_intelligence?: {
     location_data?: Record<string, unknown>
   }
@@ -41,9 +50,29 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
   const [restaurants, setRestaurants] = useState(String(initialData?.restaurants_nearby_count ?? ''))
   const [walkability, setWalkability] = useState(String(initialData?.walkability_score ?? ''))
   const [greenCover, setGreenCover] = useState(String(initialData?.green_cover_percent ?? ''))
-  const [aqi, setAqi] = useState(String(initialData?.air_quality_index_avg ?? ''))
+  const [aqi, setAqi] = useState(String(initialData?.air_quality_index_avg ?? initialData?.aqi_annual_avg ?? ''))
   const [safetyScore, setSafetyScore] = useState(String(initialData?.women_safety_score ?? ''))
   const [noiseLevel, setNoiseLevel] = useState(String(initialData?.noise_level_db ?? ''))
+  
+  const [schoolDist, setSchoolDist] = useState(String(initialData?.top_school_distance_km ?? ''))
+  const [hospitalDist, setHospitalDist] = useState(String(initialData?.hospital_distance_km ?? ''))
+  const [airportDist, setAirportDist] = useState(String(initialData?.airport_distance_km ?? ''))
+  // Empty, not 'LOW'. A default of LOW meant every project an admin never
+  // opened this section for was saved claiming low flood risk — which is how
+  // all 280 rows ended up LOW, in a city with documented waterlogging. The
+  // select carries an explicit "Not assessed" option instead.
+  const [floodRisk, setFloodRisk] = useState(initialData?.flood_waterlogging_risk || '')
+  const [floodZone, setFloodZone] = useState(initialData?.flood_zone || '')
+  const [concerns, setConcerns] = useState(Array.isArray(initialData?.location_concerns) ? initialData.location_concerns.join('\n') : '')
+  // Blank, not '0'. "0 litigation" is a verified-clean claim; blank is "not
+  // checked". Seeding the box with 0 published the strong claim for every
+  // project nobody reviewed, including builders with public NCLT proceedings.
+  const [litigationCount, setLitigationCount] = useState(
+    initialData?.litigation_count === null || initialData?.litigation_count === undefined
+      ? ''
+      : String(initialData.litigation_count),
+  )
+  const [interiorDesigner, setInteriorDesigner] = useState(initialData?.interior_designer || '')
 
   const [locationData, setLocationData] = useState<Record<string, unknown>>(
     initialData?.market_intelligence?.location_data ||
@@ -69,7 +98,7 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
     try {
       const walkabilityNum = walkability ? parseInt(String(walkability), 10) : null
       const greenCoverNum = greenCover ? parseInt(String(greenCover), 10) : null
-      const aqiNum = aqi ? parseInt(String(aqi), 10) : null
+      const aqiNum = aqi ? parseFloat(String(aqi)) : null
       const safetyNum = safetyScore ? parseInt(String(safetyScore), 10) : null
       const noiseLevelNum = noiseLevel ? parseInt(String(noiseLevel), 10) : null
 
@@ -81,6 +110,8 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
         toast.error('Green cover must be 0-100%')
         return
       }
+
+      const parsedConcerns = concerns.split('\n').map(s => s.trim()).filter(Boolean)
 
       const res = await fetch(`${API_BASE}/admin/projects/${projectId}`, {
         method: 'PATCH',
@@ -94,9 +125,20 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
           restaurants_nearby_count: restaurants ? String(parseInt(restaurants)) : null,
           walkability_score: walkabilityNum ? String(walkabilityNum) : null,
           green_cover_percent: greenCoverNum ? String(greenCoverNum) : null,
-          air_quality_index_avg: aqiNum ? String(aqiNum) : null,
-          women_safety_score: safetyNum ? String(safetyNum) : null,
+          air_quality_index_avg: aqiNum ? String(Math.round(aqiNum)) : null,
+          aqi_annual_avg: aqiNum,
+          women_safety_score: safetyNum,
           noise_level_db: noiseLevelNum ? String(noiseLevelNum) : null,
+          top_school_distance_km: schoolDist ? parseFloat(schoolDist) : null,
+          hospital_distance_km: hospitalDist ? parseFloat(hospitalDist) : null,
+          airport_distance_km: airportDist ? parseFloat(airportDist) : null,
+          // All four send null when blank rather than a substituted value, so
+          // an unreviewed field stays unreviewed instead of becoming a claim.
+          flood_waterlogging_risk: floodRisk || null,
+          flood_zone: floodZone || null,
+          location_concerns: parsedConcerns,
+          litigation_count: litigationCount.trim() === '' ? null : Number(litigationCount),
+          interior_designer: interiorDesigner || null,
         })
       })
       if (!res.ok) throw new Error('Failed to save location attributes')
@@ -114,7 +156,7 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
       })
       if (!decisionRes.ok) throw new Error('Failed to save location intelligence data')
 
-      toast.success('Location intelligence saved successfully')
+      toast.success('Location intelligence & decision factors saved successfully')
     } catch (e) {
       console.error('[LocationIntelligenceEditor] Save failed:', e)
       toast.error(e instanceof Error ? e.message : 'Error saving location intelligence')
@@ -122,74 +164,106 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800 p-6 space-y-6 font-sans">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 flex items-center justify-center">
           <MapPin size={18} />
         </div>
         <div>
-          <h3 className="text-[16px] font-black text-gray-900">Area Livability & Neighborhood Intelligence</h3>
-          <p className="text-[13px] text-gray-500">Configure walkability, green cover, environmental quality, safety, and nearby amenities.</p>
+          <h3 className="text-[16px] font-black text-gray-900 dark:text-white">Area Livability & Decision Factors</h3>
+          <p className="text-[13px] text-gray-500 dark:text-zinc-400">Configure walkability, environmental quality, safety, distances, flood risk, and honest location concerns.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 p-4 bg-slate-50/60 rounded-2xl border border-slate-100">
-        <div>
-          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Walkability (0-100)</label>
-          <input value={walkability} onChange={(e) => setWalkability(e.target.value)} type="number" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-[13px] font-bold text-slate-800" placeholder="85" />
-        </div>
-        <div>
-          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Green Cover (%)</label>
-          <input value={greenCover} onChange={(e) => setGreenCover(e.target.value)} type="number" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-[13px] font-bold text-slate-800" placeholder="75" />
-        </div>
-        <div>
-          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Air Quality (AQI)</label>
-          <input value={aqi} onChange={(e) => setAqi(e.target.value)} type="number" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-[13px] font-bold text-slate-800" placeholder="145" />
-        </div>
-        <div>
-          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Safety Score (0-100)</label>
-          <input value={safetyScore} onChange={(e) => setSafetyScore(e.target.value)} type="number" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-[13px] font-bold text-slate-800" placeholder="92" />
-        </div>
-        <div>
-          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Noise Level (dB)</label>
-          <input value={noiseLevel} onChange={(e) => setNoiseLevel(e.target.value)} type="number" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-[13px] font-bold text-slate-800" placeholder="50" />
+      {/* Decision Factors Distance Grid */}
+      <div className="p-4 rounded-2xl bg-zinc-50/80 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 space-y-4">
+        <h4 className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">Strategic Distances & Key Benchmarks</h4>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Top School (km)</label>
+            <input value={schoolDist} onChange={(e) => setSchoolDist(e.target.value)} type="number" step="0.1" className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold text-zinc-800 dark:text-zinc-100" placeholder="1.5" />
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Hospital (km)</label>
+            <input value={hospitalDist} onChange={(e) => setHospitalDist(e.target.value)} type="number" step="0.1" className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold text-zinc-800 dark:text-zinc-100" placeholder="2.0" />
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Airport (km)</label>
+            <input value={airportDist} onChange={(e) => setAirportDist(e.target.value)} type="number" step="0.1" className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold text-zinc-800 dark:text-zinc-100" placeholder="42.0" />
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Flood / Waterlogging</label>
+            <select value={floodRisk} onChange={(e) => setFloodRisk(e.target.value)} className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold text-zinc-800 dark:text-zinc-100">
+              <option value="">Not assessed</option>
+              <option value="LOW">LOW</option>
+              <option value="MODERATE">MODERATE</option>
+              <option value="HIGH">HIGH</option>
+              <option value="BUFFER_ZONE">BUFFER_ZONE</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+      {/* Environmental & Quality Metrics Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-slate-50/60 dark:bg-zinc-800/20 rounded-2xl border border-slate-100 dark:border-zinc-800">
         <div>
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Schools</label>
-          <input value={schools} onChange={(e) => setSchools(e.target.value)} type="number" className="w-full bg-slate-50/80 rounded-xl px-4 py-2 text-[14px]" placeholder="8" />
+          <label className="block text-[10px] font-black text-slate-500 dark:text-zinc-400 uppercase tracking-widest mb-1">Walkability (0-100)</label>
+          <input value={walkability} onChange={(e) => setWalkability(e.target.value)} type="number" className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-[13px] font-bold text-slate-800 dark:text-zinc-100" placeholder="85" />
         </div>
         <div>
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Hospitals</label>
-          <input value={hospitals} onChange={(e) => setHospitals(e.target.value)} type="number" className="w-full bg-slate-50/80 rounded-xl px-4 py-2 text-[14px]" placeholder="5" />
+          <label className="block text-[10px] font-black text-slate-500 dark:text-zinc-400 uppercase tracking-widest mb-1">Green Cover (%)</label>
+          <input value={greenCover} onChange={(e) => setGreenCover(e.target.value)} type="number" className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-[13px] font-bold text-slate-800 dark:text-zinc-100" placeholder="75" />
         </div>
         <div>
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Shopping Malls</label>
-          <input value={shopping} onChange={(e) => setShopping(e.target.value)} type="number" className="w-full bg-slate-50/80 rounded-xl px-4 py-2 text-[14px]" placeholder="4" />
+          <label className="block text-[10px] font-black text-slate-500 dark:text-zinc-400 uppercase tracking-widest mb-1">Air Quality (AQI)</label>
+          <input value={aqi} onChange={(e) => setAqi(e.target.value)} type="number" className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-[13px] font-bold text-slate-800 dark:text-zinc-100" placeholder="178" />
         </div>
         <div>
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">IT Parks</label>
-          <input value={itParks} onChange={(e) => setItParks(e.target.value)} type="number" className="w-full bg-slate-50/80 rounded-xl px-4 py-2 text-[14px]" placeholder="10" />
+          <label className="block text-[10px] font-black text-slate-500 dark:text-zinc-400 uppercase tracking-widest mb-1">Safety Score (0-100)</label>
+          <input value={safetyScore} onChange={(e) => setSafetyScore(e.target.value)} type="number" className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-[13px] font-bold text-slate-800 dark:text-zinc-100" placeholder="92" />
         </div>
         <div>
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Banks / ATMs</label>
-          <input value={banks} onChange={(e) => setBanks(e.target.value)} type="number" className="w-full bg-slate-50/80 rounded-xl px-4 py-2 text-[14px]" placeholder="12" />
-        </div>
-        <div>
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Restaurants</label>
-          <input value={restaurants} onChange={(e) => setRestaurants(e.target.value)} type="number" className="w-full bg-slate-50/80 rounded-xl px-4 py-2 text-[14px]" placeholder="20" />
+          <label className="block text-[10px] font-black text-slate-500 dark:text-zinc-400 uppercase tracking-widest mb-1">Litigation Count</label>
+          <input value={litigationCount} onChange={(e) => setLitigationCount(e.target.value)} type="number" className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-[13px] font-bold text-slate-800 dark:text-zinc-100" placeholder="0" />
         </div>
       </div>
-      <div className="mt-8 pt-8 border-t border-gray-100">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+
+      {/* Honest Location Concerns (Textarea per line) */}
+      <div>
+        <label className="block text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-1.5">
+          Honest Location Concerns (One point per line)
+        </label>
+        <textarea
+          rows={3}
+          value={concerns}
+          onChange={(e) => setConcerns(e.target.value)}
+          placeholder="Peak hour traffic bottleneck around sector entrance...&#10;Social retail centers are currently maturing..."
+          className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none font-medium"
+        />
+      </div>
+
+      {/* Interior Designer */}
+      <div>
+        <label className="block text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-1.5">
+          Interior Designer / Architectural Studio
+        </label>
+        <input
+          type="text"
+          value={interiorDesigner}
+          onChange={(e) => setInteriorDesigner(e.target.value)}
+          placeholder="e.g. Hafeez Contractor / In-House Architectural & Design Studio"
+          className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+        />
+      </div>
+
+      <div className="pt-4 border-t border-gray-100 dark:border-zinc-800">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
             <Map size={18} />
           </div>
           <div>
-            <h3 className="text-[16px] font-black text-gray-900">Advanced Location Data</h3>
-            <p className="text-[13px] text-gray-500">Edit location_highlights, nearby_essentials, and neighborhood_advantages JSON.</p>
+            <h3 className="text-[15px] font-bold text-gray-900 dark:text-white">Structured Micro-Market JSON</h3>
+            <p className="text-xs text-gray-500 dark:text-zinc-400">Structured highlights, essentials, and connectivity anchors.</p>
           </div>
         </div>
         <JsonEditor
@@ -200,9 +274,9 @@ export default function LocationIntelligenceEditor({ projectId, initialData }: {
         />
       </div>
 
-      <div className="flex justify-end pt-6 mt-6 border-t border-gray-100">
-        <button onClick={handleSave} className="bg-slate-900 hover:bg-black text-white px-6 py-2.5 rounded-full text-[13px] font-bold flex items-center gap-2">
-          <Save size={16} /> Save All Changes
+      <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-zinc-800">
+        <button onClick={handleSave} className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:opacity-90 transition-all cursor-pointer">
+          <Save size={15} /> Save All Changes
         </button>
       </div>
     </div>

@@ -639,7 +639,7 @@ function MessageBubbleInner({
             onTouchCancel={handleTouchEnd}
             className={`transition-all duration-200 ${
               isUser
-                ? 'max-w-[85%] sm:max-w-[75%] bg-[#edf3fd] dark:bg-[#152033] text-[#0f172a] dark:text-[#f0f6ff] border border-[#d2e2fa] dark:border-[#1e3252] shadow-[0_2px_10px_rgba(37,99,235,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] rounded-[22px] rounded-br-[6px] px-5 py-3.5 select-text'
+                ? 'max-w-[85%] sm:max-w-[75%] bg-blue-600 dark:bg-blue-700 text-white rounded-2xl sm:rounded-[22px] rounded-br-xs px-4 py-2.5 sm:px-5 sm:py-3 shadow-xs select-text'
                 : 'w-full max-w-full bg-transparent text-slate-800 dark:text-zinc-200 select-text px-0 py-0.5'
             }`}
           >
@@ -851,7 +851,7 @@ function MessageBubbleInner({
                               {displayContent}
                             </Markdown>
                             {streaming && (
-                              <span className="inline-block w-0.5 h-[1.1em] bg-blue-600 dark:bg-blue-400 animate-pulse ml-1 align-middle" />
+                              <span className="inline-block w-1.5 h-4 bg-blue-600 dark:bg-blue-400 animate-pulse rounded-xs align-middle ml-1.5 shadow-xs" />
                             )}
                           </>
                         )}
@@ -864,7 +864,7 @@ function MessageBubbleInner({
               })()}
             </div>
           ) : (
-            <p className="whitespace-pre-wrap text-[15px] sm:text-[15.5px] font-normal leading-relaxed relative z-10">{displayContent}</p>
+            <p className="whitespace-pre-wrap break-words text-[14.5px] sm:text-[15px] font-medium leading-relaxed text-white select-text font-[family-name:var(--font-inter)] tracking-normal">{displayContent}</p>
           )}
         </div>
         )}

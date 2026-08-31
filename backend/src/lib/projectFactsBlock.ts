@@ -23,6 +23,7 @@
  *     by being added to the schema later.
  */
 
+import { airportDistances } from './discovery/airports'
 import { redactProject, isPublicField, stripRelationInternals } from './projectExposure'
 
 /** Columns rendered as "yes"/"no" rather than true/false. */
@@ -115,7 +116,20 @@ function formatValue(key: string, value: unknown): string | null {
  * them. Measured on a fully-seeded record, these three were 2,857 of 8,201
  * characters — 35% of the block for detail almost no turn asks for.
  */
-export type FactTopic = 'price_history' | 'specifications' | 'construction'
+export type FactTopic = 'price_history' | 'specifications' | 'construction' | 'deep_reasoning'
+
+/**
+ * Sub-fields of decision_profile that only a genuinely analytical turn needs.
+ *
+ * Everything else in the profile is named by a prompt rule and stays in the
+ * default block. These four are long-form narrative that no rule references.
+ */
+const DEEP_NARRATIVE_KEYS = new Set([
+  'market_intelligence',
+  'financial_intelligence',
+  'property_intelligence',
+  'builder_intelligence',
+])
 
 /**
  * Which phrasings pull in a heavy relation.
@@ -129,6 +143,15 @@ export const FACT_TOPIC_PATTERNS: ReadonlyArray<{ topic: FactTopic; pattern: Reg
   // "how far along", not a bare "how far" — "how far is the airport" is a
   // distance question and must not drag in the construction timeline.
   { topic: 'construction', pattern: /construction|progress|milestone|slab|superstructure|how far along|what stage|excavat|foundation|completion status/i },
+  // Deliberately narrow. This gate decides whether the analyst narratives are
+  // billed, so it must fire on questions that genuinely want a thesis —
+  // comparisons, investment judgement, risk — and not on "does it have a gym".
+  // It mirrors the reasoning/advisory shapes in inferenceProfile.ts, which is
+  // the other place a question is judged to be worth spending on.
+  {
+    topic: 'deep_reasoning',
+    pattern: /\bvs\b|\bversus\b|compare|better (than|for)|which (one|is better)|trade[- ]?offs?|worth (it|buying)|should i (buy|invest)|investment|appreciat|resale|rental yield|risk|long[- ]term|5[- ]year|why (buy|avoid)|pros and cons/i,
+  },
 ]
 
 /** Topics the buyer's message is asking about. */
@@ -176,6 +199,27 @@ export function projectScalarFacts(
     }
     out[key] = formatted
   }
+
+  // Both airports, computed from this project's own coordinates.
+  //
+  // `airport_distance_km` is a single stored number and nothing records which
+  // airport it means. Checked against our coordinates it is Jewar — a real
+  // measurement, median error 5.5km — but a buyer asking "how far is the
+  // airport" today usually means Delhi, and answering with the other one
+  // without saying so is a confident wrong number.
+  //
+  // Naming both removes the ambiguity instead of picking a side, and the
+  // stored column stays where it is for anything that already reads it.
+  const distances = airportDistances(
+    (safe.lat as number | null) ?? null,
+    (safe.lng as number | null) ?? null,
+  )
+  if (distances.length) {
+    out.airport_distances = distances
+      .map((d) => `${d.airport} ${d.km} km`)
+      .join('; ') + ' (straight line)'
+  }
+
   return out
 }
 
@@ -259,7 +303,25 @@ export function buildProjectFacts(
   // stripRelationInternals also enforces the PUBLISHED gate here: DRAFT and
   // IN_REVIEW analyst opinion must not reach a buyer.
   const decision = cleanRelation('decision_profile', row.decision_profile)
-  if (decision) facts.decision_profile = decision
+  if (decision) {
+    // The four *_intelligence narratives are the largest single item in the
+    // block — 1,556 of 2,514 characters of decision_profile on a fully-seeded
+    // record, ~19% of the whole thing — and no prompt rule names any of them.
+    // Rules 13-15 name decision_thesis, why_buy, why_avoid, tier and
+    // walk_away_conditions; best_for / not_ideal_for feed persona matching.
+    //
+    // They became a per-turn cost on 30 Aug, when a bulk pass filled
+    // decision_profile for the 189 projects that had none. Before that the
+    // majority of turns never carried them and the budget was never tested.
+    //
+    // So they follow the same rule as price_history and specifications: pulled
+    // in when the question is actually asking for that depth. `deep_reasoning`
+    // is set for comparisons and multi-constraint advisory turns, which is
+    // exactly where a market or financial narrative earns its tokens.
+    facts.decision_profile = options.topics?.has('deep_reasoning')
+      ? decision
+      : Object.fromEntries(Object.entries(decision).filter(([k]) => !DEEP_NARRATIVE_KEYS.has(k)))
+  }
 
   const recommendation = cleanRelation('recommendation_profile', row.recommendation_profile)
   if (recommendation) facts.recommendation_profile = recommendation
@@ -273,11 +335,51 @@ export function buildProjectFacts(
   // has no use for six price snapshots and thirty fittings.
   const topics = options.topics
 
+  /**
+   * Price history, carrying whether the points were observed.
+   *
+   * 1,400 of our 1,680 `price_history` rows have `source:
+   * 'historical_benchmark'` and step by an identical amount each quarter — 8,990,
+   * 10,540, 12,090 — which is a generated arithmetic series, not a market
+   * observation. Handed to the model as bare numbers it does exactly what the
+   * numbers invite: measured live, "how much has Godrej Woods appreciated"
+   * returned "a 72.44% appreciation … a strong 5-year CAGR supported by metro and
+   * expressway upgrades", every digit of it derived from a constant.
+   *
+   * So the block states what the series is. An unobserved series arrives with an
+   * explicit instruction not to derive a rate from it, because the alternative —
+   * withholding the rows — loses the honest answer too: the buyer asked what we
+   * hold, and we do hold these numbers. Showing the points and withholding the
+   * conclusion is the shape `yieldTable.renderPriceChangeTable` uses, and the two
+   * must not disagree.
+   */
   if (topics?.has('price_history') && row.price_history?.length) {
-    facts.price_history = row.price_history
-      .slice(-maxItems)
-      .map(h => cleanRelation('price_history', h))
-      .filter(Boolean)
+    const series = row.price_history.slice(-maxItems)
+    const OBSERVED = new Set(['market_verified_2026', 'active_market_listing', 'admin_update'])
+    const observedPoints = series.filter(
+      h => typeof h.source === 'string' && OBSERVED.has(h.source),
+    ).length
+
+    facts.price_history = series.map(h => cleanRelation('price_history', h)).filter(Boolean)
+    /**
+     * A STATEMENT about the data, never an instruction to the model.
+     *
+     * The first version read "Do NOT compute or state a percentage change, a
+     * CAGR, or an annual growth rate from them" — and the model printed that
+     * sentence to the buyer verbatim as the body of its answer. Everything in
+     * this block is quotable by design: it is the facts block, and the whole
+     * point is that the model repeats what is in it. An imperative dropped in
+     * here is an internal prompt handed to the buyer, which the security rules
+     * forbid outright.
+     *
+     * So it describes what the numbers ARE. A model that repeats this one has
+     * said something true and useful. Handling rules belong in the system prompt
+     * — `YIELD_TABLE_SHOWN` in `prompts/base.ts` carries them.
+     */
+    facts.price_history_basis =
+      observedPoints >= 2
+        ? `${observedPoints} of these price points are observed market prices, recorded on the dates shown.`
+        : 'These figures are internal benchmark records, not prices we observed being paid. They were generated on a fixed step and carry no market signal, so the interval between them does not measure anything.'
   }
 
   if (topics?.has('construction') && row.construction_milestones?.length) {

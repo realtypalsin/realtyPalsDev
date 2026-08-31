@@ -102,7 +102,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased glass-app font-sans relative text-foreground bg-[#E4E4E5]">
+      <body suppressHydrationWarning className="antialiased glass-app font-sans relative text-foreground bg-[#E4E4E5]">
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:p-4 focus:bg-white focus:text-blue-600 focus:font-bold">
           Skip to main content
         </a>

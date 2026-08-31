@@ -1,9 +1,8 @@
 // backend/src/lib/ai/fallbackChain.ts
-import { FALLBACK_CHAIN, FallbackKeyConfig, isFreeTierKey } from '../config'
+import { FALLBACK_CHAIN, FallbackKeyConfig, isFreeTierKey, vendorOf } from '../config'
 import { streamWithGemini } from './gemini'
 import { streamWithOpenAI } from './openai'
 import { streamWithGroq } from './groq'
-import { streamWithCerebras } from './cerebras'
 import { streamWithMistral } from './mistral'
 import { beautifyResponse, isResponseComplete } from './responseBeautifier'
 import type { ScoredProject } from '../discovery'
@@ -79,6 +78,7 @@ import { estimateTokensReal } from './tokenizer'
 import { createTableStripper, stripTables } from './stripTables'
 import { checkToolBlindAnswer } from './toolBlindGuard'
 import { endCleanly } from './endCleanly'
+import { wouldExceed, recordAttempt, recordRateLimited, limitFor } from './rateBudget'
 import { sanitizeOutput } from './sanitizeOutput'
 
 /** Remove the prefix sentinel — it must never reach a provider. */
@@ -97,8 +97,45 @@ function applyNoToolsBlock(prompt: string, block: string): string {
 /** How much of the answer is held back before the first token reaches the buyer. */
 const STREAM_BUFFER_CHARS = Number(process.env.STREAM_BUFFER_CHARS ?? 250)
 
-/** Reply ceiling on a free-tier leg. */
-const FREE_TIER_MAX_TOKENS = Number(process.env.FREE_TIER_MAX_TOKENS ?? 900)
+/**
+ * Reply ceiling on a free-tier leg.
+ *
+ * Raised from 900 on 31 Aug 2026. 900 was set to stop a free key spending its
+ * per-minute token allowance on one answer, and it did — by cutting the answer
+ * off. The free keys LEAD the chain, so in practice every long reply was
+ * clamped: "which is better for a family: Sector 74, 75, 76 or 78" asks for a
+ * comparison, `inferenceProfile` allots it 2,600 tokens, and it was cut at 900,
+ * mid-bullet, halfway through the decision guide.
+ *
+ * The tail buffer added the same week removes the ragged edge, which made the
+ * cut look tidier without making the answer complete. This is the other half:
+ * the ceiling has to be large enough for the shape of answer being asked for.
+ *
+ * 2,200 covers every shape in `inferenceProfile` except the largest comparison,
+ * and output is billed only on what is actually generated — a short answer
+ * costs the same as it did at 900. What changes is that a long one finishes.
+ */
+const FREE_TIER_MAX_TOKENS = Number(process.env.FREE_TIER_MAX_TOKENS ?? 2200)
+
+/**
+ * Characters held back at the TAIL of a streaming answer.
+ *
+ * STREAM_BUFFER_CHARS above is a PREFIX buffer: it holds the opening of the
+ * answer so a leg that fails early can be swapped out before the buyer sees
+ * anything. Once it flushes, every later token goes straight to the client —
+ * which means the one part of the answer we could never repair was its ending,
+ * and the ending is exactly where a reply ceiling cuts.
+ *
+ * That is why roughly two answers per corpus run ended mid-sentence on every
+ * leg measured, Gemini included, however the ceilings were set: `endCleanly`
+ * only ever ran on the buffered path, and the buffered path is the opening.
+ *
+ * Holding the last ~180 characters keeps the ending editable until the stream
+ * is genuinely over. The buyer sees the final sentence appear in one piece
+ * instead of word by word, which is invisible next to a sentence that stops
+ * halfway. Set to 0 to disable.
+ */
+const STREAM_TAIL_HOLD_CHARS = Number(process.env.STREAM_TAIL_HOLD_CHARS ?? 180)
 
 function createBufferedSend(
   originalSend: SendFn,
@@ -118,6 +155,10 @@ function createBufferedSend(
   let buffer = ''
   let flushed = false
   let tokensSent = false
+  // Post-flush tail. Everything after the prefix buffer lands here first and
+  // only the excess beyond STREAM_TAIL_HOLD_CHARS is forwarded, so the answer's
+  // last ~180 characters are still ours to edit when the stream ends.
+  let tail = ''
 
   const validateAndFlush = (forceFlush = false) => {
     if (!buffer.length) return
@@ -138,7 +179,16 @@ function createBufferedSend(
 
     if (flushed) {
       tokensSent = true
-      forwardToken(data.token)
+      if (STREAM_TAIL_HOLD_CHARS <= 0) {
+        forwardToken(data.token)
+        return
+      }
+      tail += data.token
+      if (tail.length > STREAM_TAIL_HOLD_CHARS) {
+        const release = tail.slice(0, tail.length - STREAM_TAIL_HOLD_CHARS)
+        tail = tail.slice(tail.length - STREAM_TAIL_HOLD_CHARS)
+        forwardToken(release)
+      }
       return
     }
 
@@ -151,22 +201,51 @@ function createBufferedSend(
     }
   }
 
-  const flushRemaining = () => {
+  /**
+   * Ends the stream and returns how many characters were dropped from the end.
+   *
+   * The count matters: the buyer's screen, the transcript and the cache have to
+   * agree about what was said, so whatever is trimmed here is trimmed from the
+   * returned text too. Returning the number rather than re-running endCleanly
+   * on the caller's copy is deliberate — re-running it on a different string
+   * can reach a different cut, and then the three disagree.
+   */
+  const flushRemaining = (): { trimmedChars: number } => {
     if (!flushed && buffer.length > 0) {
       // Nothing has left for the client yet, so the whole answer is still
-      // editable. This is the only place a reply ceiling's mid-word cut can be
-      // repaired — on a streaming leg the fragment is already on screen. Raised
-      // ceilings in inferenceProfile.ts are the fix that covers both.
+      // editable — the prefix buffer held it all, which happens on short
+      // answers and on every buffered tool-blind leg.
+      const before = buffer.length
       buffer = endCleanly(buffer)
+      const trimmed = before - buffer.length
       validateAndFlush()
+      endStripper()
+      return { trimmedChars: trimmed }
     }
-    // The stripper holds a partial line, and possibly a heading it has not yet
-    // decided about. Without this they never reach the buyer at all.
-    if (stripper) {
-      stripper.end()
-      if (stripper.droppedAnything()) {
-        console.log('[CHAT:TABLE_SUPPRESSED] model drew a table we had already rendered')
+
+    // The ordinary streaming path: the opening is long gone, but the last
+    // STREAM_TAIL_HOLD_CHARS are still here and are where a ceiling cuts.
+    let trimmedChars = 0
+    if (tail.length > 0) {
+      const cleaned = endCleanly(tail, { maxTrimChars: tail.length })
+      trimmedChars = tail.length - cleaned.length
+      if (trimmedChars > 0) {
+        console.log(`[CHAT:TRUNCATED_TAIL] dropped ${trimmedChars} dangling chars before they reached the buyer`)
       }
+      if (cleaned.length > 0) forwardToken(cleaned)
+      tail = ''
+    }
+    endStripper()
+    return { trimmedChars }
+  }
+
+  // The stripper holds a partial line, and possibly a heading it has not yet
+  // decided about. Without this they never reach the buyer at all.
+  function endStripper() {
+    if (!stripper) return
+    stripper.end()
+    if (stripper.droppedAnything()) {
+      console.log('[CHAT:TABLE_SUPPRESSED] model drew a table we had already rendered')
     }
   }
 
@@ -237,6 +316,24 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       continue
     }
 
+    // Skip a leg that is about to be refused, rather than finding out by being
+    // refused. The cooldown above is reactive — it costs one failed round-trip
+    // to learn what a counter already knew — and a 429 that lands mid-stream
+    // cannot be rolled over at all, because tokens are already on screen. The
+    // only way not to truncate is not to start on a leg that will be refused.
+    //
+    // Budget is per KEY, not per leg: the two NVIDIA legs share one key and
+    // therefore one allowance, and counting them separately would authorise
+    // twice the requests the key actually has.
+    const vendor = vendorOf(item)
+    if (wouldExceed(item.envKey, vendor)) {
+      console.log(
+        `[FALLBACK:RATE_BUDGET] ${item.label} — skipping: ${limitFor(vendor)} req/min already used on ${item.envKey}`,
+      )
+      continue
+    }
+    recordAttempt(item.envKey)
+
     const effectivePrompt = options.buildSystemPrompt
       ? stripMarker(options.buildSystemPrompt(item.supportsTools))
       : item.supportsTools
@@ -278,9 +375,7 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       }
 
       let text = ''
-      if (item.provider === 'cerebras') {
-        text = await streamWithCerebras(effectivePrompt, cappedMessages, bufferedSend, apiKey, item.model, userId, sessionId, legMaxTokens)
-      } else if (item.provider === 'mistral') {
+      if (item.provider === 'mistral') {
         text = await streamWithMistral(effectivePrompt, cappedMessages, bufferedSend, apiKey, userId, sessionId, legMaxTokens)
       } else if (item.provider === 'gemini') {
         text = await streamWithGemini(effectivePrompt, cappedMessages, bufferedSend, onToolCall, geminiConfig, apiKey, userId, sessionId)
@@ -290,10 +385,15 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
           cappedMessages,
           bufferedSend,
           onToolCall,
-          effectiveConfig,
+          // Without item.model the leg falls back to MODELS.MAIN, which is a
+          // gpt-4o name that neither Cohere nor NVIDIA has. Two legs share the
+          // NVIDIA key and differ only by model, so this is also what keeps
+          // them from being the same leg twice.
+          { ...effectiveConfig, model: effectiveConfig.model ?? item.model },
           userId,
           sessionId,
           apiKey,
+          item.baseUrl,
         )
       } else if (item.provider === 'groq') {
         text = await streamWithGroq(effectivePrompt, cappedMessages, bufferedSend, userId, sessionId, apiKey, legMaxTokens)
@@ -314,17 +414,20 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
         }
       }
 
-      flushRemaining()
+      const { trimmedChars } = flushRemaining()
 
       // An empty string is a failed turn, not a successful one.
       if (!text.trim() && !getTokensSent()) {
         throw new Error(`${item.label} returned no text`)
       }
 
-      // flushRemaining trimmed a dangling fragment off the buffered stream, so
-      // the transcript and the cache have to carry the same edit or the three
-      // disagree about what was said.
-      if (!item.supportsTools) text = endCleanly(text)
+      // flushRemaining trimmed a dangling fragment off the stream, so the
+      // transcript and the cache have to carry the same edit or the three
+      // disagree about what was said. This now applies to EVERY leg, not only
+      // the tool-blind ones: the tail buffer means a Gemini answer cut by its
+      // reply ceiling is repaired the same way a Mistral one is, which is the
+      // half of the truncation problem that was never covered.
+      if (trimmedChars > 0) text = text.trimEnd().slice(0, -trimmedChars)
       // The buyer saw the stripped stream, so the returned copy has to match:
       if (options.suppressTables) text = stripTables(text)
       // The buyer read the sanitised stream; the transcript and cache must match.
@@ -365,6 +468,10 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       // 500 is exactly the case where the next turn should try this leg again —
       // cooling it down would remove capacity during the outage it should survive.
       const failureKind = recordFailure(cooldownKey, error)
+      // The provider knows its own limits better than our constants do. A 429
+      // means the window we allowed was too generous for this key, so fill it
+      // and let it roll over on its own clock.
+      if (failureKind === 'rate_limited') recordRateLimited(item.envKey, vendorOf(item))
       if (failureKind === 'durable') {
         console.warn(`[FALLBACK:DURABLE] ${item.label} — cooling down: ${errMsg.slice(0, 120)}`)
       }
@@ -407,5 +514,8 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
   }
 
   send('token', { token: fallbackMessage })
-  return { text: fallbackMessage, provider: 'database', model: 'fallback', envKey: 'FALLBACK_MODE', is_verified: true }
+  // `is_verified: false`. Every leg failed; nothing about this reply was verified
+  // against anything, and the flag travels — it is what made the answer cache log
+  // an outage notice as a "verified advisory response" when it stored one.
+  return { text: fallbackMessage, provider: 'database', model: 'fallback', envKey: 'FALLBACK_MODE', is_verified: false }
 }

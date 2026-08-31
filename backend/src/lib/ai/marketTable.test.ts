@@ -4,6 +4,8 @@ import {
   renderMicroMarketTable,
   renderProjectTable,
   renderPaymentPlanTable,
+  renderCityBandShelf,
+  wantsCityBandShelf,
   renderCostSheetTable,
   renderSectorComparisonTable,
   renderDerivedSectorTable,
@@ -222,7 +224,7 @@ describe('rendered sector comparison', () => {
     // Atmosphere" and "Social Infrastructure" — three rows with nothing behind
     // them, which the model filled from memory under a "Verified" header.
     const t = renderSectorComparisonTable(stats(), stats({ sector: 'Sector 137' }))
-    assert.match(t, /Projects we hold/)
+    assert.match(t, /Projects listed/) // renamed: a market question, not an inventory count
     assert.match(t, /Price band/)
     assert.ok(!/Livability|Social Infrastructure|Metro & Transit/.test(t))
   })
@@ -266,5 +268,100 @@ describe('derived sector table', () => {
 
   it('renders nothing for a single sector', () => {
     assert.equal(renderDerivedSectorTable([row()]), '')
+  })
+})
+
+describe('a market table is scoped to the sectors the buyer named', () => {
+  const markets = [
+    { microMarket: 'Central 7X Hub', sectors: ['Sector 75', 'Sector 76', 'Sector 78'], avgPricePerSqft: 11100, priceRange: { min: 10800, max: 11500 }, dominantSegment: 'Family' },
+    { microMarket: 'Established Urban Hub', sectors: ['Sector 74', 'Sector 62'], avgPricePerSqft: 9500, priceRange: { min: 9500, max: 9500 }, dominantSegment: 'High rise' },
+    { microMarket: 'Gateway to Gr. Noida West', sectors: ['Sector 1', 'Sector 16'], avgPricePerSqft: 8800, priceRange: { min: 8800, max: 8800 }, dominantSegment: 'Mid' },
+    { microMarket: 'Aerotropolis', sectors: ['Sector 22D'], avgPricePerSqft: 7200, priceRange: { min: 7200, max: 7200 }, dominantSegment: 'Speculative' },
+  ] as never[]
+
+  it('keeps only the micro-markets the named sectors fall in', () => {
+    // The 30 Aug run: "which is better for a family: 74, 75, 76 or 78" printed
+    // all four rows, three of which the buyer had not asked about, above prose
+    // quoting different rates for the same sectors.
+    const t = renderMicroMarketTable(markets, { focusSectors: ['Sector 74', 'Sector 75', 'Sector 76', 'Sector 78'] })
+    assert.match(t, /Central 7X Hub/)
+    assert.match(t, /Established Urban Hub/)
+    assert.ok(!/Aerotropolis/.test(t), t)
+    assert.ok(!/Gateway/.test(t), t)
+  })
+
+  it('suppresses the table when the named sectors leave nothing to compare', () => {
+    // One row is not a comparison, and the prose already covers it.
+    assert.equal(renderMicroMarketTable(markets, { focusSectors: ['Sector 22D'] }), '')
+  })
+
+  it('still renders the whole city when no sector was named', () => {
+    const t = renderMicroMarketTable(markets, {})
+    assert.match(t, /Aerotropolis/)
+    assert.match(t, /Central 7X Hub/)
+  })
+
+  it('does not print a range whose ends are equal', () => {
+    // "₹8,800 – ₹8,800" reads as a spread when it is one observation.
+    const t = renderMicroMarketTable(markets, {})
+    assert.ok(!/8,800 – ₹8,800/.test(t), t)
+    assert.match(t, /10,800 – ₹11,500/)
+  })
+})
+
+describe('the citywide band shelf', () => {
+  const shelfProjects = [
+    { name: 'Nirala Estate', builder: { name: 'Nirala World' }, sector: 'Sector 16B', possession_label: 'Ready to move', unit_types: [{ price_min_cr: 0.72, price_max_cr: 0.95 }] },
+    { name: 'Ace Divino', builder: { name: 'Ace Group' }, sector: 'Sector 1', possession_label: 'Dec 2026', unit_types: [{ price_min_cr: 0.85, price_max_cr: 1.1 }] },
+    { name: 'Godrej Woods', builder: { name: 'Godrej Properties' }, sector: 'Sector 43', possession_label: 'Dec 2027', unit_types: [{ price_min_cr: 1.6, price_max_cr: 2.4 }] },
+    { name: 'Max Estate 128', builder: { name: 'Max Estates' }, sector: 'Sector 128', possession_label: 'Jun 2028', unit_types: [{ price_min_cr: 4.2, price_max_cr: 6.8 }] },
+  ]
+
+  it('picks one project per band and prints the rule it ranked on', () => {
+    const out = renderCityBandShelf(shelfProjects as any)
+    assert.match(out, /Under ₹1 Cr/)
+    assert.match(out, /₹1–2 Cr/)
+    assert.match(out, /Above ₹2 Cr/)
+    // The rule is printed, not implied.
+    assert.match(out, /RERA registration/)
+    assert.match(out, /delivery record/)
+    // One row per band, not per project: Ace Divino is in the same band as
+    // Nirala Estate and must not appear.
+    assert.ok(!out.includes('Ace Divino'), 'second project in a band leaked in')
+    assert.equal(out.split('\n').filter((l) => l.startsWith('| **')).length, 3)
+  })
+
+  it('refuses to render when only one band has anything in it', () => {
+    // One band is a shortlist with extra framing, and renderProjectTable
+    // already does that better.
+    const onlyMid = shelfProjects.filter((p) => p.name === 'Godrej Woods')
+    assert.equal(renderCityBandShelf(onlyMid as any), '')
+  })
+
+  it('prints Not recorded rather than inventing a possession date', () => {
+    const noDate = [
+      { name: 'A', builder: { name: 'X' }, sector: 'Sector 1', unit_types: [{ price_min_cr: 0.8 }] },
+      { name: 'B', builder: { name: 'Y' }, sector: 'Sector 2', unit_types: [{ price_min_cr: 3.0 }] },
+    ]
+    assert.match(renderCityBandShelf(noDate as any), /Not recorded/)
+  })
+
+  it('fires on a citywide superlative and not on a narrowed one', () => {
+    const bare = { hasSector: false, hasBudget: false, hasProjectFocus: false }
+    assert.equal(wantsCityBandShelf('which is the best project in Noida', bare), true)
+    assert.equal(wantsCityBandShelf('best society to buy right now', bare), true)
+    assert.equal(wantsCityBandShelf('cheapest flats in Noida', bare), true)
+    assert.equal(wantsCityBandShelf('recommend a project', bare), true)
+
+    // Once the buyer has narrowed, one band IS the answer and a shortlist is
+    // the right shape.
+    assert.equal(wantsCityBandShelf('best project in Sector 150', { ...bare, hasSector: true }), false)
+    assert.equal(wantsCityBandShelf('best project under 1.5 crore', { ...bare, hasBudget: true }), false)
+    assert.equal(wantsCityBandShelf('is Godrej Woods the best?', { ...bare, hasProjectFocus: true }), false)
+
+    // Not a superlative, or not about inventory.
+    assert.equal(wantsCityBandShelf('what is the stamp duty in UP', bare), false)
+    assert.equal(wantsCityBandShelf('best time to buy', bare), false)
+    assert.equal(wantsCityBandShelf('', bare), false)
   })
 })

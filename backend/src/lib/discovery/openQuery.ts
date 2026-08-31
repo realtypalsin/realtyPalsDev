@@ -118,6 +118,19 @@ const SHOPPING_VOCAB_RE =
   /\b(best|top|cheapest|costliest|affordable|budget|under|below|within|over|above|between|crore|cr|lakh|lac|\d\s*bhk|bhk|sq\.?\s?ft|per\s+sqft)\b/i
 
 /**
+ * Words naming a PARTY you deal with rather than a thing you buy.
+ *
+ * These survive the shopping-vocabulary guard, because "which is the best broker
+ * in Noida" is a question about companies and the discovery pipeline answers it
+ * with property cards. `builder` and `developer` are deliberately absent: they
+ * appear in `INVENTORY_NOUN_RE` above and "best builder projects in Sector 150"
+ * is a search. A named builder still reaches the entity path through the
+ * `ENTITY_PATTERNS` shapes, which do not need this exemption.
+ */
+const PARTY_NOUN_RE =
+  /\b(broker|brokers|brokerage|brokerages|channel\s+partners?|agent|agents|agency|agencies|consultant|consultants|consultancy|realtor|realtors|advisor|advisors|advisory|firm|firms|clinic|middlemen|middleman|dealer|dealers)\b/i
+
+/**
  * True when nothing survives after removing generic vocabulary — i.e. the capture
  * was a category, not a name.
  *
@@ -159,11 +172,24 @@ export function detectOpenQuery(
 
   if (hasProjectNames) return null
 
-  // Shopping vocabulary anywhere in the message disqualifies the entity patterns.
-  // "What are the best projects under 1.5 crore in Sector 62?" matches the
-  // "what is X" shape and would otherwise be looked up as a company named
-  // "best projects under 1.5 crore".
-  if (SHOPPING_VOCAB_RE.test(msg)) return null
+  /**
+   * Shopping vocabulary anywhere in the message disqualifies the entity patterns.
+   * "What are the best projects under 1.5 crore in Sector 62?" matches the
+   * "what is X" shape and would otherwise be looked up as a company named
+   * "best projects under 1.5 crore".
+   *
+   * Unless the message is about a PARTY rather than a property. "Which is the
+   * best broker in Noida", "who is the most trustworthy consultant", "cheapest
+   * channel partner" all carry `best`/`cheapest` and are not property searches —
+   * and this guard sent every one of them to discovery, which answered a question
+   * about a company with a shelf of property cards. Nothing downstream can
+   * recover from that: the discovery path has no notion of a brokerage.
+   *
+   * Narrow deliberately. The exemption needs an explicit party noun; a
+   * superlative plus an inventory noun is still shopping and still goes to
+   * discovery, which is where the citywide band shelf now answers it.
+   */
+  if (SHOPPING_VOCAB_RE.test(msg) && !PARTY_NOUN_RE.test(msg)) return null
 
   // 2. Named third party we may not hold — brokerage, builder, person.
   for (const { re, reason } of ENTITY_PATTERNS) {
@@ -177,6 +203,22 @@ export function detectOpenQuery(
     }
     if (OWN_RECORD_RE.test(entity) || ATTRIBUTE_NOUN_RE.test(entity) || isGenericPhrase(entity)) continue
     return { topic: 'ENTITY', entity, reason }
+  }
+
+  /**
+   * A question about a CATEGORY of party, with nobody named.
+   *
+   * "Which is the best broker in Noida" has no entity to look up — there is no
+   * company called "the best broker" — so it matches none of the patterns above
+   * and fell through to the property taxonomy, which answered a question about
+   * companies with a shelf of property cards.
+   *
+   * Last, not first: a NAMED party has to win. Checked ahead of the loop this
+   * swallowed "what do you think of Investors Clinic" and returned GENERAL,
+   * throwing away the one thing that made the question answerable.
+   */
+  if (PARTY_NOUN_RE.test(msg)) {
+    return { topic: 'GENERAL', reason: 'Question about a category of party, none named' }
   }
 
   return null

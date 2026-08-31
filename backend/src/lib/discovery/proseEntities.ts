@@ -1,5 +1,6 @@
 import { prisma } from '../db'
 import { ChipAction, chip } from './conversationEngine'
+import { buildTopicChips } from './topicChips'
 
 /**
  * Find projects that the assistant named in prose.
@@ -114,6 +115,42 @@ export function findSectorsMentioned(text: string, limit = 3): string[] {
 }
 
 /**
+ * Every sector a BUYER named, including the ones they did not repeat the word
+ * "Sector" in front of.
+ *
+ * `findSectorsMentioned` reads the assistant's own prose, where each sector is
+ * written out in full, so requiring the literal word is right there. A buyer
+ * does not write that way: "Which is better for a family: Sector 74, 75, 76 or
+ * 78?" names four sectors and the strict pattern finds one. That undercount
+ * fed the market table the wrong scope, and the buyer got a city-wide table
+ * that did not contain three of the four sectors they had asked about.
+ *
+ * So a bare number is taken as a sector only when it FOLLOWS an explicit one
+ * in the same enumeration — commas, "and", "or", "vs". A number anywhere else
+ * ("3 BHK", "under 2 crore", "within 5 years") is left alone.
+ */
+export function findSectorsAsked(text: string, limit = 8): string[] {
+  const out: string[] = []
+  const seen = new Set<string>()
+  const push = (n: string) => {
+    const label = `Sector ${n.toUpperCase()}`
+    if (seen.has(label.toLowerCase()) || out.length >= limit) return
+    seen.add(label.toLowerCase())
+    out.push(label)
+  }
+
+  // "Sector 74, 75, 76 or 78" / "sector 150 vs 128" — one anchor, then the run.
+  const enumeration = /\bsectors?\s+(\d+[A-Za-z]?(?:\s*(?:,|and|or|vs\.?|versus|&)\s*\d+[A-Za-z]?)*)/gi
+  for (const m of text.matchAll(enumeration)) {
+    for (const n of m[1].split(/\s*(?:,|and|or|vs\.?|versus|&)\s*/i)) {
+      const t = n.trim()
+      if (t) push(t)
+    }
+  }
+  return out
+}
+
+/**
  * Chips for an answer that returned no cards, built from what the answer actually
  * said. A generic "show projects there" is dead weight when the reply named no
  * place; a chip naming the sector the user just read about is one tap from cards.
@@ -121,6 +158,16 @@ export function findSectorsMentioned(text: string, limit = 3): string[] {
 export function buildOpenAnswerChips(
   projects: Array<{ id: string; name: string }>,
   sectors: string[],
+  /**
+   * The question, for the topic top-up.
+   *
+   * Without it this returns `[]` whenever the answer named neither a project nor
+   * a sector — which is every entity answer, every "what do you know about me"
+   * and every refusal. Those are precisely the shapes that scored 1/5 and 2/5 on
+   * chips in the 30 Aug audit. Optional so existing callers keep working; a
+   * caller that omits it gets the old behaviour and the old score.
+   */
+  topUp?: { userMessage: string; city: string; hasBudget?: boolean },
 ): ChipAction[] {
   const out: ChipAction[] = []
   let priority = 1
@@ -157,6 +204,18 @@ export function buildOpenAnswerChips(
       { text: `Compare ${sectors[0]} with ${sectors[1]}` },
       priority++,
     ))
+  }
+
+  if (topUp && out.length < 2) {
+    const seen = new Set(out.map((c) => c.label.toLowerCase()))
+    out.push(
+      ...buildTopicChips(
+        topUp.userMessage,
+        { sector: sectors[0] ?? null, hasBudget: Boolean(topUp.hasBudget), city: topUp.city },
+        3 - out.length,
+        seen,
+      ),
+    )
   }
 
   return out

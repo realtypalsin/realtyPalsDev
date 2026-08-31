@@ -150,6 +150,10 @@ function removeAllProviderKeys(): () => void {
     'MISTRAL_API_KEY', 'MISTRAL_API_KEY1',
     'GROQ_API_KEY', 'GROQ_API_KEY1', 'GROQ_API_KEY2', 'GROQ_API_KEY3',
     'CEREBRAS_API_KEY', 'CEREBRAS_API_KEY1',
+    'COHERE_API_KEY', 'NVIDIA_API_KEY',
+    // No longer chain legs — GitHub Models retired 30 Jul 2026 — but still in
+    // .env, and extractIntent reads OPENAI_API_KEY directly. Left in the list
+    // so "all providers gone" stays true rather than nearly true.
     'OPENAI_API_KEY', 'OPENAI_API_KEY1', 'OPENAI_API_KEY2', 'OPENAI_API_KEY3',
   ]
   const saved: Record<string, string | undefined> = {}

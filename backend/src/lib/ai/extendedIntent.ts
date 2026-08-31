@@ -389,40 +389,7 @@ async function extractWithGroq(
   return parseExtendedIntentJson(raw, previousIntent, 'groq')
 }
 
-async function extractWithOpenAI(
-  message: string,
-  previousIntent: ExtendedIntentWithConfidence | undefined,
-  signal?: AbortSignal,
-): Promise<ExtendedIntentWithConfidence> {
-  console.log('[EXTENDED_INTENT] START extractWithOpenAI', Date.now())
-  const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-    baseURL: 'https://models.inference.ai.azure.com',
-    maxRetries: 0,
-  })
 
-  const userContent = previousIntent
-    ? `Previous intent: ${JSON.stringify(previousIntent)}\n\nNew user message: ${message}`
-    : `User message: ${message}`
-
-  const completion = await client.chat.completions.create(
-    {
-      model: MODELS.MAIN,
-      messages: [
-        { role: 'system', content: EXTENDED_INTENT_EXTRACTION_PROMPT },
-        { role: 'user', content: userContent },
-      ],
-      response_format: { type: 'json_object' },
-      max_tokens: 512,
-      temperature: 0.1,
-    },
-    signal ? { signal } : undefined,
-  )
-
-  console.log('[EXTENDED_INTENT] END extractWithOpenAI', Date.now())
-  const raw = completion.choices[0]?.message?.content ?? '{}'
-  return parseExtendedIntentJson(raw, previousIntent, 'openai')
-}
 
 async function extractWithGemini(
   message: string,
@@ -453,36 +420,7 @@ async function extractWithGemini(
   return parseExtendedIntentJson(raw, previousIntent, 'gemini')
 }
 
-async function extractWithCerebras(
-  message: string,
-  previousIntent: ExtendedIntentWithConfidence | undefined,
-): Promise<ExtendedIntentWithConfidence> {
-  console.log('[EXTENDED_INTENT] START extractWithCerebras', Date.now())
-  const client = new OpenAI({
-    apiKey: process.env.CEREBRAS_API_KEY || process.env.CEREBRAS_API_KEY1,
-    baseURL: 'https://api.cerebras.ai/v1',
-    timeout: 10000,
-  })
 
-  const userContent = previousIntent
-    ? `Previous intent: ${JSON.stringify(previousIntent)}\n\nNew user message: ${message}`
-    : `User message: ${message}`
-
-  const completion = await client.chat.completions.create({
-    model: 'llama-3.3-70b',
-    messages: [
-      { role: 'system', content: EXTENDED_INTENT_EXTRACTION_PROMPT },
-      { role: 'user', content: userContent },
-    ],
-    response_format: { type: 'json_object' },
-    max_tokens: 512,
-    temperature: 0.1,
-  })
-
-  console.log('[EXTENDED_INTENT] END extractWithCerebras', Date.now())
-  const raw = completion.choices[0]?.message?.content ?? '{}'
-  return parseExtendedIntentJson(raw, previousIntent, 'cerebras')
-}
 
 async function extractWithMistral(
   message: string,
@@ -629,21 +567,15 @@ export async function extractExtendedIntent(
       console.log('[EXTENDED_INTENT] Gemini path succeeded', Date.now(), { result })
       return { intent: result, degraded: false }
     } catch (err) {
-      console.warn('[extended_intent] Gemini failed, trying Cerebras:', (err as Error).message)
+      console.warn('[extended_intent] Gemini failed, trying Mistral:', (err as Error).message)
     }
   }
 
-  // 2. Cerebras (Ultra-fast LLaMA 3.3 70B extraction)
-  if (process.env.CEREBRAS_API_KEY || process.env.CEREBRAS_API_KEY1) {
-    try {
-      console.log('[EXTENDED_INTENT] trying Cerebras path', Date.now())
-      const result = await extractWithCerebras(userMessage, previousIntent)
-      console.log('[EXTENDED_INTENT] Cerebras path succeeded', Date.now(), { result })
-      return { intent: result, degraded: false }
-    } catch (err) {
-      console.warn('[extended_intent] Cerebras failed, trying Mistral:', (err as Error).message)
-    }
-  }
+  // The Cerebras step that used to be 2 is gone with its keys. Both returned
+  // 402 on every probe across three days, and it sat between Gemini and
+  // Mistral — so every extraction that got past Gemini paid a round-trip to a
+  // provider with no balance before reaching one that works. It also pinned
+  // `llama-3.3-70b`, which Cerebras had already retired.
 
   // 3. Mistral
   if (process.env.MISTRAL_API_KEY) {
@@ -665,24 +597,16 @@ export async function extractExtendedIntent(
       console.log('[EXTENDED_INTENT] Groq path succeeded', Date.now(), { result })
       return { intent: result, degraded: false }
     } catch (err) {
-      console.warn('[extended_intent] Groq failed, trying OpenAI:', (err as Error).message)
+      console.warn('[extended_intent] Groq failed:', (err as Error).message)
     }
   }
 
-  // 5. OpenAI
-  if (process.env.OPENAI_API_KEY && !isKeyFailed('OPENAI_API_KEY')) {
-    try {
-      console.log('[EXTENDED_INTENT] trying OpenAI path', Date.now())
-      const result = await extractWithOpenAI(userMessage, previousIntent)
-      console.log('[EXTENDED_INTENT] OpenAI path succeeded', Date.now(), { result })
-      return { intent: result, degraded: false }
-    } catch (err: any) {
-      if (err?.status === 404 || err?.status === 401 || err?.status === 403 || (err?.message || '').includes('404')) {
-        markKeyFailed('OPENAI_API_KEY')
-      }
-      console.warn('[extended_intent] OpenAI failed:', (err as Error).message)
-    }
-  }
+  // The OpenAI step that used to be 5 is gone, along with extractWithOpenAI.
+  // It was hardwired to `models.inference.ai.azure.com` — a host that no
+  // longer resolves — with a GitHub Models PAT, for a service retired on
+  // 30 Jul 2026. It could only fail, and it sat on the last hop before the
+  // deterministic fallback, so every fully-degraded turn paid a DNS timeout
+  // to learn what was already known at boot.
 
   // All providers failed — return rule-based fallback
   console.error('[extended_intent] all providers failed, returning degraded fallback')

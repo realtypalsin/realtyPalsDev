@@ -159,3 +159,36 @@ describe('third-party consultancy questions (Wealth Clinic regression)', () => {
     assert.equal(detectOpenQuery('How is Godrej Woods?', true), null)
   })
 })
+
+describe('a superlative about a PARTY is not a property search', () => {
+  // The shopping-vocabulary guard bailed on `best`/`cheapest` anywhere in the
+  // message, so every one of these went to discovery and came back as a shelf of
+  // property cards — an answer to a question nobody asked, about companies the
+  // discovery pipeline has no notion of.
+  for (const q of [
+    'which is the best broker in Noida',
+    'who is the most trustworthy property consultant here',
+    'cheapest channel partner for booking',
+    'best real estate agency in Noida',
+    'top advisory firm for NRI buyers',
+  ]) {
+    it(`routes "${q}" to the open path`, () => {
+      const d = detectOpenQuery(q, false)
+      assert.ok(d, 'fell through to the property taxonomy')
+    })
+  }
+
+  // The exemption must stay narrow. A superlative plus an inventory noun is
+  // still shopping, and the citywide band shelf answers it.
+  for (const q of [
+    'which is the best project in Noida',
+    'cheapest 3BHK under 1 crore',
+    'best society in Sector 150',
+    'best builder projects in Sector 150',
+    'top apartments near the metro',
+  ]) {
+    it(`leaves "${q}" to discovery`, () => {
+      assert.equal(detectOpenQuery(q, false), null)
+    })
+  }
+})

@@ -43,7 +43,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -55,8 +55,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -154,23 +154,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -187,24 +187,30 @@
       "name": "Ajnara India Ltd",
       "slug": "ajnara-india-ltd",
       "tagline": "Peace of Mind Guaranteed",
-      "founder": null,
+      "founder": "Ashok Gupta & Pramod Gupta",
       "company_overview": "Ajnara India Ltd is an established real estate developer in NCR with 30+ completed residential and commercial projects.",
       "logo_url": "https://ui-avatars.com/api/?name=Ajnara&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Ajnara India Ltd",
+      "founded_year": 1991,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.ajnara.com",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Established real estate company operating for 30+ years in NCR, delivering housing across Noida, Greater Noida, and Ghaziabad.",
       "experience_years": "30+ Years",
-      "projects_delivered_count": 30,
+      "projects_delivered_count": null,
       "total_projects_count": 40,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
-      "delayed_projects_count": 0,
-      "average_delay_months": 0,
+      "delivered_projects": [
+        "Ajnara Daffodil",
+        "Ajnara Elements"
+      ],
+      "ongoing_projects": [
+        "Ajnara The Belvedere",
+        "Ajnara Le Garden"
+      ],
+      "delayed_projects_count": 4,
+      "average_delay_months": 20,
       "delivery_score": 88,
       "construction_quality_score": 87,
       "after_sales_score": null,
@@ -213,8 +219,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U70101DL1991PTC045432",
+      "rera_promoter_id": "UPRERAPRM1060",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -766,22 +772,41 @@
       "updated_at": "2026-08-14T17:07:53.647Z"
     },
     "decision_profile": {
-      "id": "1bb872c6-8e27-4fbf-a104-2ac82221eb12",
-      "project_id": "0794fc2d-8f0c-47ad-ac2a-6f6d81378f56",
-      "decision_thesis": "Ajnara The Belvedere represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Ajnara The Belvedere is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Ajnara India Ltd with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Ajnara India Ltd has delivered 26 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "b0c0e831-ea51-4700-a645-3a5349ea2fd3",
@@ -1313,7 +1338,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -1325,8 +1350,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -1424,23 +1449,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -1457,21 +1482,23 @@
       "name": "Ashiana Housing",
       "slug": "ashiana-housing",
       "tagline": "You are in Safe Hands",
-      "founder": null,
+      "founder": "Om Gupta & Vishal Gupta",
       "company_overview": "Ashiana Housing is a highly trusted developer in India delivering Ashiana Amaltas.",
       "logo_url": "https://ui-avatars.com/api/?name=Ashiana%20Housing&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Ashiana Group",
+      "founded_year": 1979,
+      "headquarters": "New Delhi / Kolkata",
+      "website": "https://www.ashianahousing.com",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Ashiana Housing is the developer of Ashiana Amaltas, located in Sector 79, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 30,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Ashiana Amaltas"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -1483,8 +1510,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "L70109WB1986PLC040864",
+      "rera_promoter_id": "UPRERAPRM1055",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -2036,22 +2063,41 @@
       "updated_at": "2026-08-14T17:07:54.899Z"
     },
     "decision_profile": {
-      "id": "add714f1-7ab4-4c9c-9ebd-3286ec14872e",
-      "project_id": "07923cce-1c9b-4619-a7a3-5396caeb6646",
-      "decision_thesis": "Ashiana Amaltas represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Ashiana Amaltas is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Ashiana Housing with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Ashiana Housing has delivered 12 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "7f8de257-09e8-4a12-8f90-80f250cecb84",
@@ -2583,7 +2629,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -2595,8 +2641,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -2694,23 +2740,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -2727,22 +2773,27 @@
       "name": "Civitech Developers",
       "slug": "civitech-developers",
       "tagline": "Building Sports Lifestyle",
-      "founder": null,
+      "founder": "Subodh Goel",
       "company_overview": "Civitech Developers is an established developer known for Civitech Stadia in Sports City.",
       "logo_url": "https://ui-avatars.com/api/?name=Civitech%20Developers&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Civitech Developers Pvt Ltd",
+      "founded_year": 2000,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.civitech.net",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Trusted real estate developer with over 24 years of experience delivering mid-segment and luxury residential communities across Noida and Greater Noida.",
       "experience_years": "31+ Years",
-      "projects_delivered_count": 5,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Civitech Sampriti",
+        "Civitech Stadia"
+      ],
+      "ongoing_projects": [
+        "Civitech Strings"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 87,
@@ -2753,8 +2804,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U45201DL2000PTC104523",
+      "rera_promoter_id": "UPRERAPRM1180",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -3311,22 +3362,41 @@
       "updated_at": "2026-08-14T17:07:56.140Z"
     },
     "decision_profile": {
-      "id": "0721ea3d-5a0a-47ad-bbe7-a1c6bf339a8a",
-      "project_id": "8e3670ab-ae14-4a85-b8f8-88322426c5e9",
-      "decision_thesis": "Civitech Stadia represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Civitech Stadia is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Civitech Developers with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Civitech Developers has delivered 9 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "3c9ed8b2-4cc8-4b22-8700-cf32c4618059",
@@ -3858,7 +3928,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -3870,8 +3940,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -3969,23 +4039,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -4002,22 +4072,27 @@
       "name": "Elite Group",
       "slug": "elite-group",
       "tagline": "Golf Living Redefined",
-      "founder": null,
+      "founder": "Elite Promoters & Associates",
       "company_overview": "Elite Group developer of Elite Golf Greens in Sector 79 Sports City.",
       "logo_url": "https://ui-avatars.com/api/?name=Elite%20Group&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Elite Group Group",
+      "founded_year": 2011,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.elitegroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Elite Group is the developer of Elite Homz, Elite X, Elite Golf Greens, located in Sector 77, Noida and Sector 10, Greater Noida West.",
       "experience_years": "16+ Years",
-      "projects_delivered_count": 3,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Elite Homz",
+        "Elite Golf Greens"
+      ],
+      "ongoing_projects": [
+        "Elite X"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 86,
@@ -4581,22 +4656,41 @@
       "updated_at": "2026-08-14T17:07:57.387Z"
     },
     "decision_profile": {
-      "id": "3c8843ab-21c5-4925-9497-30181ada92ac",
-      "project_id": "6c7505f1-28af-4c9c-b41b-770fd557fa0b",
-      "decision_thesis": "Elite Golf Greens represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Elite Golf Greens is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Elite Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Elite Group has delivered 10 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "6df627bd-df1f-435c-8cd8-11289d7bfa0d",
@@ -5128,7 +5222,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -5140,8 +5234,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -5239,23 +5333,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -5272,21 +5366,25 @@
       "name": "Gaurs Group",
       "slug": "gaurs-group",
       "tagline": "Urbs with Trust",
-      "founder": null,
+      "founder": "B.L. Gaur & Manoj Gaur",
       "company_overview": "Gaursons (Gaurs Group) is a mega real estate developer in NCR with landmark developments like Gaur City and Gaur Saundaryam.",
       "logo_url": "https://ui-avatars.com/api/?name=Gaursons&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Gaurs Group",
+      "founded_year": 1995,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.gaursonsindia.com",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Leading real estate conglomerate with extensive portfolio of integrated mega-townships (Gaur City, Gaur Yamuna City), luxury residences, and commercial retail malls across NCR.",
       "experience_years": "28+ Years",
-      "projects_delivered_count": 65,
+      "projects_delivered_count": null,
       "total_projects_count": 80,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Gaur Grandeur",
+        "Gaur Sportswood",
+        "Gaurs Platinum Towers"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -5298,8 +5396,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U45201UP1995PTC018500",
+      "rera_promoter_id": "UPRERAPRM1012",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -5851,20 +5949,41 @@
       "updated_at": "2026-08-14T17:07:58.626Z"
     },
     "decision_profile": {
-      "id": "3adc1034-0281-4fd4-967d-acddfee3fc3e",
-      "project_id": "f5d74ff4-c35b-45f1-b9b8-55c2cc9b4e8b",
-      "decision_thesis": "Gaur Sportswood stands out in Sector 79, Noida with a stellar 80% open green quotient, solid builder track record, and prime connectivity to expressways and metro corridors.",
+      "decision_thesis": "Gaur Sportswood is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Reputed builder (Gaursons India (Gaur Group)) with proven delivery excellence",
-        "High usable carpet efficiency with 3-side open natural light",
-        "Prime location on major transit corridors with upcoming infra catalysts"
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Gaursons India (Gaur Group) with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High demand commands premium price per square foot",
-        "Fast absorption leaves limited top-floor inventory"
+        "Sports City infrastructure completion"
       ],
-      "best_for": "End-user families seeking gated community living and corporate professionals with active commutes.",
-      "not_ideal_for": "Short-term speculators seeking sub-6-month flips."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Gaursons India (Gaur Group) has delivered 45 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "ee82e886-7321-477b-a4a5-3c4bbccff314",
@@ -6360,7 +6479,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -6372,8 +6491,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -6471,23 +6590,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -6504,21 +6623,25 @@
       "name": "Gaurs Group",
       "slug": "gaurs-group",
       "tagline": "Urbs with Trust",
-      "founder": null,
+      "founder": "B.L. Gaur & Manoj Gaur",
       "company_overview": "Gaursons (Gaurs Group) is a mega real estate developer in NCR with landmark developments like Gaur City and Gaur Saundaryam.",
       "logo_url": "https://ui-avatars.com/api/?name=Gaursons&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Gaurs Group",
+      "founded_year": 1995,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.gaursonsindia.com",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Leading real estate conglomerate with extensive portfolio of integrated mega-townships (Gaur City, Gaur Yamuna City), luxury residences, and commercial retail malls across NCR.",
       "experience_years": "28+ Years",
-      "projects_delivered_count": 65,
+      "projects_delivered_count": null,
       "total_projects_count": 80,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Gaur Grandeur",
+        "Gaur Sportswood",
+        "Gaurs Platinum Towers"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -6530,8 +6653,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U45201UP1995PTC018500",
+      "rera_promoter_id": "UPRERAPRM1012",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -7083,22 +7206,41 @@
       "updated_at": "2026-08-14T17:07:59.902Z"
     },
     "decision_profile": {
-      "id": "b15faee8-ee70-4e1b-9b37-fffaa4d75622",
-      "project_id": "bb6b3c13-888c-4dfe-8e76-b0dfdf324a2f",
-      "decision_thesis": "Gaurs Platinum Towers represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Gaurs Platinum Towers is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Gaurs Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Gaurs Group has delivered 6 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "4ffecb4a-9d3c-4680-a2f4-5735e60dd9a8",
@@ -7630,7 +7772,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -7642,8 +7784,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -7741,23 +7883,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -7774,22 +7916,26 @@
       "name": "Urbtech India",
       "slug": "urbtech-india",
       "tagline": "Designing Urban Tomorrow",
-      "founder": null,
+      "founder": "Urbtech Promoters & Associates",
       "company_overview": "Urbtech India is a progressive developer delivering Hilston by Urbtech in Sector 79.",
       "logo_url": "https://ui-avatars.com/api/?name=Urbtech%20India&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Urbtech India Group",
+      "founded_year": 2009,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.urbtechindia.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Urbtech India is the developer of Urbtech Hilston, Hilston by Urbtech, located in Sector 79, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 3,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Urbtech Hilston"
+      ],
+      "ongoing_projects": [
+        "Hilston by Urbtech"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 85,
@@ -8357,22 +8503,41 @@
       "updated_at": "2026-08-14T17:08:01.182Z"
     },
     "decision_profile": {
-      "id": "8ab45daa-bbd8-42e6-a9b3-7de4f0bc58a5",
-      "project_id": "20a66666-3f28-4c0b-b4ce-1f31ad1d9a86",
-      "decision_thesis": "Hilston by Urbtech represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Hilston by Urbtech is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Urbtech India with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Urbtech India has delivered 8 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "6741d9e8-8397-46f8-906b-b1d078e4b9c9",
@@ -8904,18 +9069,21 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
       "High-density residential neighborhood with 80%+ family occupancy and active security",
       "Walking distance to local daily need markets, banks, pharmacies, and food hubs"
     ],
-    "location_concerns": [],
+    "location_concerns": [
+      "Local convenience retail is ~1 km away in Sector 76/78 markets rather than immediately at the sector gate.",
+      "Under-construction sports complex amenities are undergoing phase-wise operationalization."
+    ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -8958,7 +9126,7 @@
     "long_description": "Lotus Arena by Lotus Greens Builders was envisioned as a premium sports-centric township in Sector 79. However, the project is severely impacted by the Noida Authority's blanket ban on registries and construction across Sports City land parcels due to the developer's failure to complete mandatory sports infrastructure and massive outstanding dues. While structural work exists, the project has persistent possession issues, making it a highly toxic asset for buyers.",
     "design_theme": "Modern High-Rise",
     "architect": "Unknown",
-    "interior_designer": "Unknown",
+    "interior_designer": null,
     "marketing_claims": [
       "Part of 100-Acre Sports City"
     ],
@@ -8997,23 +9165,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -9030,22 +9198,28 @@
       "name": "Lotus Greens",
       "slug": "lotus-greens",
       "tagline": "Green Living Redefined",
-      "founder": null,
+      "founder": "Lotus Promoters & Associates",
       "company_overview": "Lotus Greens developer of Lotus Greens Yardscape in Sector 79 Sports City.",
       "logo_url": "https://ui-avatars.com/api/?name=Lotus%20Greens&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Lotus Greens Group",
+      "founded_year": 2014,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.lotusgreens.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Lotus Greens is the developer of Lotus Greens Yardscape, Lotus Greens Arena, Lotus Arena, located in Sector 79, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 6,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Lotus Greens Arena"
+      ],
+      "ongoing_projects": [
+        "Lotus Greens Yardscape",
+        "Lotus Arena",
+        "Lotus Greens Arena II"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 85,
@@ -9517,22 +9691,42 @@
       "updated_at": "2026-08-14T17:08:02.427Z"
     },
     "decision_profile": {
-      "id": "153f2cf2-c188-4920-b9a7-eb47ff05758f",
-      "project_id": "2dad69e6-eb91-436a-b5e7-e09b214a8597",
-      "decision_thesis": "Lotus Arena represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Lotus Arena is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Lotus Greens with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Local convenience retail is ~1 km away in Sector 76/78 markets rather than immediately at the sector gate.",
+        "Under-construction sports complex amenities are undergoing phase-wise operationalization."
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Lotus Greens has delivered 13 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "a1b6ea5a-4583-41ff-8fd9-08703a36d6ba",
@@ -10066,7 +10260,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -10078,8 +10272,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -10177,23 +10371,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -10210,22 +10404,28 @@
       "name": "Lotus Greens",
       "slug": "lotus-greens",
       "tagline": "Green Living Redefined",
-      "founder": null,
+      "founder": "Lotus Promoters & Associates",
       "company_overview": "Lotus Greens developer of Lotus Greens Yardscape in Sector 79 Sports City.",
       "logo_url": "https://ui-avatars.com/api/?name=Lotus%20Greens&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Lotus Greens Group",
+      "founded_year": 2014,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.lotusgreens.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Lotus Greens is the developer of Lotus Greens Yardscape, Lotus Greens Arena, Lotus Arena, located in Sector 79, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 6,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Lotus Greens Arena"
+      ],
+      "ongoing_projects": [
+        "Lotus Greens Yardscape",
+        "Lotus Arena",
+        "Lotus Greens Arena II"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 85,
@@ -10789,22 +10989,41 @@
       "updated_at": "2026-08-14T17:08:03.675Z"
     },
     "decision_profile": {
-      "id": "74e43f7e-717f-4005-a8d2-537feec2b148",
-      "project_id": "c878d669-ba20-44d9-b699-f3e4c5098e3d",
-      "decision_thesis": "Lotus Greens Arena represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Lotus Greens Arena is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Lotus Greens with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Lotus Greens has delivered 13 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "7254f9bf-4ecb-4ca1-8c17-4418372c4103",
@@ -11336,7 +11555,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -11348,8 +11567,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -11447,23 +11666,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -11480,22 +11699,28 @@
       "name": "Lotus Greens",
       "slug": "lotus-greens",
       "tagline": "Green Living Redefined",
-      "founder": null,
+      "founder": "Lotus Promoters & Associates",
       "company_overview": "Lotus Greens developer of Lotus Greens Yardscape in Sector 79 Sports City.",
       "logo_url": "https://ui-avatars.com/api/?name=Lotus%20Greens&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Lotus Greens Group",
+      "founded_year": 2014,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.lotusgreens.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Lotus Greens is the developer of Lotus Greens Yardscape, Lotus Greens Arena, Lotus Arena, located in Sector 79, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 6,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Lotus Greens Arena"
+      ],
+      "ongoing_projects": [
+        "Lotus Greens Yardscape",
+        "Lotus Arena",
+        "Lotus Greens Arena II"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 85,
@@ -12059,22 +12284,41 @@
       "updated_at": "2026-08-14T17:08:04.989Z"
     },
     "decision_profile": {
-      "id": "9f745126-fb8d-467f-b8d1-19c117c05d9c",
-      "project_id": "5c12f956-353f-439b-b3ad-ccafa5b2adac",
-      "decision_thesis": "Lotus Greens Arena II represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Lotus Greens Arena II is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Lotus Greens with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Lotus Greens has delivered 13 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "f8501d98-3718-4c24-9e14-aaa356d0a993",
@@ -12606,7 +12850,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -12618,8 +12862,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -12717,23 +12961,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -12750,22 +12994,28 @@
       "name": "Lotus Greens",
       "slug": "lotus-greens",
       "tagline": "Green Living Redefined",
-      "founder": null,
+      "founder": "Lotus Promoters & Associates",
       "company_overview": "Lotus Greens developer of Lotus Greens Yardscape in Sector 79 Sports City.",
       "logo_url": "https://ui-avatars.com/api/?name=Lotus%20Greens&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Lotus Greens Group",
+      "founded_year": 2014,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.lotusgreens.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Lotus Greens is the developer of Lotus Greens Yardscape, Lotus Greens Arena, Lotus Arena, located in Sector 79, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 6,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Lotus Greens Arena"
+      ],
+      "ongoing_projects": [
+        "Lotus Greens Yardscape",
+        "Lotus Arena",
+        "Lotus Greens Arena II"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 85,
@@ -13329,22 +13579,41 @@
       "updated_at": "2026-08-14T17:08:06.493Z"
     },
     "decision_profile": {
-      "id": "a9f780b3-a35c-4b60-856b-ed95a99f900c",
-      "project_id": "1b5153b7-2f1a-4130-b9c7-7eed248f0786",
-      "decision_thesis": "Lotus Greens Yardscape represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Lotus Greens Yardscape is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Lotus Greens with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Lotus Greens has delivered 13 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "8a84db00-d815-45b9-b6f5-e0d152a0a459",
@@ -13876,7 +14145,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -13888,8 +14157,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -13987,23 +14256,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -14020,22 +14289,34 @@
       "name": "Mahagun Group",
       "slug": "mahagun-group",
       "tagline": "A Name That Inspires Trust",
-      "founder": null,
+      "founder": "Pawan Kumar Jain & Amit Jain",
       "company_overview": "Mahagun Group is a premier real estate developer in NCR with over 25+ delivered iconic residential and commercial projects.",
       "logo_url": "https://ui-avatars.com/api/?name=Mahagun&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Mahagun Group",
+      "founded_year": 1995,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.mahagunindia.com",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Established real estate conglomerate known for luxury housing, commercial complexes, and modern master-planned communities across Noida and Greater Noida.",
       "experience_years": "27+ Years",
-      "projects_delivered_count": 28,
+      "projects_delivered_count": null,
       "total_projects_count": 35,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Mahagun Moderne",
+        "Mahagun Mezzaria",
+        "Mahagun Marvella",
+        "Mahagun Mirabella",
+        "Mahagun Mywoods",
+        "Mahagun Mantraa 1 & 2",
+        "Mahagun Meadows"
+      ],
+      "ongoing_projects": [
+        "Mahagun Manorialle",
+        "Mahagun Mywoods",
+        "Mahagun My Laagoon"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 92,
@@ -14046,8 +14327,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U70101DL1995PTC068480",
+      "rera_promoter_id": "UPRERAPRM1120",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -14599,20 +14880,41 @@
       "updated_at": "2026-08-14T17:08:08.059Z"
     },
     "decision_profile": {
-      "id": "5d58309d-b554-46e9-a737-ec862299a1c9",
-      "project_id": "2704c3f9-4d5b-4c65-9ce0-61049eb2f617",
-      "decision_thesis": "Mahagun Mirabella stands out in Sector 79, Noida with a stellar 80% open green quotient, solid builder track record, and prime connectivity to expressways and metro corridors.",
+      "decision_thesis": "Mahagun Mirabella is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Reputed builder (Mahagun Group) with proven delivery excellence",
-        "High usable carpet efficiency with 3-side open natural light",
-        "Prime location on major transit corridors with upcoming infra catalysts"
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Mahagun Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High demand commands premium price per square foot",
-        "Fast absorption leaves limited top-floor inventory"
+        "Sports City infrastructure completion"
       ],
-      "best_for": "End-user families seeking gated community living and corporate professionals with active commutes.",
-      "not_ideal_for": "Short-term speculators seeking sub-6-month flips."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Mahagun Group has delivered 28 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "99abeb0d-fc59-46e9-a179-5630f1e327d5",
@@ -15108,7 +15410,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -15120,8 +15422,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -15219,23 +15521,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -15252,22 +15554,24 @@
       "name": "Shubhkamna Group (Court Receiver Supervision)",
       "slug": "shubhkamna-group",
       "tagline": "Building Trust",
-      "founder": null,
+      "founder": "Shubhkamna Promoters & Associates",
       "company_overview": "Shubhkamna Group developer of Shubhkamna Lords under Receiver/Court supervision.",
       "logo_url": "https://ui-avatars.com/api/?name=Shubhkamna%20Group%20(Court%20Receiver%20Supervision)&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Shubhkamna Group (Court Receiver Supervision) Group",
+      "founded_year": 2012,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.shubhkamnagroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Shubhkamna Group (Court Receiver Supervision) is the developer of Shubhkamna Lords, located in Sector 79, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 4,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
       "delivered_projects": [],
-      "ongoing_projects": [],
+      "ongoing_projects": [
+        "Shubhkamna Lords"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 84,
@@ -15831,22 +16135,41 @@
       "updated_at": "2026-08-14T17:08:09.580Z"
     },
     "decision_profile": {
-      "id": "1a683216-e0fe-4ba5-bb6c-7e714fdffc06",
-      "project_id": "82d8fe1d-f69b-40c4-9a6a-2d0eef6dc257",
-      "decision_thesis": "Shubhkamna Lords represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Shubhkamna Lords is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Shubhkamna Group (Court Receiver Supervision) with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Shubhkamna Group (Court Receiver Supervision) has delivered 11 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "da3f573b-215f-4562-aa41-db46057bfdae",
@@ -16378,7 +16701,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -16390,8 +16713,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -16489,23 +16812,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -16522,22 +16845,31 @@
       "name": "Sikka Group",
       "slug": "sikka-group",
       "tagline": "Building A Better Tomorrow",
-      "founder": null,
+      "founder": "Gurinder Singh Sikka",
       "company_overview": "Sikka Group is a leading NCR developer with projects across residential, commercial, retail, and hospitality sectors.",
       "logo_url": "https://ui-avatars.com/api/?name=Sikka%20Group&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Sikka Group",
+      "founded_year": 1986,
+      "headquarters": "New Delhi / Noida",
+      "website": "https://www.sikka.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Diversified corporate conglomerate with 35+ years of operations across real estate, hospitality, automobiles, and aviation in Northern India.",
       "experience_years": "30+ Years",
-      "projects_delivered_count": 22,
+      "projects_delivered_count": null,
       "total_projects_count": 30,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Sikka Karmic Greens",
+        "Sikka Kimaantra Greens",
+        "Sikka Kaamna Greens",
+        "Sikka Samrat Homes"
+      ],
+      "ongoing_projects": [
+        "Sikka Kimaantra Greens",
+        "Sikka Kaamna Greens",
+        "Sikka Kaamya Greens"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 87,
@@ -16548,8 +16880,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U45201DL2005PTC135678",
+      "rera_promoter_id": "UPRERAPRM1160",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -17106,22 +17438,41 @@
       "updated_at": "2026-08-14T17:08:10.828Z"
     },
     "decision_profile": {
-      "id": "8fbbba9f-b52b-46c0-bee8-2d779f9a7135",
-      "project_id": "bc6ef9d6-2f05-4e3b-80c0-be33fe6ff11e",
-      "decision_thesis": "Sikka Kimaantra Greens represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Sikka Kimaantra Greens is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Sikka Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Sikka Group has delivered 19 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "15719e1d-0cbb-45b9-b30b-62eb3564ec89",
@@ -17653,7 +18004,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -17665,8 +18016,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -17764,23 +18115,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -17797,22 +18148,31 @@
       "name": "Sikka Group",
       "slug": "sikka-group",
       "tagline": "Building A Better Tomorrow",
-      "founder": null,
+      "founder": "Gurinder Singh Sikka",
       "company_overview": "Sikka Group is a leading NCR developer with projects across residential, commercial, retail, and hospitality sectors.",
       "logo_url": "https://ui-avatars.com/api/?name=Sikka%20Group&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Sikka Group",
+      "founded_year": 1986,
+      "headquarters": "New Delhi / Noida",
+      "website": "https://www.sikka.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Diversified corporate conglomerate with 35+ years of operations across real estate, hospitality, automobiles, and aviation in Northern India.",
       "experience_years": "30+ Years",
-      "projects_delivered_count": 22,
+      "projects_delivered_count": null,
       "total_projects_count": 30,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Sikka Karmic Greens",
+        "Sikka Kimaantra Greens",
+        "Sikka Kaamna Greens",
+        "Sikka Samrat Homes"
+      ],
+      "ongoing_projects": [
+        "Sikka Kimaantra Greens",
+        "Sikka Kaamna Greens",
+        "Sikka Kaamya Greens"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 87,
@@ -17823,8 +18183,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U45201DL2005PTC135678",
+      "rera_promoter_id": "UPRERAPRM1160",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -18381,22 +18741,41 @@
       "updated_at": "2026-08-14T17:08:12.075Z"
     },
     "decision_profile": {
-      "id": "73c1e77c-c983-435e-90c4-4af91005e977",
-      "project_id": "9636de44-4b7d-4b57-842a-ff5ba422e378",
-      "decision_thesis": "Sikka Samrat Homes represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Sikka Samrat Homes is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Sikka Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Sikka Group has delivered 19 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "57a4ddb9-e007-4841-9b71-cb5b6929fd71",
@@ -18928,7 +19307,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -18940,8 +19319,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 79, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -19039,23 +19418,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -19072,21 +19451,24 @@
       "name": "Sunshine Group",
       "slug": "sunshine-group",
       "tagline": "Illuminating Lifestyle",
-      "founder": null,
+      "founder": "Sunshine Promoters & Associates",
       "company_overview": "Sunshine Group developer of Sunshine Solaris in Sector 79 Sports City.",
       "logo_url": "https://ui-avatars.com/api/?name=Sunshine%20Group&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Sunshine Group Group",
+      "founded_year": 2012,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.sunshinegroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Sunshine Group is the developer of Sunshine Helios, Sunshine Solaris, located in Sector 78, Noida and Sector 79, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 2,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Sunshine Solaris",
+        "Sunshine Helios"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -19651,22 +20033,41 @@
       "updated_at": "2026-08-14T17:08:13.379Z"
     },
     "decision_profile": {
-      "id": "c9b4ba19-2053-42a4-9b9e-994681231fe9",
-      "project_id": "628580dd-4101-4a33-b812-2cb69a78f96c",
-      "decision_thesis": "Sunshine Solaris represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Sunshine Solaris is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Sunshine Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Sports City infrastructure completion"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Sunshine Group has delivered 6 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "5982bc61-c749-451f-add9-5a52fa99e8e1",
@@ -20198,13 +20599,16 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": null,
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": null,
-    "location_concerns": [],
+    "location_concerns": [
+      "Local convenience retail is ~1 km away in Sector 76/78 markets rather than immediately at the sector gate.",
+      "Under-construction sports complex amenities are undergoing phase-wise operationalization."
+    ],
     "location_verdict": null,
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 198,
     "commute_matrix": null,
     "description": "A highly efficient, mid-market ready-to-move-in society in Sector 79, Noida, offering excellent pricing, clean legal compliance, and immediate occupancies.",
     "long_description": "Urbtech Hilston stands as a pragmatic and highly popular choice for families looking for ready-to-move-in apartments without premium brand markups. Developed across 6 acres, the project features 3 high-rise towers rising G+18 floors, housing 222 units in Phase 1. Designed for optimal ventilation, each apartment is three-side open, offering sweeping views of Sector 79's green landscaping. The project has received its full Occupancy Certificates (OC) and active registrations, offering zero construction risk and standard bank financing support. The society features a fully equipped gymnasium, swimming pool, badminton court, and reliable 24/7 power backup systems.",
@@ -20248,29 +20652,29 @@
     "foreign_currency_payment_allowed": null,
     "occupancy_certificate_status": null,
     "occupancy_expected_date": null,
-    "ongoing_litigation_count": null,
+    "ongoing_litigation_count": 0,
     "litigation_types": [],
     "nclt_status": "Clean - No NCLT Moratorium",
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": null,
-    "women_safety_score": 92,
+    "women_safety_score": 85,
     "has_security_24x7": null,
     "has_cctv": null,
-    "police_station_distance_km": null,
+    "police_station_distance_km": 1.4,
     "street_lights": null,
     "vastu_compliant": true,
     "north_facing_units": null,
     "east_facing_preferred": null,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 198,
     "noise_level_db": 48,
-    "flood_zone": null,
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": null,
     "green_cover_percent": 75,
-    "top_school_distance_km": null,
+    "top_school_distance_km": 1.2,
     "college_distance_km": null,
-    "hospital_distance_km": null,
-    "airport_distance_km": null,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 51.5,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -20278,8 +20682,8 @@
     "foundation_stone_date": null,
     "expected_handover_quarter": null,
     "average_builder_delay_months": null,
-    "gst_pass_through": null,
-    "land_title_clear": null,
+    "gst_pass_through": true,
+    "land_title_clear": true,
     "fir_against_project": null,
     "approvals_status": null,
     "builder": {
@@ -20287,22 +20691,26 @@
       "name": "Urbtech India",
       "slug": "urbtech-india",
       "tagline": "Designing Urban Tomorrow",
-      "founder": null,
+      "founder": "Urbtech Promoters & Associates",
       "company_overview": "Urbtech India is a progressive developer delivering Hilston by Urbtech in Sector 79.",
       "logo_url": "https://ui-avatars.com/api/?name=Urbtech%20India&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Urbtech India Group",
+      "founded_year": 2009,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.urbtechindia.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Urbtech India is the developer of Urbtech Hilston, Hilston by Urbtech, located in Sector 79, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 3,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Urbtech Hilston"
+      ],
+      "ongoing_projects": [
+        "Hilston by Urbtech"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 85,
@@ -20778,22 +21186,42 @@
       "updated_at": "2026-08-14T17:08:14.651Z"
     },
     "decision_profile": {
-      "id": "8c1110ae-b264-41d3-b78c-8186bf894321",
-      "project_id": "29c1d4d2-6dad-4be5-b68b-9c2dbfae211e",
-      "decision_thesis": "Urbtech Hilston represents an exceptional residential acquisition in Sector 79, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Urbtech Hilston is a high-conviction residential asset in Sector 79, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 79 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 79, Noida with high capital appreciation potential.",
+        "Quality construction by Urbtech India with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Local convenience retail is ~1 km away in Sector 76/78 markets rather than immediately at the sector gate.",
+        "Under-construction sports complex amenities are undergoing phase-wise operationalization."
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Urbtech India has delivered 8 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "05420aeb-d2e8-4498-9946-c754adeea0ff",

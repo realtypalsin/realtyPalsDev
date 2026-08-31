@@ -47,3 +47,37 @@ describe('ending an answer cleanly', () => {
     assert.equal(endCleanly(''), '')
   })
 })
+
+describe('endCleanly on a stream tail rather than a whole answer', () => {
+  // The tail buffer in fallbackChain holds only the last ~180 characters, so
+  // the ratio guard — which assumes it is looking at the entire answer —
+  // refuses to trim exactly the fragments it exists to remove. maxTrimChars
+  // is how the tail path opts out of an assumption that is false for it.
+
+  it('drops a dangling row that is most of the tail', () => {
+    const tail = '| **Techzone 4** | IT commuters | 5,80'
+    // Without the option the ratio guard keeps it: dropping the row loses
+    // everything the tail is holding.
+    assert.equal(endCleanly(tail), tail)
+    assert.equal(endCleanly(tail, { maxTrimChars: tail.length }), '')
+  })
+
+  it('drops a dangling clause that is most of the tail', () => {
+    const tail = 'possession is 2027. The trade-off is that the nearest metro'
+    assert.equal(
+      endCleanly(tail, { maxTrimChars: tail.length }),
+      'possession is 2027.',
+    )
+  })
+
+  it('still leaves a tail that already ends cleanly', () => {
+    const tail = 'and possession is expected in 2027.'
+    assert.equal(endCleanly(tail, { maxTrimChars: tail.length }), tail)
+  })
+
+  it('respects a tighter cap when one is given', () => {
+    const tail = 'possession is 2027. The trade-off is that the nearest metro'
+    // Trimming needs 40 chars; only 5 are allowed, so the edge is kept.
+    assert.equal(endCleanly(tail, { maxTrimChars: 5 }), tail)
+  })
+})

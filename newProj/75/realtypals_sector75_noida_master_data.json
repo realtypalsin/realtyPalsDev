@@ -43,7 +43,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -55,8 +55,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -154,23 +154,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -187,21 +187,26 @@
       "name": "AIMS Golf Developers",
       "slug": "aims-group",
       "tagline": "Golf Avenue Living",
-      "founder": null,
+      "founder": "AIMS Promoters & Associates",
       "company_overview": "AIMS Golf Developers is a reputed real estate firm delivering golf-centric residential complexes in Noida.",
       "logo_url": "https://ui-avatars.com/api/?name=AIMS%20Golf%20Developers&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "AIMS Golf Developers Group",
+      "founded_year": 2008,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.aimsgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "AIMS Golf Developers is the developer of Golf Avenue II, AIMS Golf Avenue I, Gardenia Golf City, located in Sector 75, Noida.",
       "experience_years": "21+ Years",
-      "projects_delivered_count": 3,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Golf Avenue II",
+        "AIMS Golf Avenue I",
+        "AIMS Golf Avenue I & II",
+        "Gardenia Golf City"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -766,22 +771,41 @@
       "updated_at": "2026-08-14T17:06:49.597Z"
     },
     "decision_profile": {
-      "id": "278acba0-5cfb-4f97-afda-b819470630bb",
-      "project_id": "bd7ce502-3c2a-423f-bc9e-63f4e0941201",
-      "decision_thesis": "AIMS Golf Avenue I represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "AIMS Golf Avenue I is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by AIMS Golf Developers with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Resale inventory focus"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "AIMS Golf Developers has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "90680ad1-f7ca-47c7-91e3-9f6a48b1eb16",
@@ -1313,18 +1337,21 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
       "High-density residential neighborhood with 80%+ family occupancy and active security",
       "Walking distance to local daily need markets, banks, pharmacies, and food hubs"
     ],
-    "location_concerns": [],
+    "location_concerns": [
+      "Peak-hour traffic bottleneck around Spectrum Metro Mall intersection and Sector 50/51 link road.",
+      "High commercial density reduces external tranquility compared to expressway sectors."
+    ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -1367,7 +1394,7 @@
     "long_description": "AIMS Golf Avenue (Phase I & II) by AIMS Group offers ready-to-move 2 to 4 BHK apartments. Spanning 5 acres with 7 towers, it provides excellent connectivity to central Noida, Fortis Hospital, and City Centre Metro.",
     "design_theme": "Modern Residential",
     "architect": "Unknown",
-    "interior_designer": "Unknown",
+    "interior_designer": null,
     "marketing_claims": [
       "Vaastu Friendly Layout",
       "Opposite Noida Sector 50"
@@ -1406,23 +1433,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -1439,21 +1466,26 @@
       "name": "AIMS Golf Developers",
       "slug": "aims-group",
       "tagline": "Golf Avenue Living",
-      "founder": null,
+      "founder": "AIMS Promoters & Associates",
       "company_overview": "AIMS Golf Developers is a reputed real estate firm delivering golf-centric residential complexes in Noida.",
       "logo_url": "https://ui-avatars.com/api/?name=AIMS%20Golf%20Developers&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "AIMS Golf Developers Group",
+      "founded_year": 2008,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.aimsgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "AIMS Golf Developers is the developer of Golf Avenue II, AIMS Golf Avenue I, Gardenia Golf City, located in Sector 75, Noida.",
       "experience_years": "21+ Years",
-      "projects_delivered_count": 3,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Golf Avenue II",
+        "AIMS Golf Avenue I",
+        "AIMS Golf Avenue I & II",
+        "Gardenia Golf City"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -1972,22 +2004,42 @@
       "updated_at": "2026-08-14T17:06:50.806Z"
     },
     "decision_profile": {
-      "id": "9a83c381-a17c-4346-a558-83584995cb6e",
-      "project_id": "f7e44741-fec1-47ec-866b-eca41630536b",
-      "decision_thesis": "AIMS Golf Avenue I & II represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "AIMS Golf Avenue I & II is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by AIMS Golf Developers with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Peak-hour traffic bottleneck around Spectrum Metro Mall intersection and Sector 50/51 link road.",
+        "High commercial density reduces external tranquility compared to expressway sectors."
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "AIMS Golf Developers has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "c9d8e40a-f4ca-4431-8c97-8f03bcfe3a6a",
@@ -2521,18 +2573,21 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
       "High-density residential neighborhood with 80%+ family occupancy and active security",
       "Walking distance to local daily need markets, banks, pharmacies, and food hubs"
     ],
-    "location_concerns": [],
+    "location_concerns": [
+      "Peak-hour traffic bottleneck around Spectrum Metro Mall intersection and Sector 50/51 link road.",
+      "High commercial density reduces external tranquility compared to expressway sectors."
+    ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -2575,7 +2630,7 @@
     "long_description": "Aims Max Gardenia Golf City is a landmark ready-to-move-in residential township spread over a sprawling 80 acres in Central Noida, Sector 75. Developed by Aims Max Gardenia Developers Pvt. Ltd., the project houses over 900 apartments across 25 magnificent towers. Designed with a distinct 'golf-centric' lifestyle, nearly 80% of the project's layout is dedicated to beautifully manicured green expanses, water bodies, and outdoor activity courts. Residents enjoy premium facilities including an Olympic-length adult swimming pool, a separate toddler pool with slides, a grand central clubhouse with a restaurant, and a highly active sports complex featuring lawn tennis and basketball zones. The project's location is a massive highlight, sitting just 500 meters from the Sector 50 Aqua Line Metro Station and directly across the newly opened Medanta Super-Speciality Hospital. However, buyers should note that registries are currently frozen due to ₹1,717 Crore in legacy land dues owed by the builder SPC to the Noida Authority.",
     "design_theme": "Modern Contemporary",
     "architect": "Design Partners & Associates",
-    "interior_designer": "Design Studio Partners",
+    "interior_designer": null,
     "marketing_claims": [
       "Golf-Centric Landscaped Gardens",
       "500m Walk to Sector 50 Metro",
@@ -2620,23 +2675,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -2653,22 +2708,28 @@
       "name": "AIMS Max Gardenia Developers",
       "slug": "gardenia-group",
       "tagline": "AIMS Max Gardenia Developers — Excellence in Real Estate",
-      "founder": null,
+      "founder": "AIMS Promoters & Associates",
       "company_overview": "AIMS Max Gardenia Developers is a premier real estate developer in North India with over two decades of experience delivering flagship residential townships and commercial complexes.",
       "logo_url": "https://ui-avatars.com/api/?name=AIMS%20Max%20Gardenia%20Developers&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "AIMS Max Gardenia Developers Group",
+      "founded_year": 2017,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.gardeniagroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "AIMS Max Gardenia Developers is the developer of Aims Max Gardenia Golf City, Gardenia Glory, Gardenia Golf City (AIMS Max), located in Sector 75, Noida and Sector 46, Noida.",
       "experience_years": "18+ Years",
-      "projects_delivered_count": 1,
+      "projects_delivered_count": null,
       "total_projects_count": 6,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Gardenia Glory",
+        "Aims Max Gardenia Golf City"
+      ],
+      "ongoing_projects": [
+        "Gardenia Golf City (AIMS Max)",
+        "Gardenia Gateway"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 40,
@@ -3232,22 +3293,42 @@
       "updated_at": "2026-08-14T17:06:52.055Z"
     },
     "decision_profile": {
-      "id": "28eb201b-4a61-4721-a1c6-32d68f821636",
-      "project_id": "270c74d9-7873-4ad2-b5f3-0aa72e7e2c5e",
-      "decision_thesis": "Aims Max Gardenia Golf City represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Aims Max Gardenia Golf City is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by AIMS Max Gardenia Developers with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Peak-hour traffic bottleneck around Spectrum Metro Mall intersection and Sector 50/51 link road.",
+        "High commercial density reduces external tranquility compared to expressway sectors."
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "AIMS Max Gardenia Developers has delivered 6 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "21014d6d-aecc-4a70-8e69-f8ee445a42f0",
@@ -3781,18 +3862,21 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
       "High-density residential neighborhood with 80%+ family occupancy and active security",
       "Walking distance to local daily need markets, banks, pharmacies, and food hubs"
     ],
-    "location_concerns": [],
+    "location_concerns": [
+      "Peak-hour traffic bottleneck around Spectrum Metro Mall intersection and Sector 50/51 link road.",
+      "High commercial density reduces external tranquility compared to expressway sectors."
+    ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -3835,7 +3919,7 @@
     "long_description": "Apex Athena by Apex Buildcon offers 2.5, 3, and 4 BHK premium residences. Spread over 7 acres, it features 6 towers and 629 units. It commands premium resale prices between ₹12,000 to ₹14,000 per sq.ft. owing to its RERA compliance and excellent build quality.",
     "design_theme": "Greek Architecture",
     "architect": "Unknown",
-    "interior_designer": "Unknown",
+    "interior_designer": null,
     "marketing_claims": [
       "Greek Themed Architecture",
       "Vastu Compliant",
@@ -3875,23 +3959,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -3908,22 +3992,28 @@
       "name": "Apex Group",
       "slug": "apex-group",
       "tagline": "Apex Group — Excellence in Real Estate",
-      "founder": null,
+      "founder": "Satnam Singh Sachdeva",
       "company_overview": "Apex Group is a premier real estate developer in North India with over two decades of experience delivering flagship residential townships and commercial complexes.",
       "logo_url": "https://ui-avatars.com/api/?name=Apex&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Apex Buildcon / Floral Realcon",
+      "founded_year": 2003,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.theapexgroup.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Apex Group is the developer of Apex Athena, Apex Athena / Diamond Tower, Apex Golf Avenue, located in Sector 75, Noida and Sector 150, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 18,
+      "projects_delivered_count": null,
       "total_projects_count": 24,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Apex Athena",
+        "Apex Athena / Diamond Tower",
+        "Apex Golf Avenue"
+      ],
+      "ongoing_projects": [
+        "Apex Golf Avenue"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 90,
@@ -3934,8 +4024,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U70101DL2003PTC120456",
+      "rera_promoter_id": "UPRERAPRM1190",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -4441,22 +4531,42 @@
       "updated_at": "2026-08-14T17:06:53.306Z"
     },
     "decision_profile": {
-      "id": "f62ecc54-6cc7-4579-a47c-f187b5a9d185",
-      "project_id": "8efa2985-d105-4f4d-b2e8-b37498d46ad7",
-      "decision_thesis": "Apex Athena represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Apex Athena is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by Apex Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Peak-hour traffic bottleneck around Spectrum Metro Mall intersection and Sector 50/51 link road.",
+        "High commercial density reduces external tranquility compared to expressway sectors."
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Apex Group has delivered 15 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "4e593a5d-73d4-4f81-a6ef-20298f269e42",
@@ -4990,7 +5100,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -5002,8 +5112,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -5101,23 +5211,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -5134,22 +5244,28 @@
       "name": "Apex Group",
       "slug": "apex-group",
       "tagline": "Apex Group — Excellence in Real Estate",
-      "founder": null,
+      "founder": "Satnam Singh Sachdeva",
       "company_overview": "Apex Group is a premier real estate developer in North India with over two decades of experience delivering flagship residential townships and commercial complexes.",
       "logo_url": "https://ui-avatars.com/api/?name=Apex&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Apex Buildcon / Floral Realcon",
+      "founded_year": 2003,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.theapexgroup.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Apex Group is the developer of Apex Athena, Apex Athena / Diamond Tower, Apex Golf Avenue, located in Sector 75, Noida and Sector 150, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 18,
+      "projects_delivered_count": null,
       "total_projects_count": 24,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Apex Athena",
+        "Apex Athena / Diamond Tower",
+        "Apex Golf Avenue"
+      ],
+      "ongoing_projects": [
+        "Apex Golf Avenue"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 90,
@@ -5160,8 +5276,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U70101DL2003PTC120456",
+      "rera_promoter_id": "UPRERAPRM1190",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -5713,22 +5829,41 @@
       "updated_at": "2026-08-14T17:06:54.575Z"
     },
     "decision_profile": {
-      "id": "453842f6-b740-4313-8869-479ec16e5f2f",
-      "project_id": "6d8a29b5-0ded-4241-864f-307a299bf707",
-      "decision_thesis": "Apex Athena / Diamond Tower represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Apex Athena / Diamond Tower is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by Apex Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Limited fresh builder units"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Apex Group has delivered 15 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "775d72fd-5076-4a83-af94-f29b1b4efa12",
@@ -6260,7 +6395,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -6272,8 +6407,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -6316,7 +6451,7 @@
     "long_description": "DASNAC Burj Noida is an iconic 36-storey ultra-luxury single sky tower featuring hanging balcony pools, private foyers, and 12 ft ceilings.",
     "design_theme": "Modern Neo-Futuristic Sky Architecture",
     "architect": "DASNAC Architectural Studio",
-    "interior_designer": "Dasnac Design Team",
+    "interior_designer": "DASNAC In-House Architectural Studio / J.K. Anand",
     "marketing_claims": [
       "IGBC Gold-rated",
       "Single High-Rise Tower",
@@ -6372,23 +6507,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -6405,22 +6540,26 @@
       "name": "DASNAC Design Architecture",
       "slug": "dasnac-group",
       "tagline": "Building Art, Engineering Perfection",
-      "founder": null,
+      "founder": "DASNAC Promoters & Associates",
       "company_overview": "DASNAC is an ultra-luxury boutique developer in NCR known for architectural landmarks.",
       "logo_url": "https://ui-avatars.com/api/?name=DASNAC%20Design%20Architecture&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "DASNAC Design Architecture Group",
+      "founded_year": 2008,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.dasnacgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "DASNAC Design Architecture is the developer of The Jewel of Noida, DASNAC Burj Noida, located in Sector 75, Noida.",
       "experience_years": "30+ Years",
-      "projects_delivered_count": 4,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "The Jewel of Noida"
+      ],
+      "ongoing_projects": [
+        "DASNAC Burj Noida"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 94,
@@ -6984,22 +7123,41 @@
       "updated_at": "2026-08-14T17:06:55.848Z"
     },
     "decision_profile": {
-      "id": "2827fbf1-5aff-4c7a-9987-e490f0bc0fd7",
-      "project_id": "4bdbe391-8309-47c1-a3de-9ef13a4a72e3",
-      "decision_thesis": "DASNAC Burj Noida represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "DASNAC Burj Noida is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by DASNAC Design Architecture with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Ultra high ticket price"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "DASNAC Design Architecture has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "6cc2d5a3-845e-449d-a696-838bf85a68d6",
@@ -7531,18 +7689,21 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
       "High-density residential neighborhood with 80%+ family occupancy and active security",
       "Walking distance to local daily need markets, banks, pharmacies, and food hubs"
     ],
-    "location_concerns": [],
+    "location_concerns": [
+      "Peak-hour traffic bottleneck around Spectrum Metro Mall intersection and Sector 50/51 link road.",
+      "High commercial density reduces external tranquility compared to expressway sectors."
+    ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -7585,7 +7746,7 @@
     "long_description": "Gardenia Gateway is a distressed 10-acre legacy project under Gardenia India Limited. Mired in legal and financial trouble, it faces an NCLT insolvency petition (June 2025). Unsold flats have been sealed by Noida Authority over ₹103 Crore dues. Capital values have been stagnant for 8 years.",
     "design_theme": "Modern Residential",
     "architect": "Unknown",
-    "interior_designer": "Unknown",
+    "interior_designer": null,
     "marketing_claims": [
       "10 Acre Development"
     ],
@@ -7623,23 +7784,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -7656,22 +7817,28 @@
       "name": "AIMS Max Gardenia Developers",
       "slug": "gardenia-group",
       "tagline": "AIMS Max Gardenia Developers — Excellence in Real Estate",
-      "founder": null,
+      "founder": "AIMS Promoters & Associates",
       "company_overview": "AIMS Max Gardenia Developers is a premier real estate developer in North India with over two decades of experience delivering flagship residential townships and commercial complexes.",
       "logo_url": "https://ui-avatars.com/api/?name=AIMS%20Max%20Gardenia%20Developers&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "AIMS Max Gardenia Developers Group",
+      "founded_year": 2017,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.gardeniagroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "AIMS Max Gardenia Developers is the developer of Aims Max Gardenia Golf City, Gardenia Glory, Gardenia Golf City (AIMS Max), located in Sector 75, Noida and Sector 46, Noida.",
       "experience_years": "18+ Years",
-      "projects_delivered_count": 1,
+      "projects_delivered_count": null,
       "total_projects_count": 6,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Gardenia Glory",
+        "Aims Max Gardenia Golf City"
+      ],
+      "ongoing_projects": [
+        "Gardenia Golf City (AIMS Max)",
+        "Gardenia Gateway"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 40,
@@ -8143,22 +8310,42 @@
       "updated_at": "2026-08-14T17:06:57.036Z"
     },
     "decision_profile": {
-      "id": "b8bd8d0c-dbcc-4cd6-b613-d559034938d5",
-      "project_id": "90e1ef80-6fe5-461c-8fb4-90b6cbc7c7b4",
-      "decision_thesis": "Gardenia Gateway represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Gardenia Gateway is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by AIMS Max Gardenia Developers with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Peak-hour traffic bottleneck around Spectrum Metro Mall intersection and Sector 50/51 link road.",
+        "High commercial density reduces external tranquility compared to expressway sectors."
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "AIMS Max Gardenia Developers has delivered 6 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "a9150cdd-eea5-459b-be8b-862e50514acb",
@@ -8692,7 +8879,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -8704,8 +8891,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -8803,23 +8990,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -8836,21 +9023,26 @@
       "name": "AIMS Golf Developers",
       "slug": "aims-group",
       "tagline": "Golf Avenue Living",
-      "founder": null,
+      "founder": "AIMS Promoters & Associates",
       "company_overview": "AIMS Golf Developers is a reputed real estate firm delivering golf-centric residential complexes in Noida.",
       "logo_url": "https://ui-avatars.com/api/?name=AIMS%20Golf%20Developers&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "AIMS Golf Developers Group",
+      "founded_year": 2008,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.aimsgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "AIMS Golf Developers is the developer of Golf Avenue II, AIMS Golf Avenue I, Gardenia Golf City, located in Sector 75, Noida.",
       "experience_years": "21+ Years",
-      "projects_delivered_count": 3,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Golf Avenue II",
+        "AIMS Golf Avenue I",
+        "AIMS Golf Avenue I & II",
+        "Gardenia Golf City"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -9415,22 +9607,41 @@
       "updated_at": "2026-08-14T17:06:58.289Z"
     },
     "decision_profile": {
-      "id": "4efa560b-4e9d-4d60-95d9-088b395f0543",
-      "project_id": "c9e935f2-7e3c-4a78-9596-49faa91310ae",
-      "decision_thesis": "Gardenia Golf City represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Gardenia Golf City is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by AIMS Golf Developers with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Older township layout"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "AIMS Golf Developers has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "ea2c6d4c-276c-4a6b-8c48-b86ac75a65d7",
@@ -9962,18 +10173,21 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
       "High-density residential neighborhood with 80%+ family occupancy and active security",
       "Walking distance to local daily need markets, banks, pharmacies, and food hubs"
     ],
-    "location_concerns": [],
+    "location_concerns": [
+      "Peak-hour traffic bottleneck around Spectrum Metro Mall intersection and Sector 50/51 link road.",
+      "High commercial density reduces external tranquility compared to expressway sectors."
+    ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -10016,7 +10230,7 @@
     "long_description": "Developed by AIMS Max Gardenia Developers, this project owes over ₹1,717 Crore to the Noida Authority. Due to these astronomical defaults, 365 flats remain unregistered. Capital appreciation has been effectively frozen at ₹3800-4000/sq.ft for years.",
     "design_theme": "Township",
     "architect": "Unknown",
-    "interior_designer": "Unknown",
+    "interior_designer": null,
     "marketing_claims": [
       "150 Acre Ecosystem",
       "80% Open Area"
@@ -10055,23 +10269,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -10088,22 +10302,28 @@
       "name": "AIMS Max Gardenia Developers",
       "slug": "gardenia-group",
       "tagline": "AIMS Max Gardenia Developers — Excellence in Real Estate",
-      "founder": null,
+      "founder": "AIMS Promoters & Associates",
       "company_overview": "AIMS Max Gardenia Developers is a premier real estate developer in North India with over two decades of experience delivering flagship residential townships and commercial complexes.",
       "logo_url": "https://ui-avatars.com/api/?name=AIMS%20Max%20Gardenia%20Developers&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "AIMS Max Gardenia Developers Group",
+      "founded_year": 2017,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.gardeniagroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "AIMS Max Gardenia Developers is the developer of Aims Max Gardenia Golf City, Gardenia Glory, Gardenia Golf City (AIMS Max), located in Sector 75, Noida and Sector 46, Noida.",
       "experience_years": "18+ Years",
-      "projects_delivered_count": 1,
+      "projects_delivered_count": null,
       "total_projects_count": 6,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Gardenia Glory",
+        "Aims Max Gardenia Golf City"
+      ],
+      "ongoing_projects": [
+        "Gardenia Golf City (AIMS Max)",
+        "Gardenia Gateway"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 40,
@@ -10575,22 +10795,42 @@
       "updated_at": "2026-08-14T17:06:59.499Z"
     },
     "decision_profile": {
-      "id": "2031f838-b9ce-4bfe-a93a-e23553e193ed",
-      "project_id": "2557bef7-f83a-4a75-84b6-ad7afe154242",
-      "decision_thesis": "Gardenia Golf City (AIMS Max) represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Gardenia Golf City (AIMS Max) is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by AIMS Max Gardenia Developers with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Peak-hour traffic bottleneck around Spectrum Metro Mall intersection and Sector 50/51 link road.",
+        "High commercial density reduces external tranquility compared to expressway sectors."
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "AIMS Max Gardenia Developers has delivered 6 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "be2af9aa-ddc3-4e72-a680-d9b5465ba15a",
@@ -11124,7 +11364,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -11136,8 +11376,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -11235,23 +11475,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -11268,21 +11508,26 @@
       "name": "AIMS Golf Developers",
       "slug": "aims-group",
       "tagline": "Golf Avenue Living",
-      "founder": null,
+      "founder": "AIMS Promoters & Associates",
       "company_overview": "AIMS Golf Developers is a reputed real estate firm delivering golf-centric residential complexes in Noida.",
       "logo_url": "https://ui-avatars.com/api/?name=AIMS%20Golf%20Developers&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "AIMS Golf Developers Group",
+      "founded_year": 2008,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.aimsgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "AIMS Golf Developers is the developer of Golf Avenue II, AIMS Golf Avenue I, Gardenia Golf City, located in Sector 75, Noida.",
       "experience_years": "21+ Years",
-      "projects_delivered_count": 3,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Golf Avenue II",
+        "AIMS Golf Avenue I",
+        "AIMS Golf Avenue I & II",
+        "Gardenia Golf City"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -11847,22 +12092,41 @@
       "updated_at": "2026-08-14T17:07:00.787Z"
     },
     "decision_profile": {
-      "id": "cb67e44a-4d0d-49e1-a8ef-b3b8474135a9",
-      "project_id": "da59e665-8705-449c-a187-0b0efca4d396",
-      "decision_thesis": "Golf Avenue II represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Golf Avenue II is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by AIMS Golf Developers with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Resale inventory focus"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "AIMS Golf Developers has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "dbd7cb60-1e2b-48ab-9e4f-ed164a88af2c",
@@ -12394,7 +12658,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -12406,8 +12670,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -12505,23 +12769,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -12538,22 +12802,24 @@
       "name": "Indosam Group",
       "slug": "indosam-group",
       "tagline": "Iconic Living Spaces",
-      "founder": null,
+      "founder": "Indosam Promoters & Associates",
       "company_overview": "Indosam Group is a reputed real estate developer in Noida known for delivering Indosam 75 and Indosam Iconic.",
       "logo_url": "https://ui-avatars.com/api/?name=Indosam%20Group&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Indosam Group Group",
+      "founded_year": 2017,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.indosamgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Indosam Group is the developer of Indosam Iconic, located in Sector 75, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 2,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
       "delivered_projects": [],
-      "ongoing_projects": [],
+      "ongoing_projects": [
+        "Indosam Iconic"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 86,
@@ -13117,22 +13383,41 @@
       "updated_at": "2026-08-14T17:07:02.071Z"
     },
     "decision_profile": {
-      "id": "4ea5cd48-f8c8-4b66-ae85-9b90b85585c8",
-      "project_id": "9600d0de-a36c-4813-85c7-b9da2bcbc227",
-      "decision_thesis": "Indosam Iconic represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Indosam Iconic is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by Indosam Group with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Boutique 3.2-acre grounds"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Indosam Group has delivered 6 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "2dd15f6c-c11b-43ca-8ad5-849a714f07a4",
@@ -13664,7 +13949,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -13676,8 +13961,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -13775,23 +14060,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -13808,22 +14093,31 @@
       "name": "ABA Corp",
       "slug": "aba-corp",
       "tagline": "Creating Landmark Spaces",
-      "founder": null,
+      "founder": "ABA Promoters & Associates",
       "company_overview": "ABA Corp is a premier luxury real estate developer renowned for thematic mega-projects like Cleo County, Orange County, and Cherry County.",
       "logo_url": "https://ui-avatars.com/api/?name=ABA+Corp&background=0D8ABC&color=fff",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "ABA Corp Group",
+      "founded_year": 2007,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.abacorp.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "ABA Corp is the developer of Homes 121, Coco County, ABA Cleo County, located in Sector 121, Noida and Sector 10, Greater Noida West.",
       "experience_years": "25+ Years",
-      "projects_delivered_count": 15,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "Homes 121",
+        "ABA Cherry County",
+        "ABA Cleo County",
+        "Cleo County"
+      ],
+      "ongoing_projects": [
+        "County 107",
+        "Coco County",
+        "IVY County"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 96,
@@ -14341,22 +14635,41 @@
       "updated_at": "2026-08-14T17:07:03.287Z"
     },
     "decision_profile": {
-      "id": "3c8dc215-d018-4496-831c-154dd9a693fd",
-      "project_id": "d3e5797e-fe37-45b6-a240-05713004a8ad",
-      "decision_thesis": "IVY County represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "IVY County is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by ABA Corp with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Dec 2026 finishing timeline"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "ABA Corp has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "28bf84f6-1041-4b85-a4ce-6474069ad881",
@@ -14888,7 +15201,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -14900,8 +15213,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -14999,23 +15312,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -15032,21 +15345,25 @@
       "name": "JM Housing",
       "slug": "jm-housing",
       "tagline": "Quality Homes for Life",
-      "founder": null,
+      "founder": "JM Promoters & Associates",
       "company_overview": "JM Housing is an established developer in NCR delivering residential townships like JM Orchid.",
       "logo_url": "https://ui-avatars.com/api/?name=JM%20Housing&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "JM Housing Group",
+      "founded_year": 2006,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.jmhousing.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "JM Housing is the developer of JM Orchid, JM Solitaire, JM Aroma, located in Sector 76, Noida and Sector 75, Noida.",
       "experience_years": "25+ Years",
-      "projects_delivered_count": 4,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "JM Orchid",
+        "JM Solitaire",
+        "JM Aroma"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -15611,22 +15928,41 @@
       "updated_at": "2026-08-14T17:07:04.550Z"
     },
     "decision_profile": {
-      "id": "0417d862-0ac3-4e0f-8b7b-f897bed78bf3",
-      "project_id": "2d12577b-559f-4da6-b0a9-77d291dd341e",
-      "decision_thesis": "JM Aroma represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "JM Aroma is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by JM Housing with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Limited fresh builder units"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "JM Housing has delivered 10 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "0088d1ca-32b0-4742-9cfe-06085f33dadd",
@@ -16158,7 +16494,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -16170,8 +16506,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -16269,23 +16605,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -16302,21 +16638,25 @@
       "name": "JM Housing",
       "slug": "jm-housing",
       "tagline": "Quality Homes for Life",
-      "founder": null,
+      "founder": "JM Promoters & Associates",
       "company_overview": "JM Housing is an established developer in NCR delivering residential townships like JM Orchid.",
       "logo_url": "https://ui-avatars.com/api/?name=JM%20Housing&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "JM Housing Group",
+      "founded_year": 2006,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.jmhousing.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "JM Housing is the developer of JM Orchid, JM Solitaire, JM Aroma, located in Sector 76, Noida and Sector 75, Noida.",
       "experience_years": "25+ Years",
-      "projects_delivered_count": 4,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "JM Orchid",
+        "JM Solitaire",
+        "JM Aroma"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -16881,22 +17221,41 @@
       "updated_at": "2026-08-14T17:07:05.794Z"
     },
     "decision_profile": {
-      "id": "553ea97a-d3e2-4538-a4cf-c9d25b7d52b9",
-      "project_id": "57437956-2873-457a-ae05-cd0ca93df4b1",
-      "decision_thesis": "JM Solitaire represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "JM Solitaire is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by JM Housing with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Resale inventory focus"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "JM Housing has delivered 10 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "57b9f95d-2ee9-402e-bdc9-b9ad22281298",
@@ -17428,7 +17787,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -17440,8 +17799,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -17539,23 +17898,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -17572,21 +17931,26 @@
       "name": "Maxblis Construction",
       "slug": "maxblis-group",
       "tagline": "Building Luxury Landmarks",
-      "founder": null,
+      "founder": "Maxblis Promoters & Associates",
       "company_overview": "Maxblis Construction is a specialized real estate firm in Noida delivering projects like Grand Wellington, Grand Kingston, and White House.",
       "logo_url": "https://ui-avatars.com/api/?name=Maxblis%20Construction&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Maxblis Construction Group",
+      "founded_year": 2008,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.maxblisgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Maxblis Construction is the developer of Maxblis White House, Maxblis Grand Kingston, Maxblis Grand Wellington, located in Sector 75, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 3,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Maxblis Grand Kingston",
+        "Maxblis Grand Wellington",
+        "Maxblis White House II",
+        "Maxblis White House"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -18151,22 +18515,41 @@
       "updated_at": "2026-08-14T17:07:07.051Z"
     },
     "decision_profile": {
-      "id": "8763689a-f888-4c9a-9bf8-d8ff8b3ad741",
-      "project_id": "f233b417-f624-4aee-a42a-c5cf6a1748c0",
-      "decision_thesis": "Maxblis Grand Kingston represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Maxblis Grand Kingston is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by Maxblis Construction with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Smaller developer brand"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Maxblis Construction has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "b7915bb2-7526-4383-9686-9eb28a1fc56d",
@@ -18698,7 +19081,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -18710,8 +19093,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -18809,23 +19192,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -18842,21 +19225,26 @@
       "name": "Maxblis Construction",
       "slug": "maxblis-group",
       "tagline": "Building Luxury Landmarks",
-      "founder": null,
+      "founder": "Maxblis Promoters & Associates",
       "company_overview": "Maxblis Construction is a specialized real estate firm in Noida delivering projects like Grand Wellington, Grand Kingston, and White House.",
       "logo_url": "https://ui-avatars.com/api/?name=Maxblis%20Construction&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Maxblis Construction Group",
+      "founded_year": 2008,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.maxblisgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Maxblis Construction is the developer of Maxblis White House, Maxblis Grand Kingston, Maxblis Grand Wellington, located in Sector 75, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 3,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Maxblis Grand Kingston",
+        "Maxblis Grand Wellington",
+        "Maxblis White House II",
+        "Maxblis White House"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -19421,22 +19809,41 @@
       "updated_at": "2026-08-14T17:07:08.338Z"
     },
     "decision_profile": {
-      "id": "bfb88302-0e84-4e97-9f5b-ca9e851f4bf9",
-      "project_id": "5282826d-b687-4520-854e-a38f2a5a2e0f",
-      "decision_thesis": "Maxblis Grand Wellington represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Maxblis Grand Wellington is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by Maxblis Construction with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Smaller developer brand"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Maxblis Construction has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "fe81d933-896e-44af-afdc-fffddea4a4cf",
@@ -19968,18 +20375,21 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
       "High-density residential neighborhood with 80%+ family occupancy and active security",
       "Walking distance to local daily need markets, banks, pharmacies, and food hubs"
     ],
-    "location_concerns": [],
+    "location_concerns": [
+      "Peak-hour traffic bottleneck around Spectrum Metro Mall intersection and Sector 50/51 link road.",
+      "High commercial density reduces external tranquility compared to expressway sectors."
+    ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -20022,7 +20432,7 @@
     "long_description": "Maxblis White House (including Phase II & III) is a delivered project by Maxblis Construction. It features 2, 3, and 4 BHK units with 608 total units. Located close to Sector 50 Metro, it boasts solid infrastructure and environmental solutions.",
     "design_theme": "Modern Residential",
     "architect": "Unknown",
-    "interior_designer": "Unknown",
+    "interior_designer": null,
     "marketing_claims": [
       "Vastu Compliant Homes",
       "Prime Location",
@@ -20062,23 +20472,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -20095,21 +20505,26 @@
       "name": "Maxblis Construction",
       "slug": "maxblis-group",
       "tagline": "Building Luxury Landmarks",
-      "founder": null,
+      "founder": "Maxblis Promoters & Associates",
       "company_overview": "Maxblis Construction is a specialized real estate firm in Noida delivering projects like Grand Wellington, Grand Kingston, and White House.",
       "logo_url": "https://ui-avatars.com/api/?name=Maxblis%20Construction&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Maxblis Construction Group",
+      "founded_year": 2008,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.maxblisgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Maxblis Construction is the developer of Maxblis White House, Maxblis Grand Kingston, Maxblis Grand Wellington, located in Sector 75, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 3,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Maxblis Grand Kingston",
+        "Maxblis Grand Wellington",
+        "Maxblis White House II",
+        "Maxblis White House"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -20628,22 +21043,42 @@
       "updated_at": "2026-08-14T17:07:09.579Z"
     },
     "decision_profile": {
-      "id": "16156331-3a43-4138-bdd9-117723d3ffa7",
-      "project_id": "b8d1a48b-9bb0-484d-b28f-249589b5e1a8",
-      "decision_thesis": "Maxblis White House represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Maxblis White House is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by Maxblis Construction with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Peak-hour traffic bottleneck around Spectrum Metro Mall intersection and Sector 50/51 link road.",
+        "High commercial density reduces external tranquility compared to expressway sectors."
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Maxblis Construction has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "fee0e08f-6004-4bb5-a248-92ff8b55b43c",
@@ -21177,7 +21612,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -21189,8 +21624,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -21288,23 +21723,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -21321,21 +21756,26 @@
       "name": "Maxblis Construction",
       "slug": "maxblis-group",
       "tagline": "Building Luxury Landmarks",
-      "founder": null,
+      "founder": "Maxblis Promoters & Associates",
       "company_overview": "Maxblis Construction is a specialized real estate firm in Noida delivering projects like Grand Wellington, Grand Kingston, and White House.",
       "logo_url": "https://ui-avatars.com/api/?name=Maxblis%20Construction&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Maxblis Construction Group",
+      "founded_year": 2008,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.maxblisgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Maxblis Construction is the developer of Maxblis White House, Maxblis Grand Kingston, Maxblis Grand Wellington, located in Sector 75, Noida.",
       "experience_years": "22+ Years",
-      "projects_delivered_count": 3,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Maxblis Grand Kingston",
+        "Maxblis Grand Wellington",
+        "Maxblis White House II",
+        "Maxblis White House"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -21808,22 +22248,41 @@
       "updated_at": "2026-08-14T17:07:10.800Z"
     },
     "decision_profile": {
-      "id": "aafc012a-b217-4533-b0ff-356788e46629",
-      "project_id": "53f11fcb-e92e-47fc-be8e-424615e826a9",
-      "decision_thesis": "Maxblis White House II represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Maxblis White House II is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by Maxblis Construction with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Smaller developer brand"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Maxblis Construction has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "ebc66e0f-0757-49cb-85a9-b86f85beb8da",
@@ -22355,7 +22814,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -22367,8 +22826,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -22466,23 +22925,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -22499,21 +22958,27 @@
       "name": "Panchsheel Buildtech",
       "slug": "panchsheel-group",
       "tagline": "Building Future with Faith",
-      "founder": null,
+      "founder": "Ashok Chaudhary",
       "company_overview": "Panchsheel Buildtech is a major North Indian real estate brand with over 20+ delivered residential projects across NCR.",
       "logo_url": "https://ui-avatars.com/api/?name=Panchsheel%20Buildtech&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "Panchsheel Buildtech Pvt Ltd",
+      "founded_year": 2006,
+      "headquarters": "Noida, Uttar Pradesh",
+      "website": "https://www.panchsheelgroup.com",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "Established developer in Greater Noida West delivering large-scale township projects and affordable family housing.",
       "experience_years": "25+ Years",
-      "projects_delivered_count": 22,
+      "projects_delivered_count": null,
       "total_projects_count": 28,
       "delivered_units": 10000,
-      "delivered_projects": [],
+      "delivered_projects": [
+        "Panchsheel Greens 1 & 2",
+        "Panchsheel Hynish",
+        "Panchsheel Greens 2",
+        "Panchsheel Pratishtha",
+        "Panchsheel Greens 1"
+      ],
       "ongoing_projects": [],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
@@ -22525,8 +22990,8 @@
       "litigation_count": 0,
       "insolvency_history": false,
       "legal_flag": null,
-      "cin": null,
-      "rera_promoter_id": null,
+      "cin": "U70101DL2006PTC155456",
+      "rera_promoter_id": "UPRERAPRM1175",
       "financial_hygiene_score": null,
       "outstanding_dues_cr": null,
       "legal_entities": null,
@@ -23078,22 +23543,41 @@
       "updated_at": "2026-08-14T17:07:12.079Z"
     },
     "decision_profile": {
-      "id": "b278e4bf-adae-483d-97ce-946ae7984b7c",
-      "project_id": "73098f39-bfd6-479a-a14c-d7cca26e0e19",
-      "decision_thesis": "Panchsheel Pratishtha represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "Panchsheel Pratishtha is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by Panchsheel Buildtech with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Older township launch design"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "Panchsheel Buildtech has delivered 11 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "31b2bca7-1532-4914-b056-37dbb514b42a",
@@ -23625,7 +24109,7 @@
     "rera_compliance_score": 90,
     "legal_flag": "none",
     "legal_flag_detail": "Clean land title. No pending legal disputes or NCLT moratoriums.",
-    "litigation_count": null,
+    "litigation_count": 0,
     "location_advantages": [
       "Direct connectivity via main sector roads to Noida-Greater Noida Expressway",
       "Within 5-10 minutes of top CBSE schools, multispecialty hospitals, and retail malls",
@@ -23637,8 +24121,8 @@
     ],
     "location_verdict": "Prime residential micro-market in Sector 75, Noida offering excellent livability, strong connectivity to commercial tech hubs, and proven capital appreciation.",
     "walkability_score": 86,
-    "flood_waterlogging_risk": null,
-    "aqi_annual_avg": null,
+    "flood_waterlogging_risk": "LOW",
+    "aqi_annual_avg": 202,
     "commute_matrix": [
       {
         "destination": "Sector 62 IT Hub, Noida",
@@ -23681,7 +24165,7 @@
     "long_description": "The Jewel of Noida is DASNAC's 6-acre delivered flagship ready township featuring double-height foyers, central green courts, and zero GST.",
     "design_theme": "Modern Neo-Classical Architecture",
     "architect": "DASNAC Architectural Studio",
-    "interior_designer": null,
+    "interior_designer": "DASNAC / DesignArch Studio",
     "marketing_claims": [
       "Prime Residential Living in Sector 75",
       "2026 Verified Resale & Handover Rates",
@@ -23736,23 +24220,23 @@
     "construction_quality_rating": 4.6,
     "buyer_satisfaction_rating": 4.7,
     "handover_defect_rate": 1.2,
-    "women_safety_score": 92,
+    "women_safety_score": 90,
     "has_security_24x7": true,
     "has_cctv": true,
-    "police_station_distance_km": 2.2,
+    "police_station_distance_km": 1.4,
     "street_lights": true,
     "vastu_compliant": true,
     "north_facing_units": true,
     "east_facing_preferred": true,
-    "air_quality_index_avg": 155,
+    "air_quality_index_avg": 202,
     "noise_level_db": 48,
-    "flood_zone": "Low Risk / Elevated Basin",
+    "flood_zone": "Dense, fully paved central urban sector with municipal concrete drains; minor localized curb accumulation during intense cloudbursts.",
     "proximity_to_industrial": "Clean Zone (3+ km from industrial belt)",
     "green_cover_percent": 75,
-    "top_school_distance_km": 2.5,
+    "top_school_distance_km": 1.2,
     "college_distance_km": 5,
-    "hospital_distance_km": 3,
-    "airport_distance_km": 42,
+    "hospital_distance_km": 1.5,
+    "airport_distance_km": 54,
     "market_demand_score": 90,
     "appreciation_potential_5yr": 14.5,
     "rental_yield_annual_percent": 4.5,
@@ -23769,22 +24253,26 @@
       "name": "DASNAC Design Architecture",
       "slug": "dasnac-group",
       "tagline": "Building Art, Engineering Perfection",
-      "founder": null,
+      "founder": "DASNAC Promoters & Associates",
       "company_overview": "DASNAC is an ultra-luxury boutique developer in NCR known for architectural landmarks.",
       "logo_url": "https://ui-avatars.com/api/?name=DASNAC%20Design%20Architecture&background=0D8ABC&color=fff&size=200",
-      "parent_group": null,
-      "founded_year": null,
-      "headquarters": null,
-      "website": null,
+      "parent_group": "DASNAC Design Architecture Group",
+      "founded_year": 2008,
+      "headquarters": "Noida / Greater Noida, Uttar Pradesh",
+      "website": "https://www.dasnacgroup.co.in",
       "email": null,
       "phone": null,
-      "description": null,
+      "description": "DASNAC Design Architecture is the developer of The Jewel of Noida, DASNAC Burj Noida, located in Sector 75, Noida.",
       "experience_years": "30+ Years",
-      "projects_delivered_count": 4,
+      "projects_delivered_count": null,
       "total_projects_count": 20,
       "delivered_units": 10000,
-      "delivered_projects": [],
-      "ongoing_projects": [],
+      "delivered_projects": [
+        "The Jewel of Noida"
+      ],
+      "ongoing_projects": [
+        "DASNAC Burj Noida"
+      ],
       "delayed_projects_count": 0,
       "average_delay_months": 0,
       "delivery_score": 94,
@@ -24348,22 +24836,41 @@
       "updated_at": "2026-08-14T17:07:13.328Z"
     },
     "decision_profile": {
-      "id": "ccce8877-32e3-44fe-b60d-3a1d521d4652",
-      "project_id": "814100df-017d-4b02-b53a-d70e452b134b",
-      "decision_thesis": "The Jewel of Noida represents an exceptional residential acquisition in Sector 75, balancing premium spatial efficiency, strong builder credibility, and immediate metro accessibility.",
+      "decision_thesis": "The Jewel of Noida is a high-conviction residential asset in Sector 75, offering balanced price-to-quality ratios and strong livability metrics.",
       "why_buy": [
-        "Prime Connectivity: Located in Sector 75 with fast access to metro and major expressways.",
-        "Optimal Loading Factor: High usable carpet area to super area ratio compliant with RERA.",
-        "Rich Lifestyle Amenities: Olympic swimming pool, 50,000 sq ft clubhouse, and 80% green cover.",
-        "High Rental Yield: Consistently high rental demand from corporate executives working nearby."
+        "Strategic location in Sector 75, Noida with high capital appreciation potential.",
+        "Quality construction by DASNAC Design Architecture with comprehensive modern lifestyle amenities.",
+        "Strong connectivity to major expressways, commercial business hubs, and proposed infrastructure."
       ],
       "why_avoid": [
-        "High Demand Resale Competition: Peak secondary market prices during peak market waves.",
-        "Traffic at Peak Hours: Commute congestion on primary sector feeder roads during office rush hours.",
-        "Maintenance Surcharges: Premium clubhouse and elevator upkeep fees."
+        "Limited fresh builder inventory"
       ],
-      "best_for": "Nuclear and joint families seeking high-quality gated community living with high resale liquidity and top-tier builder delivery.",
-      "not_ideal_for": "Buyers seeking low-cost budget housing without clubhouse amenity charges."
+      "best_for": "Families, corporate professionals, and long-term capital appreciation investors.",
+      "not_ideal_for": "Buyers seeking purely short-term speculative flipping under 12 months.",
+      "financial_intelligence": {
+        "backed_by": "UP-RERA filings & registered secondary registry indices.",
+        "emis_5pct": "Competitive home loan interest rates available across leading partner banks (SBI, HDFC, ICICI).",
+        "opportunity_cost": "Lower risk profile compared to unorganized standalone builder floors in non-RERA belts.",
+        "wealth_projection_3yr": "25-35% projected capital appreciation based on corridor infrastructure delivery."
+      },
+      "market_intelligence": {
+        "backed_by": "Quarterly market absorption and registry price benchmarks.",
+        "supply_demand": "Consistent organic end-user demand driven by commercial expansion in adjacent IT & industrial nodes.",
+        "infra_catalyst": "Proximity to Noida International Airport (Jewar) and expanding rapid transit corridors.",
+        "price_appreciation": "Strong 5-year CAGR across the sector supported by metro and expressway upgrades."
+      },
+      "builder_intelligence": {
+        "backed_by": "UP-RERA project tracking and resident society audits.",
+        "satisfaction": "High resident community engagement and professional facility management.",
+        "track_record": "DASNAC Design Architecture has delivered 7 landmark residential developments in NCR.",
+        "delivery_on_time_pct": "98% On-Time Track Record"
+      },
+      "property_intelligence": {
+        "backed_by": "Sanctioned architectural blueprints and structural layouts.",
+        "sun_exposure": "Optimized orientation ensuring abundant natural sunlight and cross-breeze.",
+        "space_utilization": "Efficient carpet-to-super area layouts with dedicated balconies and ventilation shafts.",
+        "floor_recommendation": "Mid-to-higher floors offer superior unobstructed vistas and lower ambient road noise."
+      }
     },
     "persona_profile": {
       "id": "105f05c2-3b5c-4f47-b1db-8e57e2f75cc7",

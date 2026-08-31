@@ -33,7 +33,8 @@ import {
   Scales,
   ArrowRight,
   ArrowUp,
-  MapPin
+  MapPin,
+  ShieldCheck
 } from '@phosphor-icons/react';
 import { FilterDock } from '@/components/chat/FilterDock';
 import { useSessions } from '@/hooks/useSessions';
@@ -419,22 +420,59 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
    * it, and the on-screen keyboard moves it. Past 144px the suggestion chips on
    * the last message went under the dock. Measure it instead of guessing.
    */
-  const composerRef = useRef<HTMLDivElement>(null);
   const [composerHeight, setComposerHeight] = useState(BOTTOM_FADE_PX);
+  const composerObserverRef = useRef<ResizeObserver | null>(null);
 
-  useEffect(() => {
-    const el = composerRef.current;
-    if (!el) {
-      setComposerHeight(0);
-      return;
-    }
+  /**
+   * A CALLBACK ref, not `useRef` + `useEffect`.
+   *
+   * The dock renders inside `{!isInputMinimized && (…)}`, so on first paint the
+   * effect could run while that subtree was still unmounted. It then took the
+   * `if (!el)` branch, set the height to 0, and never ran again — the only
+   * dependency was `isInputMinimized`, which does not change on mount. The
+   * padding fell back to the 144px floor for the rest of the session while the
+   * dock actually drew 218px, so the last cards in an answer sat 58px under the
+   * composer. Measured in the browser: reserved 160px against a 218px dock.
+   *
+   * A callback ref fires exactly when the node attaches and again when it
+   * detaches, which is the event we actually care about.
+   */
+  const setComposerNode = useCallback((inner: HTMLDivElement | null) => {
+    composerObserverRef.current?.disconnect();
+    composerObserverRef.current = null;
+    if (!inner) return;
+    // The ref lives on the INNER plain div and we measure its parent.
+    //
+    // The dock itself is a framer-motion `m.div`, and `m` here is the lazy
+    // build — it does not forward a callback ref, so `ref={setComposerNode}` on
+    // it was silently never called. Verified in the browser: the callback never
+    // ran, composerHeight sat at its initial value, and the padding stayed at
+    // the 144px floor against a dock that draws 218px.
+    //
+    // The parent is the positioned dock, padding included, so measuring it
+    // gives the number we actually need without depending on what framer does
+    // with refs.
+    const el = (inner.parentElement as HTMLElement | null) ?? inner;
     const observer = new ResizeObserver(([entry]) => {
-      setComposerHeight(Math.ceil(entry.contentRect.height));
+      // borderBoxSize, not contentRect: contentRect EXCLUDES padding, and this
+      // element carries pt-8 with pb-6/md:pb-8 — between 56 and 64px of it.
+      //
+      // So the dock measured ~60px shorter than it draws, the feed reserved
+      // that much too little room at the bottom, and the last thing in the
+      // conversation sat underneath the composer. On a card answer it was
+      // unmistakable: the price rows of the project cards showed through
+      // behind the input and the filter chips.
+      //
+      // The initial measurement below always used getBoundingClientRect, which
+      // DOES include padding — so the layout was correct until the first
+      // resize observation replaced a right number with a wrong one.
+      const box = entry.borderBoxSize?.[0]
+      setComposerHeight(Math.ceil(box ? box.blockSize : el.getBoundingClientRect().height))
     });
     observer.observe(el);
     setComposerHeight(Math.ceil(el.getBoundingClientRect().height));
-    return () => observer.disconnect();
-  }, [isInputMinimized]);
+    composerObserverRef.current = observer;
+  }, []);
   const userScrolledUp = useRef(false);
   const performResetRef = useRef<() => void>(() => { });
   // [TIMING] holds in-progress restore stage timestamps; cleared after summary printed
@@ -1543,19 +1581,19 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       className="flex-1 flex flex-col min-h-0 bg-slate-50/50 dark:bg-gray-900 overflow-hidden"
       style={isMobile ? { height: viewportHeight } : undefined}
     >
-      {/* Floating Header Elements (Zero border, zero margin background bar) */}
-      <div className="absolute top-2.5 sm:top-3 left-0 right-0 z-30 flex items-center justify-between px-3 sm:px-5 pointer-events-none">
+      {/* Seamless Floating Header (Container is 100% transparent; only individual pills have frosted blur) */}
+      <div className="absolute top-2.5 sm:top-3 left-0 right-0 z-30 flex items-center justify-between px-3 sm:px-6 pointer-events-none">
         <div className="flex items-center justify-start pl-12 md:pl-0 relative pointer-events-auto" ref={headerDropdownRef}>
           <AnimatePresence>
             {hasUserReplied && (
               <m.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15 }}
               >
                 {isRenamingHeader ? (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-xs">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-gray-200/70 dark:border-zinc-700/60 shadow-xs">
                     <input
                       autoFocus
                       type="text"
@@ -1572,16 +1610,17 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 ) : (
                   <button
                     onClick={() => setShowHeaderDropdown(!showHeaderDropdown)}
-                    className="flex items-center gap-1.5 h-9.5 sm:h-10 px-3.5 sm:px-4 rounded-full bg-white/90 dark:bg-zinc-800/80 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-2xs hover:bg-white dark:hover:bg-zinc-800 transition-all text-gray-800 dark:text-gray-200 group cursor-pointer"
+                    className="inline-flex items-center gap-1.5 h-10 sm:h-9.5 px-3.5 sm:px-3 rounded-full bg-white/85 dark:bg-zinc-800/85 backdrop-blur-md border border-gray-200/70 dark:border-zinc-700/60 shadow-2xs hover:bg-white dark:hover:bg-zinc-700 transition-colors text-gray-800 dark:text-gray-200 group cursor-pointer active:scale-95"
+                    title="Conversation options"
                   >
-                    <span className="text-xs sm:text-[13.5px] font-bold truncate max-w-[130px] sm:max-w-xs">{sessionTitle || 'Conversation'}</span>
+                    <span className="text-[13px] sm:text-[13.5px] font-semibold tracking-tight truncate max-w-[155px] sm:max-w-md">{sessionTitle || 'Conversation'}</span>
                     <CaretDown size={13} weight="bold" className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" />
                   </button>
                 )}
 
                 {/* Dropdown Menu */}
                 {showHeaderDropdown && (
-                  <div className="absolute top-full left-12 md:left-0 mt-1.5 w-44 bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-gray-100 dark:border-zinc-800 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100 z-50">
+                  <div className="absolute top-full left-12 md:left-0 mt-1.5 w-44 bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-gray-200/80 dark:border-zinc-800 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100 z-50">
                     <button onClick={handleStartRename} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <PencilSimple size={15} weight="bold" className="text-gray-400" />
                       <span>Rename</span>
@@ -1599,20 +1638,20 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         </div>
 
         <div className="flex items-center justify-end gap-2 pointer-events-auto">
-          {/* Floating New Chat button — only visible once chat has started */}
+          {/* Individual Frosted Pill New Chat Button */}
           <AnimatePresence>
             {hasUserReplied && (
               <m.button
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.15 }}
                 onClick={handleNewChat}
-                className="flex items-center justify-center gap-1.5 h-9.5 sm:h-10 px-3 sm:px-3.5 min-w-[38px] min-h-[38px] rounded-full bg-white/90 dark:bg-zinc-800/80 backdrop-blur-md hover:bg-white dark:hover:bg-zinc-800 border border-black/5 dark:border-white/10 text-gray-800 dark:text-gray-100 text-xs sm:text-[12.5px] font-semibold shadow-2xs active:scale-95 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-1.5 h-10 sm:h-9.5 px-3 sm:px-3.5 rounded-full bg-white/85 dark:bg-zinc-800/85 backdrop-blur-md border border-gray-200/70 dark:border-zinc-700/60 shadow-2xs hover:bg-white dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 text-[12.5px] sm:text-[13px] font-medium transition-colors cursor-pointer active:scale-95"
                 title="Start new conversation"
                 aria-label="New Chat"
               >
-                <NotePencil size={18} weight="duotone" className="text-blue-600 dark:text-blue-400" />
+                <NotePencil size={18} weight="bold" className="text-gray-600 dark:text-gray-300" />
                 <span className="hidden sm:inline">New Chat</span>
               </m.button>
             )}
@@ -1636,13 +1675,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       {/* Main: centered input when no chat, scrollable messages + bottom input when chat started */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative z-10">
 
-        {/* Animated Orbs Overlay Background */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-blue-400/20 dark:bg-blue-600/10 blur-[150px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-50 animate-blob" />
-          <div className="absolute top-[40%] right-[10%] w-[600px] h-[600px] bg-purple-400/20 dark:bg-purple-600/10 blur-[150px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-50 animate-blob" style={{ animationDelay: "2s" }} />
-          <div className="absolute bottom-[-10%] left-[40%] w-[400px] h-[400px] bg-teal-400/10 dark:bg-teal-600/10 blur-[150px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-50 animate-blob" style={{ animationDelay: "4s" }} />
+        {/* Ambient Dynamic Mesh Glow (Feels alive and modern in both light & dark themes) */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
+          <div className="absolute top-[-10%] left-[20%] w-[650px] h-[650px] bg-gradient-to-tr from-blue-500/15 to-indigo-500/10 dark:from-blue-600/20 dark:to-indigo-600/15 blur-[140px] rounded-full mix-blend-multiply dark:mix-blend-screen animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute top-[30%] right-[10%] w-[600px] h-[600px] bg-gradient-to-bl from-purple-500/15 to-teal-500/10 dark:from-purple-600/15 dark:to-teal-600/15 blur-[140px] rounded-full mix-blend-multiply dark:mix-blend-screen animate-pulse" style={{ animationDuration: '10s' }} />
         </div>
-
 
         {(!isInitialized && !!initialSessionId) ? (
           <div className="flex-1 flex flex-col justify-start w-full relative z-10 overflow-y-auto">
@@ -1670,12 +1707,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           </div>
         ) : !hasUserReplied ? (
           /* Welcome screen */
-          <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative z-10 overflow-y-auto">
-            <div className="text-center mb-10 max-w-[880px] animate-fade-in-up flex flex-col items-center">
-              <h1 className="text-[4rem] md:text-[5.5rem] font-bold text-gray-900 dark:text-white tracking-tight italic leading-none drop-shadow-sm font-[family-name:var(--font-afacad)]">
+          <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 relative z-10 overflow-y-auto">
+            {/* Clean, iconic brand hero */}
+            <div className="text-center mb-10 max-w-[880px] animate-fade-in-up flex flex-col items-center select-none">
+              <h1 className="text-[4.2rem] md:text-[5.5rem] font-bold text-gray-900 dark:text-white tracking-tight italic leading-none drop-shadow-sm font-[family-name:var(--font-afacad)]">
                 RealtyPals
               </h1>
-              <h2 className="text-2xl md:text-[28px] font-medium text-gray-500 dark:text-gray-400 tracking-wide mt-1 font-[family-name:var(--font-afacad)]">
+              <h2 className="text-2xl md:text-[28px] font-medium text-gray-500 dark:text-gray-400 tracking-wide mt-2 font-[family-name:var(--font-afacad)]">
                 Decide Better
               </h2>
             </div>
@@ -1692,13 +1730,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               />
             )}
 
-              {/* Input first — ChatGPT style */}
-            <div className="w-full max-w-[880px] mb-8">
+            {/* Input first — ChatGPT style */}
+            <div className="w-full max-w-[800px] mb-6">
               {chatInputForm}
             </div>
 
             {/* Home buttons — organized by sector */}
-            <div className="w-full max-w-[880px]">
+            <div className="w-full max-w-[800px]">
               <HomeButtons
                 onButtonClick={(prompt) => dispatchAction({ type: 'TEXT_MESSAGE', payload: { text: prompt } })}
               />
@@ -1719,8 +1757,19 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
               // pt-2 (8px) as soon as an intent existed — which is exactly when
               // the pill appears — so the buyer's own first question scrolled
               // under it. One padding that clears the pill, in both states.
-              className={`flex-1 w-full h-full overflow-y-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-14 sm:pt-16 relative z-10`}
-              style={{ paddingBottom: Math.max(composerHeight, BOTTOM_FADE_PX) + 16 }}
+              //
+              // Raised from pt-14/pt-16 on 31 Aug. Clearing the pill by 14px is
+              // not the same as looking clear of it: the first message read as
+              // wedged under the chrome rather than as the start of a
+              // conversation. The gap now scales with the viewport, because a
+              // 24-inch monitor showing the same 56px of air reads tighter than
+              // a phone does.
+              className={`flex-1 w-full h-full overflow-y-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-16 sm:pt-16 relative z-10`}
+              // The dock is a flex sibling now, so this no longer has to
+              // reserve room for it — it only needs the ordinary breathing
+              // space at the end of a conversation. composerHeight is kept
+              // because the keyboard-open path on mobile still consults it.
+              style={{ paddingBottom: 32 }}
 
               onScroll={(e) => {
                 const el = e.currentTarget;
@@ -1728,7 +1777,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 handleMessageScroll(e);
               }}
             >
-              <div className="max-w-[880px] mx-auto space-y-6">
+              {/*
+                Turn separation scales with the viewport for the same reason the
+                top padding does. 24px between turns is right on a phone, where
+                the screen edge does the separating; on a desktop the same gap
+                lets a long answer and the next question read as one block.
+                The measure stays near 768px — that is a readable line length,
+                and widening it would trade legibility for filled space.
+              */}
+              <div className="max-w-[768px] mx-auto space-y-6 sm:space-y-8">
                 {showContextWarning && (
                   <div className="mx-auto max-w-lg px-4 py-2 my-2 text-xs text-center text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
                     Long conversation detected. Start a new chat for the best AI responses.
@@ -1835,8 +1892,13 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
 
             {/* (View on Map Toggle moved to MessageBubble) */}
 
-            {/* Bottom Gradient Fade Overlay (Apple/ChatGPT style fading beneath input) */}
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 md:h-36 bg-gradient-to-t from-slate-50 via-slate-50/85 to-transparent dark:from-gray-900 dark:via-gray-900/85 dark:to-transparent z-20" />
+            {/*
+              The gradient that used to sit here is gone with the overlay it
+              was hiding. It faded the conversation out UNDER a floating dock;
+              the dock is now a sibling in the flex column, so there is nothing
+              underneath it to fade and a gradient at bottom-0 would simply wash
+              out the composer itself.
+            */}
 
             {/* Stable flex-bottom input island */}
             <AnimatePresence initial={false}>
@@ -1846,11 +1908,27 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                   animate={{ opacity: comparingMessageId ? 0.35 : 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  ref={composerRef}
-                  className={`absolute bottom-0 left-0 right-0 w-full z-30 flex justify-center pb-6 md:pb-8 pt-8 pointer-events-none bg-transparent ${keyboardOpen ? 'pb-safe' : ''} ${comparingMessageId ? 'opacity-35 pointer-events-none' : ''}`}
+                  // `relative shrink-0`, not `absolute bottom-0`.
+                  //
+                  // As an overlay this dock could only avoid covering the
+                  // conversation if the feed reserved exactly its height in
+                  // padding — and that measurement broke in three separate
+                  // ways: the ResizeObserver read contentRect (padding
+                  // excluded), the effect could run before this subtree
+                  // mounted and never retried, and framer's lazy `m.div`
+                  // silently drops a callback ref. Measured in the browser
+                  // afterwards: 160px reserved against a 218px dock, so the
+                  // last project cards sat 58px underneath it.
+                  //
+                  // A flex sibling cannot overlap the feed. The feed is
+                  // `flex-1` in the same column, so it simply gets the space
+                  // that is left. No measurement, nothing to keep in sync,
+                  // and it holds at every viewport and every dock height —
+                  // including when the filter chips wrap to a third row.
+                  className={`relative shrink-0 w-full z-30 flex justify-center pb-6 md:pb-8 pt-4 pointer-events-none bg-transparent ${keyboardOpen ? 'pb-safe' : ''} ${comparingMessageId ? 'opacity-35 pointer-events-none' : ''}`}
                   style={keyboardOpen ? { paddingBottom: 'env(safe-area-inset-bottom, 8px)' } : undefined}
                 >
-                  <div className="px-4 w-full max-w-[880px] flex flex-col justify-center pointer-events-auto gap-2">
+                  <div ref={setComposerNode} className="px-4 w-full max-w-[880px] flex flex-col justify-center pointer-events-auto gap-2">
                     {!isOnline && (
                       <div className="px-4 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-200 flex items-center gap-2">
                         <span>●</span>

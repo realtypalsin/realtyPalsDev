@@ -151,16 +151,6 @@ export function parseIntentJson(raw: string, previous: Intent): Intent {
   return tryParseIntentJson(raw, previous) ?? previous
 }
 
-async function extractWithCerebras(msg: string, prev: Intent, apiKey: string): Promise<Intent | null> {
-  const { completeWithCerebras } = await import('./cerebras')
-  const raw = await completeWithCerebras(
-    INTENT_EXTRACTION_PROMPT,
-    `Previous intent: ${slimIntentForPrompt(prev)}\n\nUser message: ${msg}`,
-    apiKey
-  )
-  return tryParseIntentJson(raw, prev)
-}
-
 async function extractWithMistral(msg: string, prev: Intent, apiKey: string): Promise<Intent | null> {
   const { completeWithMistral } = await import('./mistral')
   const raw = await completeWithMistral(
@@ -342,11 +332,6 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
       if (config.provider === 'groq') {
         console.log(`[INTENT] Trying Groq (${config.model}) via ${config.envKey}`)
         const result = await extractWithGroqKey(message, previousIntent, apiKey, config.timeout)
-        if (result) return { intent: result, degraded: false }
-      }
-      if (config.provider === 'cerebras') {
-        console.log(`[INTENT] Trying Cerebras via ${config.envKey}`)
-        const result = await extractWithCerebras(message, previousIntent, apiKey)
         if (result) return { intent: result, degraded: false }
       }
       if (config.provider === 'mistral') {

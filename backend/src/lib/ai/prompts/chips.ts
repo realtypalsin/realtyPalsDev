@@ -47,7 +47,6 @@ function parseChipQuestions(content: string): string[] {
   return []
 }
 
-import { completeWithCerebras } from '../cerebras'
 import { completeWithMistral } from '../mistral'
 import { beautifyResponse } from '../responseBeautifier'
 
@@ -63,9 +62,7 @@ async function tryProvider(item: FallbackKeyConfig, systemPrompt: string, histor
   try {
     let raw = ''
 
-    if (item.provider === 'cerebras') {
-      raw = await completeWithCerebras(systemPrompt, historyText, apiKey)
-    } else if (item.provider === 'groq') {
+    if (item.provider === 'groq') {
       const groq = new Groq({ apiKey, timeout: 6000 })
       const res = await groq.chat.completions.create({
         model: MODELS.GROQ_FAST,

@@ -102,6 +102,15 @@ export function buildSystemPromptWithCache(
   multiDimContext?: string,
   /** False for providers that cannot call tools — drops the tool catalogue entirely. */
   toolsEnabled: boolean = true,
+  /**
+   * False when retrieval was gated this turn rather than run and empty.
+   *
+   * Threaded because "searched and found nothing" and "never searched" arrive
+   * at buildProjectsBlock as the same empty array, and it used to answer both
+   * with SECTOR_NOT_COVERED — a claim about the world made from a fact about
+   * our own control flow.
+   */
+  discoveryRan: boolean = true,
 ): string {
   // Get cached static base — now actually parameterised (see getCachedBasePrompt).
   const staticBase = getCachedBasePrompt(
@@ -126,6 +135,7 @@ export function buildSystemPromptWithCache(
     notFoundNames,
     blockedBuilders,
     intentState,
+    discoveryRan,
   )
 
   // Combine: static (cached) + marker + dynamic (per-request)
@@ -147,12 +157,37 @@ function buildDynamicRules(
   notFoundNames: string[],
   blockedBuilders: any,
   intentState: string,
+  discoveryRan: boolean = true,
 ): string {
   let dynamic = ''
 
+  // "We searched and found nothing" and "we never searched" arrive here as the
+  // same empty array, and the prompt's coverage rules turn both into a claim
+  // that the sector is not in our database.
+  //
+  // Measured 31 Aug: "best society in sector 137" was gated before retrieval —
+  // `[DISCOVERY:GATE] ran: false, reason: needsClarification`, because bhk,
+  // budget and purpose were unset — and the buyer was told "Sector 137 is not
+  // currently in our verified database" while ten projects sat in it. That is
+  // a statement about the world derived from a fact about our own control flow.
+  if (!discoveryRan && (!projects || projects.length === 0)) {
+    dynamic +=
+      `\n\n## ⛔ NO SEARCH WAS RUN THIS TURN\n` +
+      `You have NOT been given search results, because no search was performed — not because nothing exists.\n` +
+      `You therefore know NOTHING about what we do or do not hold in any sector, project or builder.\n\n` +
+      `- You MUST NOT say a sector, project or builder is absent from our database, is "not covered", or is "not tracked".\n` +
+      `- You MUST NOT list or name projects as if they were results.\n` +
+      `- If the buyer asked for inventory, ask the ONE question you need to search properly, and say why you are asking.\n`
+  }
+
   // Ground truth matched projects from database (Pruned for high efficiency)
   if (projects && projects.length > 0) {
-    const optimizedProjects = projects.slice(0, 5).map((p: any) => ({
+    // 12, not 5. This is a SECOND cap on how many projects reach the model,
+    // downstream of the one in chat-router — so raising that one to 12 for a
+    // browse still left the prompt seeing five. "best society in sector 137"
+    // has eight matches; the model could describe five of them and the
+    // prose-card renderer could only draw cards for the ones it named.
+    const optimizedProjects = projects.slice(0, 12).map((p: any) => ({
       id: p.id,
       name: p.name,
       sector: p.sector,

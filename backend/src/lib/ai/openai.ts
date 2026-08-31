@@ -20,23 +20,34 @@ export interface OpenAIProvider {
   name: string; // 'azure' | 'openai'
 }
 
-// Detect and prefer Azure OpenAI or GitHub Models.
-// apiKeyOverride: used when the caller is rotating through multiple OpenAI
-// fallback keys (OPENAI_API_KEY1/2/3) — all use GitHub Models endpoint.
-function getOpenAIProvider(apiKeyOverride?: string): OpenAIProvider {
+// Detect the OpenAI-compatible host and key for this call.
+//
+// apiKeyOverride: the chain rotating through its own keys.
+// baseUrlOverride: the chain naming the host for THIS leg. Cohere and NVIDIA
+//   both speak this protocol, so they arrive here rather than through adapters
+//   of their own; the override is what keeps them from being sent to whatever
+//   OPENAI_BASE_URL happens to say. It wins over every ambient source, because
+//   a leg that names its host is more specific than a process-wide default.
+function getOpenAIProvider(apiKeyOverride?: string, baseUrlOverride?: string): OpenAIProvider {
   const key = apiKeyOverride || process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY || ''
-  // OPENAI_BASE_URL from config, not from env: config rewrites the dead
-  // models.inference.ai.azure.com address to the live GitHub Models host.
-  // Reading the raw env var here sent every OpenAI leg to a hostname that no
-  // longer resolves, so they failed with a bare connection error.
-  const baseURL = process.env.AZURE_OPENAI_ENDPOINT || CONFIGURED_OPENAI_BASE_URL || 'https://api.openai.com/v1'
+  // CONFIGURED_OPENAI_BASE_URL comes from config, not raw env: config drops the
+  // retired GitHub Models / dead Azure hosts rather than passing them through.
+  const baseURL =
+    baseUrlOverride
+    || process.env.AZURE_OPENAI_ENDPOINT
+    || CONFIGURED_OPENAI_BASE_URL
+    || 'https://api.openai.com/v1'
 
-  // Determine provider name based on key source
-  let name: 'azure' | 'openai' = 'openai'
-  if (process.env.AZURE_OPENAI_API_KEY && !apiKeyOverride) {
+  // Name is for logging only. A leg with its own host is named after that host,
+  // so "[openai] using provider: azure" can no longer appear over a Cohere call.
+  let name = 'openai'
+  if (baseUrlOverride) {
+    name = /cohere/.test(baseUrlOverride) ? 'cohere'
+      : /cloudflare/.test(baseUrlOverride) ? 'cloudflare'
+      : /nvidia/.test(baseUrlOverride) ? 'nvidia'
+        : 'openai-compatible'
+  } else if (process.env.AZURE_OPENAI_API_KEY && !apiKeyOverride) {
     name = 'azure'
-  } else if (apiKeyOverride || process.env.OPENAI_API_KEY || baseURL.includes('github')) {
-    name = 'openai'
   }
 
   return {
@@ -114,8 +125,9 @@ export async function streamWithOpenAI(
   userId?: string | null,
   sessionId?: string | null,
   apiKeyOverride?: string,
+  baseUrlOverride?: string,
 ): Promise<string> {
-  const provider = getOpenAIProvider(apiKeyOverride);
+  const provider = getOpenAIProvider(apiKeyOverride, baseUrlOverride);
 
   if (!provider.apiKey) {
     throw new Error('No OpenAI API key configured (AZURE_OPENAI_API_KEY, OPENAI_API_KEY, or github_pat)');
@@ -173,8 +185,14 @@ export async function streamWithOpenAI(
 
     console.log('[OPENAI] START create() cycle=' + cycle, Date.now(), { allowTools, msgCount: currentMsgs.length });
 
-    // Use MAIN model when tools needed (larger context window for gpt-4o vs gpt-4o-mini 8KB limit)
-    const model = allowTools ? MODELS.MAIN : MODELS.FALLBACK;
+    // config.model wins, and it has to: this adapter now serves Cohere and
+    // NVIDIA legs as well as OpenAI ones, and neither of them has a model
+    // called gpt-4o. Ignoring the caller's model sent every one of those legs
+    // to a 404 — the same shape of bug the Gemini path already carries a note
+    // about. Only when no model is named does the old rule apply: MAIN when
+    // tools are on, because gpt-4o-mini's context is too small to hold the
+    // catalogue alongside the facts block.
+    const model = config.model ?? (allowTools ? MODELS.MAIN : MODELS.FALLBACK);
 
     // Absolute wall-clock deadline for the entire turn (120s max)
     const turnDeadline = Date.now() + 120_000;

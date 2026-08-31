@@ -161,7 +161,16 @@ function readLocal(key: string, countMiss = true): CachedEntry | null {
 // reported query kept returning the reported bug. Any future routing change
 // needs this bumped too; the alternative is a routing version inside the key,
 // which is not worth building for a flush that costs a cold cache.
-const REDIS_PREFIX = 'ac:v4:'
+// v5: four routing changes in one session, and the first smoke run proved the
+// point this comment already made. "Which is the best project in Noida" came
+// back in 1.6 seconds with the pre-change answer — micro-market prose naming no
+// project, and zero chips, because the cached path does not rebuild them — so the
+// citywide band shelf could not be observed at all. The changes: the discovery
+// gate now opens for a citywide superlative, the open lane no longer takes
+// rental-yield or appreciation questions, a category-of-party question routes to
+// the open path, and `appreciation_potential_5yr` no longer reaches a prompt.
+// Every one of those changes what an answer to the same words means.
+const REDIS_PREFIX = 'ac:v5:'
 
 /** A read that takes longer than this is not worth waiting for — the LLM call it */
 const REDIS_READ_TIMEOUT_MS = Number(process.env.ANSWER_CACHE_READ_TIMEOUT_MS ?? 250)

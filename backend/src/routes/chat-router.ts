@@ -39,12 +39,14 @@ import { calcEmi, calcStampDuty, calcGst, formatInr } from '../lib/calculators'
 import { classifyQuery } from '../lib/discovery/queryClassifier'
 import { detectOpenQuery } from '../lib/discovery/openQuery'
 import { runGroundedAnswer, buildNoGroundingReply } from '../lib/ai/groundedAnswer'
-import { findProjectsMentioned, buildProseChips, linkProjectNames, findSectorsMentioned, buildOpenAnswerChips, resolveProjectNames } from '../lib/discovery/proseEntities'
+import { findProjectsMentioned, buildProseChips, linkProjectNames, findSectorsMentioned, findSectorsAsked, buildOpenAnswerChips, resolveProjectNames } from '../lib/discovery/proseEntities'
 import { computeConversationState, getFloorChips, CONVERTING_TURN_THRESHOLD } from '../lib/discovery/conversationEngine'
 import { getMemory, upsertMemory } from '../lib/ai/memory'
 import { buildContextMessages } from '../lib/ai/context'
 import { maybeCompress } from '../lib/ai/compression'
 import { maybeCompressTopical, TopicSummaries } from '../lib/chat/summaryCompression'
+import { isSpecificUnknownProject, logCoverageGap, fetchUnknownProjectContext, unknownProjectDirective } from '../lib/chat/coverageGap'
+import { statedMonthlyIncome, isAffordabilityQuestion, computeAffordability, renderAffordabilityTable, affordabilityDirective } from '../lib/ai/affordability'
 import { scorePropertyEngagement } from '../lib/chat/propertyEngagement'
 import { detectPropertyReactions, PropertyReaction } from '../lib/chat/reactionDetector'
 import { buildSystemPromptWithCache } from '../lib/ai/systemPromptCache'
@@ -54,7 +56,7 @@ import { streamWithGemini, GeminiStreamStallError } from '../lib/ai/gemini'
 import { executeWithFallbackChain } from '../lib/ai/fallbackChain'
 import { classifyIntent, routeToModel } from '../lib/ai/intentClassifier'
 import { trimPropertiesForPrompt } from '../lib/ai/propertyTrim'
-import { DEFAULT_CITY, PILOT_SCOPE_LABEL } from '../lib/config/cities'
+import { DEFAULT_CITY, PILOT_SCOPE_LABEL, SUPPORTED_CITIES } from '../lib/config/cities'
 import { verifyUser } from '../lib/auth'
 import { clientIp } from '../lib/request'
 import { getChipInventory } from '../lib/discovery/chipInventory'
@@ -81,14 +83,17 @@ import { trackEvent, ANALYTICS_EVENTS, trackUserProperties } from '../lib/monito
 import { captureException, addBreadcrumb, setSentryUser } from '../sentry.server.config'
 import { inputGuardrail } from '../lib/ai/guardrails'
 import { profileFor, classifyShape } from '../lib/ai/inferenceProfile'
-import { renderMicroMarketTable, renderProjectTable, renderAlternativesTable, renderDerivedSectorTable, wantsMarketTable } from '../lib/ai/marketTable'
+import { asksRentalYield, asksAppreciation, computeSectorYields, renderRentalYieldTable, computePriceChange, renderPriceChangeTable, computeSectorAppreciation, renderAppreciationTable } from '../lib/ai/yieldTable'
+import { renderMicroMarketTable, renderProjectTable, renderAlternativesTable, renderDerivedSectorTable, wantsMarketTable, wantsCityBandShelf } from '../lib/ai/marketTable'
+import { renderCityShelfForCity } from '../lib/ai/cityShelf'
 import { deriveSectorsFromProjects } from '../lib/discovery/derivedSectors'
 import { buildAdaptiveChips } from '../lib/discovery/adaptiveChips'
+import { buildTopicChips } from '../lib/discovery/topicChips'
 import { sanitizeOutput } from '../lib/ai/sanitizeOutput'
 import { stripInternalFields } from '../lib/projectRepository'
 import { builderCoverage, sectorCoverage, sectorPinCode } from '../lib/chat/coverageAnswer'
 import { rentalAnswer, isRentalQuestion } from '../lib/chat/rentalAnswer'
-import { TABLE_ALREADY_SHOWN } from '../lib/ai/prompts/base'
+import { TABLE_ALREADY_SHOWN, cityShelfShown, YIELD_TABLE_SHOWN } from '../lib/ai/prompts/base'
 import { STATIC_PREFIX_MARKER } from '../lib/ai/systemPromptCache'
 import type { InferenceConfig } from '../lib/ai/openai'
 import { validateAgainstFacts } from '../lib/ai/guardrails-v2'
@@ -97,6 +102,7 @@ import {
   sameSet,
   logRouting,
   generateHighTrafficFallback,
+  isServiceFailureReply,
   canReuseCache,
   trimMessagesToBudget,
   sseWrite,
@@ -319,9 +325,9 @@ router.post('/', async (req: Request, res: Response) => {
     }
     if (event === 'token' && typeof data.token === 'string') {
       const clean = sanitizeOutput(data.token)
-      if (clean.strippedEmoji || clean.strippedPlatforms) {
+      if (clean.strippedEmoji || clean.strippedPlatforms || clean.normalizedCitations) {
         console.warn(
-          `[CHAT:SANITISED] emoji=${clean.strippedEmoji} platforms=${clean.strippedPlatforms}`,
+          `[CHAT:SANITISED] emoji=${clean.strippedEmoji} platforms=${clean.strippedPlatforms} citations=${clean.normalizedCitations}`,
         )
       }
       if (!clean.text) return
@@ -369,11 +375,38 @@ router.post('/', async (req: Request, res: Response) => {
       if (cached) {
         console.log('[CHAT:CACHE_HIT] Serving verified advisory response from cache:', message.slice(0, 50))
         send('token', { token: cached.token })
-        if (cached.chips && cached.chips.length > 0) {
+        /**
+         * A cache hit owes the buyer chips too.
+         *
+         * This branch emitted `ui_state` only when the cached entry happened to
+         * carry chips, and most entries do not — the main path writes
+         * `{ token, intentState, responseMode }` and no chip list. So a cached
+         * turn showed a full answer with an empty chip row: measured live, "which
+         * is the best project in Noida" served from cache with zero chips, which
+         * is the 1/5 case the floor exists to remove. The cheapest answer in the
+         * product was also its worst-presented one.
+         *
+         * Rebuilt from the question rather than stored, so the chips follow the
+         * current topic table rather than whatever was true when the answer was
+         * written — and so a chip never outlives the path that could answer it.
+         */
+        const cachedChips =
+          cached.chips && cached.chips.length > 0
+            ? cached.chips
+            : buildTopicChips(
+                message,
+                {
+                  sector: (prevIntent as { sector?: string | null })?.sector ?? null,
+                  hasBudget: Boolean((prevIntent as { budgetMax?: number })?.budgetMax),
+                  city: DEFAULT_CITY,
+                },
+                3,
+              )
+        if (cachedChips.length > 0) {
           send('ui_state', {
             stage: 'RESEARCH',
             thinking: 'Verified RealtyPals Intelligence (Cached):',
-            chips: cached.chips,
+            chips: cachedChips,
             missingFields: [],
             confidence: 'HIGH'
           })
@@ -799,7 +832,24 @@ router.post('/', async (req: Request, res: Response) => {
       // "I want a property near Sector 62" was being answered by the sector
       // lane with "we hold one project in Sector 62" — true, and not what was
       // asked. The nearby handler answers it from coordinates instead.
-      if (!coverage && intent.sector && !isCityLevel(intent.sector) && !isProximityQuestion(message)) {
+      // A question about a PROJECT is never a question about its sector.
+      //
+      // postProcessIntent resolves a named project to its sector and writes it
+      // onto the intent, so "Tell me about Godrej Woods" arrives here carrying
+      // `sector: 'Sector 43'`. The sector lane then answered it with "we hold
+      // one project in Sector 43" — true, about the wrong subject, and about a
+      // project we do hold and could have described in full.
+      const askedAboutAProject =
+        (intent.projectNames?.length ?? 0) > 0 ||
+        Boolean((intent as { focus_project_id?: string | null })?.focus_project_id)
+
+      if (
+        !coverage &&
+        intent.sector &&
+        !isCityLevel(intent.sector) &&
+        !isProximityQuestion(message) &&
+        !askedAboutAProject
+      ) {
         coverage = await sectorCoverage(intent.sector)
       }
 
@@ -831,7 +881,74 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // ─── OPEN QUERY LANE (grounded general answers) ────────────────────────────
-    if (queryClassification.queryKind === 'OPEN') {
+    //
+    // The lane answers from sector intelligence and web grounding and never
+    // touches project retrieval — which is right for "what should I check
+    // before buying" and catastrophic for "best society in sector 137". That
+    // question was classified OPEN, so the model answered from sector data
+    // alone and said "we do not track verified projects in Sector 137" while
+    // ten of them sat in the database.
+    //
+    // The guard is at the lane boundary rather than in the classifier because
+    // this is the property that actually matters: whatever the classifier
+    // decided, a question asking for INVENTORY in a place we hold inventory
+    // must go through retrieval. Nothing else can answer it truthfully.
+    const asksForInventory =
+      /\b(societ(y|ies)|projects?|builders?|flats?|apartments?|properties|options?)\b/i.test(message) &&
+      /\b(best|top|which|show|list|find|recommend|suggest|good|any)\b/i.test(message)
+
+    /**
+     * A question about legal safety is NEVER answered from the web.
+     *
+     * The worst answer this product has produced. Asked "which projects in
+     * Noida have zero litigation and clear title?", the grounded lane searched
+     * the web and replied that **Supertech Supernova** has zero litigation and
+     * clear titles. Our own rows say `litigation_count: 14`,
+     * `land_title_clear: false`, and its builder carries
+     * `insolvency_history: true, legal_flag: NCLT_INSOLVENCY`.
+     *
+     * Meanwhile 239 projects in the database genuinely satisfy the filter.
+     *
+     * So the product's central promise — that it tells you the bad news —
+     * was answered with the exact opposite of the truth it already held, about
+     * the single worst project it could have named, sourced from a search
+     * engine. Legal questions are answerable from our own columns or not at
+     * all; the web has no standing here.
+     */
+    const asksLegalSafety =
+      /\b(litigation|legal|court|nclt|dispute|title|encumbrance|clean|clear title|safe to buy|due diligence|rera)\b/i.test(message)
+
+    // An affordability question with a stated income is not an open question
+    // either — it is arithmetic we do in code, plus a shortlist.
+    //
+    // "I earn 2 lakh a month, what can I afford in Noida?" was classified OPEN
+    // and answered from web grounding: it talked about RENT, which is out of
+    // scope entirely, and cited a Reddit thread. The affordability renderer
+    // further down never ran, because this lane returns before reaching it.
+    const asksAffordability = Boolean(statedMonthlyIncome(message)) && isAffordabilityQuestion(message)
+
+    /**
+     * Rental yield and price history are answerable from our own rows, so the
+     * open lane must not take them.
+     *
+     * Measured live: "what is the rental yield in Noida" was classified OPEN and
+     * answered from web search — "3% to 5%", "up to 5.5%", each tagged (market
+     * data) — while `yieldTable.ts` sat downstream holding a computed table off
+     * 65 sector rents and 371 priced 3BHK units. The lane returns before the
+     * render block, so the better answer was never reachable.
+     *
+     * Same failure as the affordability and legal-safety bail-outs above, and
+     * the same shape as every lane problem in this file: a specialised path
+     * claims a turn a general one would have answered from data.
+     */
+    const asksOurOwnNumbers = asksRentalYield(message) || asksAppreciation(message)
+    if (queryClassification.queryKind === 'OPEN' && asksForInventory && intent.sector) {
+      console.log(
+        `[CHAT:OPEN_LANE_DECLINED] "${message.slice(0, 60)}" asks for inventory in ${intent.sector} — routing to retrieval instead`,
+      )
+    }
+
+    if (queryClassification.queryKind === 'OPEN' && !(asksForInventory && intent.sector) && !asksAffordability && !asksLegalSafety && !asksOurOwnNumbers) {
       const openDetection = detectOpenQuery(message, hasVerifiedProjectNames)
         ?? { topic: 'GENERAL' as const, reason: 'Fail-open general question' }
 
@@ -862,8 +979,16 @@ router.post('/', async (req: Request, res: Response) => {
       try {
         const mentionedProjects = await findProjectsMentioned(rawOpenText, DEFAULT_CITY)
         const mentionedSectors = findSectorsMentioned(rawOpenText)
-        openText = linkProjectNames(rawOpenText, mentionedProjects)
-        openChips = buildOpenAnswerChips(mentionedProjects, mentionedSectors)
+        // `send` sanitises what the buyer reads, but this lane writes its own
+        // transcript row further down. Sanitise here so the stored copy, the
+        // cache and the stream all say the same thing — the open lane is where
+        // the citation leaks came from, so it is the one that must agree.
+        openText = sanitizeOutput(linkProjectNames(rawOpenText, mentionedProjects)).text
+        openChips = buildOpenAnswerChips(mentionedProjects, mentionedSectors, {
+          userMessage: message,
+          city: DEFAULT_CITY,
+          hasBudget: Boolean(intent.budgetMax || intent.budgetMin),
+        })
         openCards = await loadMentionedProjectCards(mentionedProjects)
       } catch (e) {
         console.warn('[CHAT:OPEN_LANE:CHIP_ERROR]', e)
@@ -1168,7 +1293,24 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     // Diadem" reached no handler at all and was answered as ordinary prose,
     // with the stored milestone schedule never read.
     const isPaymentPlanRequest = matchesPaymentPlanRequest(topicText)
-    const isCostSheetRequest = /\b(cost sheets?|price breakdowns?|all inclusive|other charges|possession charges|car parking charge)\b/i.test(topicText)
+    // "What are the hidden costs beyond the sticker price" scored 2/5 in the
+    // 31 Aug audit, and the cause was this regex rather than the answer. None of
+    // the phrasings a buyer actually uses for the question — hidden, extra,
+    // additional, what else do I pay, on top of the price — matched, so the turn
+    // reached no handler and the generic path rendered the CITY PER-SQFT RATE
+    // TABLE above prose about registry charges. The buyer asked what else they
+    // pay and got a table of what things cost per square foot.
+    //
+    // `costSheetHandler` already answers this correctly with no project in focus:
+    // statutory rates from UP_STATUTORY in one table, builder-set charges in a
+    // second carrying MARKET_QUALIFIER, and the all-inclusive load band. The fix
+    // is reaching it, not writing a second one.
+    const isCostSheetRequest =
+      /\b(cost sheets?|price breakdowns?|all inclusive|other charges|possession charges|car parking charge)\b/i.test(topicText) ||
+      /\b(hidden|extra|additional|unexpected)\s+(costs?|charges?|fees?|expenses?)\b/i.test(topicText) ||
+      /\b(?:costs?|charges?|fees?|expenses?)\s+(?:beyond|besides|apart\s+from|other\s+than|over\s+and\s+above|on\s+top\s+of)\b/i.test(topicText) ||
+      /\b(?:beyond|on\s+top\s+of|over\s+and\s+above)\s+(?:the\s+)?(?:sticker|base|quoted|listed|ticket)?\s*price\b/i.test(topicText) ||
+      /\bwhat\s+else\s+(?:do|will|would)\s+i\s+(?:pay|be\s+paying|spend)\b/i.test(topicText)
     const isStatutoryTaxQuery = /(stamp duty|registration (charges?|fees?)|gst on (flat|property|real estate)|tds on (property|sale)|circle rate|index 2|agreement value charges)/i.test(topicText)
     const isReraCheckQuery = matchesReraProcessQuestion(topicText) && (intent.projectNames?.length ?? 0) === 0
     // `!isReraCheckQuery` is the fix, not a tidy-up. "rera complian" belongs to
@@ -1752,6 +1894,9 @@ USING THE FACTS:
               rendered: null,
               missingFields: [],
               focusedProject: { name: projName },
+              userMessage: message,
+              city: DEFAULT_CITY,
+              hasBudget: Boolean(intent.budgetMax || intent.budgetMin),
             })
           }
 
@@ -2239,11 +2384,57 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
 
     let discoveryExpansion: Awaited<ReturnType<typeof discoverProjects>>['expansion'] = undefined
     let notFoundNames: string[] | undefined = undefined
+    /** Web context plus its handling rules, when the buyer named a project we do not hold. */
+    let unknownProjectTail = ''
     let disambiguationText: string | null = null
+
+    /**
+     * The buyer asked to SEE what is in a place. That is answerable now.
+     *
+     * "best society in sector 137" is sector-only, so the rule below classed it
+     * as a single signal and asked for BHK and budget before searching. But the
+     * question is not under-specified — it is a request for the shelf, and the
+     * shelf is what narrows the conversation. Asking three questions before
+     * showing anything is how a chat starts feeling like a form.
+     *
+     * Worse, the empty result then reached the prompt as though we had searched
+     * and found nothing, and the buyer was told Sector 137 was not in our
+     * database while ten projects sat in it. That half is fixed in
+     * systemPromptCache; this is the half that makes the answer useful.
+     */
+    const asksToSeeInventoryHere =
+      Boolean(intent.sector) &&
+      /\b(societ(y|ies)|projects?|flats?|apartments?|properties|options?|builders?)\b/i.test(message ?? '') &&
+      /\b(best|top|which|show|list|find|recommend|suggest|good|any|what)\b/i.test(message ?? '')
+
+    /**
+     * The same question with no place attached: "which is the best project in
+     * Noida", "what's the cheapest society I can buy".
+     *
+     * `asksToSeeInventoryHere` requires `intent.sector`, so a citywide
+     * superlative fell to the state machine and the gate closed on
+     * `intentState=COLD` — measured live: retrieval never ran, the reply was
+     * micro-market prose naming no project, and the chips were two filters. The
+     * band shelf could not render because there was nothing to render it from.
+     *
+     * The gate's own reasoning below covers this: GATHERING means we do not know
+     * enough to RECOMMEND, and it does not follow that we cannot LIST. A buyer
+     * who has told us nothing is exactly who the shelf is for — it shows the
+     * range and asks which band, instead of asking three questions before
+     * showing anything.
+     *
+     * Uses the shelf's own predicate rather than a second one, so the gate and
+     * the renderer can never disagree about which turns this is.
+     */
+    const asksToSeeInventoryCitywide = wantsCityBandShelf(message ?? '', {
+      hasSector: Boolean(intent.sector),
+      hasBudget: Boolean(intent.budgetMax || intent.budgetMin),
+      hasProjectFocus: (intent.projectNames?.length ?? 0) > 0,
+    })
 
     // Single-signal with no geographic or lifestyle context → ask rather than guess.
     // Covers: BHK-only, budget-only, sector-only. Takes priority over isAdvisoryQuery.
-    const needsClarification = intentState === 'GATHERING' && (
+    const needsClarification = !asksToSeeInventoryHere && !asksToSeeInventoryCitywide && intentState === 'GATHERING' && (
       ((intent.bhk?.length ?? 0) > 0 && !intent.sector && !intent.budgetMax && !(intent.lifestyleKeywords?.length ?? 0)) ||
       (!!intent.budgetMax && !intent.sector && !(intent.bhk?.length ?? 0) && !(intent.lifestyleKeywords?.length ?? 0)) ||
       (!!intent.sector && !isCityLevel(intent.sector) && !(intent.bhk?.length ?? 0) && !intent.budgetMax && !(intent.lifestyleKeywords?.length ?? 0))
@@ -2276,7 +2467,17 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       console.log('[CHAT] END getAllSectorsOverview', Date.now())
     }
 
+    // `asksToSeeInventoryHere` opens BOTH gates, not just the clarification one.
+    // Closing the first and leaving the second changed the log line from
+    // `reason: needsClarification` to `reason: intentState=GATHERING` and
+    // nothing else — the search still did not run, and the buyer was still told
+    // Sector 137 was not in our database.
+    //
+    // The state machine is right that GATHERING means we do not know enough to
+    // recommend. It does not follow that we cannot LIST. Showing the shelf is
+    // what moves a buyer out of GATHERING in the first place.
     const discoverySkipReason =
+      asksToSeeInventoryHere || asksToSeeInventoryCitywide ? null :
       needsClarification   ? 'needsClarification' :
       skipForCachedQuery   ? `cachedQuery=${cacheDecision?.reason ?? 'cached'}` :
       (intentState !== 'READY_TO_SEARCH' && intentState !== 'SHORTLISTED') ? `intentState=${intentState}` :
@@ -2325,7 +2526,19 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     })
       }
       logRouting('DISCOVERY_SKIPPED', { intentState })
-    } else if (intentState === 'READY_TO_SEARCH' || intentState === 'SHORTLISTED') {
+      // `asksToSeeInventoryHere` is the third clause because this is the gate
+      // that actually decides whether discovery runs — the two above it only
+      // set a log line. A buyer asking "best society in sector 137" is in
+      // GATHERING by definition (no BHK, no budget) and is asking to be shown
+      // the shelf; the shelf is what moves them out of GATHERING.
+      // ...and `asksToSeeInventoryCitywide` is the fourth, for the same reason.
+      // I made the exact mistake the comment above warns about: opening the two
+      // gates further up flipped `[DISCOVERY:GATE]` to `ran: true` and changed
+      // nothing else, because THIS is the branch that calls `discoverProjects`.
+      // Retrieval still returned zero, so the band shelf had nothing to render
+      // and the tool-blind legs were all skipped by `[FALLBACK:NO_LOOKUP]` — the
+      // turn ended in an outage notice with a green log line above it.
+    } else if (intentState === 'READY_TO_SEARCH' || intentState === 'SHORTLISTED' || asksToSeeInventoryHere || asksToSeeInventoryCitywide) {
       // Builder-only queries always run discovery — no pre-disambiguation.
       const searchOffset = offset ?? 0
       console.log('[CHAT] START discoverProjects', Date.now(), { intent, offset: searchOffset })
@@ -2348,6 +2561,22 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       nearbyProjects = discoveryResult.nearbyResults
       discoveryExpansion = discoveryResult.expansion
       notFoundNames = discoveryResult.notFoundNames
+
+      // A named project we do not hold: say something useful about it from the
+      // web, and tell an admin it is missing. Deliberately NOT fired for a
+      // general browse — "best society in sector 137" names no project, and
+      // treating it as a gap would log noise and search the web for a question
+      // the database answers well. No card is ever rendered: a card promises
+      // verified rows and there are none.
+      if (projects.length === 0 && (notFoundNames?.length ?? 0) > 0) {
+        const unknown = isSpecificUnknownProject(message, notFoundNames ?? [])
+        if (unknown) {
+          console.log(`[CHAT:COVERAGE_GAP] "${unknown}" — not in the database, falling back to web`)
+          void logCoverageGap(unknown, message, sessionId)
+          const ctx = await fetchUnknownProjectContext(unknown, (intent as { city?: string })?.city || DEFAULT_CITY)
+          unknownProjectTail = `${ctx ? `\n\n${ctx}` : ''}\n${unknownProjectDirective(unknown)}`
+        }
+      }
 
       // ─── MULTI-DIMENSIONAL RANKING ENHANCEMENT ────────────────────────────────
       const wantsMultiDim =
@@ -2557,8 +2786,32 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       await setCached('blockedBuilders', blockedBuilders, 3600)
     }
     // G6: trim properties to only essential fields (30-40% token savings)
-    const trimmedProjects = trimPropertiesForPrompt(projects.slice(0, 3))
-    const trimmedNearby = nearbyProjects.length > 0 ? trimPropertiesForPrompt(nearbyProjects.slice(0, 3)) : undefined
+    //
+    // The limit used to be a flat 3, and that one number was behind most of the
+    // wrong answers in the 30 Aug manual run:
+    //
+    //   "3BHK in Sector 150 under 2Cr"  retrieval returned 9, prompt saw 3
+    //   "best society in sector 137"    retrieval returned 8, prompt saw 3,
+    //                                   the model named 2, and the prose-card
+    //                                   renderer can only draw cards for names
+    //                                   the model actually wrote — so the buyer
+    //                                   got 2 cards out of 8 real matches, both
+    //                                   from the same builder.
+    //
+    // Cards were never the constraint: the `properties` event ships every
+    // retrieved project and the UI pages them six at a time. The prompt was.
+    //
+    // A DISCOVERY turn is a browse — the buyer is asking to see the shelf, so
+    // give the model the shelf. Everything else is a judgement call about a
+    // handful of options, where more rows buy nothing and cost tokens.
+    // Trimmed rows are small (~250 chars), so 12 is roughly 750 tokens on the
+    // turns that need it and unchanged on the turns that do not.
+    const promptProjectLimit = queryClassification.queryKind === 'DISCOVERY' ? 12 : 5
+    const trimmedProjects = trimPropertiesForPrompt(projects.slice(0, promptProjectLimit))
+    const trimmedNearby = nearbyProjects.length > 0 ? trimPropertiesForPrompt(nearbyProjects.slice(0, 5)) : undefined
+    if (projects.length > promptProjectLimit) {
+      console.log(`[CHAT:PROMPT_TRIM] ${projects.length} retrieved, ${promptProjectLimit} sent to the model (${queryClassification.queryKind})`)
+    }
 
     // Phase 2: Use cached system prompt (static part cached, dynamic part injected)
     const multiDimContext = generateMultiDimensionalContext(projects)
@@ -2585,7 +2838,10 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       try {
         const { buildCityMicroMarketsContext } = await import('../lib/discovery/sectorDataGateway')
         const city = (intent as any)?.city || DEFAULT_CITY
-        const microMarketsBlock = await buildCityMicroMarketsContext(city)
+        // Same scope as the rendered table below. If these two ever disagree,
+        // the model transcribes the block and the buyer sees two different
+        // answers to one question stacked on top of each other.
+        const microMarketsBlock = await buildCityMicroMarketsContext(city, findSectorsAsked(message))
         if (microMarketsBlock) {
           microMarketsTail = `\n\n${microMarketsBlock}`
         }
@@ -2594,10 +2850,24 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       }
     }
 
+    // ─── AFFORDABILITY, CALCULATED HERE RATHER THAN BY THE MODEL ───────────────
+    // Same rule as the market tables, for the same reason: the 31 Aug audit
+    // caught the model quoting a comfortable EMI of "₹1,000,000 per month" on a
+    // ₹2 lakh income — a slipped digit between lakh notation and numerals, on a
+    // figure a buyer would act on. It also spent 45 seconds deriving it.
+    let affordabilityTail = ''
+    const statedIncome = statedMonthlyIncome(message ?? '')
+    if (statedIncome && isAffordabilityQuestion(message ?? '')) {
+      const a = computeAffordability(statedIncome)
+      send('token', { token: `${renderAffordabilityTable(a)}\n\n` })
+      affordabilityTail = affordabilityDirective(a)
+      console.log(`[CHAT:AFFORDABILITY] income=${statedIncome} -> ₹${a.priceConservativeCr.toFixed(2)}–${a.priceStretchedCr.toFixed(2)} Cr`)
+    }
+
     // ─── MARKET TABLE, RENDERED HERE RATHER THAN BY THE MODEL ──────────────────
     let renderedTable = ''
     /** Which table went on screen, so the chips can follow it. */
-    let renderedTableKind: 'projects' | 'micro-market' | null = null
+    let renderedTableKind: 'projects' | 'micro-market' | 'city-shelf' | 'yield' | null = null
     // A shortlist of real projects beats a city-wide table whenever discovery
     const cardsAreRendering = renderTarget === 'cards' || renderTarget === 'both'
 
@@ -2616,7 +2886,61 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       intent.queryKind === 'RANKING' ||
       (intent as { is_comparison_query?: boolean }).is_comparison_query === true
 
-    if (
+    /**
+     * Citywide and superlative — "which is the best project in Noida".
+     *
+     * Checked BEFORE the shortlist table, because it is the same turn seen more
+     * honestly: no sector, no budget, no named project, so there is nothing to
+     * rank against and the old answer ranked against nothing. The shelf shows
+     * one pick per budget band with the rule printed above it, and the chips
+     * carry the narrowing the shelf declined to guess at.
+     *
+     * Unlike the shortlist table this renders even when cards are on screen. The
+     * "never a project table beside cards" rule exists because the cards carry
+     * the same five columns — the shelf's Budget column is the one thing they
+     * cannot show, and three rows of framing beside twenty cards is the index to
+     * them, not a duplicate of them.
+     */
+    const wantsShelf =
+      Boolean(message) &&
+      wantsProjectList &&
+      wantsCityBandShelf(message ?? '', {
+        hasSector: Boolean(intent.sector),
+        hasBudget: Boolean(intent.budgetMax || intent.budgetMin),
+        hasProjectFocus: (intent.projectNames?.length ?? 0) > 0,
+      })
+
+    /**
+     * Built from a citywide query, not from `trimmedProjects`.
+     *
+     * Feeding it the turn's retrieval was the first version, and it rendered two
+     * bands out of three: retrieval returned 19 rows and none had an entry price
+     * above ₹2 Cr, because it ranks by score against an intent that is empty by
+     * definition here. A ranked shortlist and a price spread want opposite
+     * things, and the question that asks to see our range is the worst one to
+     * answer from a shortlist's bias.
+     */
+    let citywideShelf = ''
+    /** The names the shelf chose, handed to the prompt so it annotates them. */
+    let shelfPicks: string[] = []
+    if (wantsShelf) {
+      try {
+        const shelf = await renderCityShelfForCity(
+          [...SUPPORTED_CITIES, 'Yamuna Expressway'],
+          DEFAULT_CITY,
+        )
+        citywideShelf = shelf.table
+        shelfPicks = shelf.picks
+      } catch (e) {
+        console.warn('[CHAT:CITY_SHELF] skipped:', e instanceof Error ? e.message : e)
+      }
+    }
+
+    if (citywideShelf) {
+      renderedTable = citywideShelf
+      renderedTableKind = 'city-shelf'
+      console.log('[CHAT:CITY_SHELF] rendered band spread for a citywide superlative')
+    } else if (
       message &&
       !cardsAreRendering &&
       wantsProjectList &&
@@ -2684,6 +3008,101 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     // its neighbours. True, and irrelevant to most questions: every turn that
     // rendered a card also got the Central Noida / Expressway / Greater Noida
     // table, whether the buyer asked about amenities, possession or schools.
+    /**
+     * Rental yield, and what a price has recorded doing.
+     *
+     * Three systems answered these and disagreed: `guardrails.ts` blocks any
+     * "N% returns/CAGR/ROI" claim, HARD RULE 20 forbids ROI projections, and
+     * `tools/financialCalculators.ts` projected 12% residential / 18% commercial
+     * CAGR from constants. So the buyer got a refusal, a hedge or an invented
+     * number depending on which path won the turn.
+     *
+     * The first two are right. But refusing the whole question was wrong, because
+     * we hold the measured half: 65 sector rows carry a recorded 3BHK rent and we
+     * hold 371 priced 3BHK units, so gross yield is division on rows we already
+     * show. `yieldTable.ts` computes it, prints what it is and is not net of, and
+     * still refuses to forecast — which is the part the guardrail protects.
+     */
+    if (!renderedTable && message && asksRentalYield(message)) {
+      try {
+        const yields = await computeSectorYields([
+          ...SUPPORTED_CITIES,
+          'Yamuna Expressway',
+        ])
+        renderedTable = renderRentalYieldTable(yields)
+        if (renderedTable) {
+          renderedTableKind = 'yield'
+          console.log(`[CHAT:YIELD_TABLE] ${yields.length} sectors`)
+        }
+      } catch (e) {
+        console.warn('[CHAT:YIELD_TABLE] skipped:', e instanceof Error ? e.message : e)
+      }
+    }
+
+    /**
+     * Appreciation, answered as recorded history or declined.
+     *
+     * Only fires with a project in focus, because the series is per project. And
+     * it prints the points WITHOUT a rate of change when every point carries
+     * `source: 'historical_benchmark'` — 1,400 of our 1,680 rows do, and they
+     * step by an identical amount each quarter, so a CAGR off them restates
+     * whatever constant generated them while looking like a market finding.
+     */
+    if (!renderedTable && message && asksAppreciation(message) && projects.length === 1) {
+      try {
+        const change = await computePriceChange(projects[0].id)
+        if (change) {
+          renderedTable = renderPriceChangeTable(change)
+          if (renderedTable) {
+            renderedTableKind = 'yield'
+            console.log(`[CHAT:PRICE_CHANGE] ${change.projectName} observed=${change.observed}`)
+          }
+        }
+      } catch (e) {
+        console.warn('[CHAT:PRICE_CHANGE] skipped:', e instanceof Error ? e.message : e)
+      }
+    }
+
+    /**
+     * Appreciation for a SECTOR, or for the city when no sector was named.
+     *
+     * The branch above only fires on a single project in focus, and it can never
+     * print a rate — every project holds five benchmark points and one observed
+     * point, so `observed` is false for all 280 by construction. That left the
+     * question buyers actually ask with nothing: "price appreciation in Sector
+     * 150" retrieved ten projects, fell past the project branch, and was
+     * answered from the model's memory. It scored 3/5 for that reason.
+     *
+     * `sector_intelligence.price_5yr_cagr_pct` is populated on all 65 rows and
+     * stamped `verified_by: 'RealtyPals Research Desk'`. It is backward-looking,
+     * which is the half of this question we are allowed to answer. The renderer
+     * carries the refusal to forecast in its own text rather than trusting the
+     * prompt, which is the layer that had been ignoring it.
+     *
+     * With no sector named this becomes a ranking, which is the citywide
+     * superlative shape — the same gap the band shelf closes for "best project".
+     */
+    if (!renderedTable && message && asksAppreciation(message)) {
+      try {
+        const asked = findSectorsAsked(message)
+        const sectorsForAppreciation =
+          asked.length > 0 ? asked : intent.sector ? [String(intent.sector)] : []
+        const rows = await computeSectorAppreciation(
+          [...SUPPORTED_CITIES, 'Yamuna Expressway'],
+          sectorsForAppreciation,
+        )
+        renderedTable = renderAppreciationTable(rows)
+        if (renderedTable) {
+          renderedTableKind = 'yield'
+          console.log(
+            `[CHAT:APPRECIATION] ${rows.length} sectors, asked=${sectorsForAppreciation.join(',') || 'citywide'}`,
+          )
+        }
+      } catch (e) {
+        console.warn('[CHAT:APPRECIATION] skipped:', e instanceof Error ? e.message : e)
+      }
+    }
+
     if (!renderedTable && message && wantsPriceContext) {
       try {
         const { getCityMicroMarkets } = await import('../lib/discovery/sectorDataGateway')
@@ -2691,6 +3110,11 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         renderedTable = renderMicroMarketTable(markets, {
           // A premium brief reads top-down, everything else bottom-up.
           order: /\bpremium|luxury|\b[2-9]\s*crore/i.test(message) ? 'price_desc' : 'price_asc',
+          // Scope to the sectors the buyer named, when they named any. Without
+          // this, "which is better for a family: 74, 75, 76 or 78" got the full
+          // city table — six micro-markets, none of them containing 75, 76 or
+          // 78 — above prose that quoted different rates for the same sectors.
+          focusSectors: findSectorsAsked(message),
         })
         // Without this the chips never learned a market table went on screen,
         // so the branch that follows one up has never run.
@@ -2731,8 +3155,13 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         DEFAULT_CITY,
         multiDimContext,
         supportsTools,
-        ) + systemSuffix + (renderedTable ? TABLE_ALREADY_SHOWN : ''),
-        microMarketsTail,
+        // False when the gate above skipped retrieval. Without it the prompt
+        // cannot tell "searched and found nothing" from "never searched".
+        discoverySkipReason === null,
+        ) + systemSuffix + (renderedTable ? (renderedTableKind === 'city-shelf' ? cityShelfShown(shelfPicks) : renderedTableKind === 'yield' ? YIELD_TABLE_SHOWN : TABLE_ALREADY_SHOWN) : ''),
+        // Both tails ride the same slot. The unknown-project block goes last so
+        // its handling rules are the closest instruction to the answer.
+        microMarketsTail + unknownProjectTail + affordabilityTail,
       )
 
     // Tool-less is the common path (Gemini is tier 1) — size and fact-check against it.
@@ -2825,7 +3254,17 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         sessionId: currentSessionId,
         config: inferenceConfig,
         // We rendered the table above; drop any the model draws anyway.
-        suppressTables: Boolean(renderedTable),
+        // Suppress when WE rendered a table, and also whenever cards are on
+      // screen. CLAUDE.md has said "a project table is never rendered when
+      // property cards are" since the table renderer was written, but the flag
+      // only ever covered the first half — so a turn that rendered cards and no
+      // table left the model free to draw its own.
+      //
+      // That is what happened to "best society in sector 137": eight cards went
+      // to the buyer and the model wrote a three-row table above them, choosing
+      // three of the eight for reasons nobody can audit. The cards already
+      // carry price, builder, possession and area, and they can be tapped.
+      suppressTables: Boolean(renderedTable) || cardsAreRendering,
       })
       fullText = fallbackResult.text
       usedProvider = { provider: fallbackResult.provider, envKey: fallbackResult.envKey }
@@ -2879,7 +3318,9 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       action.type === 'TEXT_MESSAGE' &&
       message &&
       fullText &&
-      !fullText.startsWith("We're experiencing high traffic") &&
+      // Not `startsWith` on one of the two outage strings — that missed the
+      // other one, and an outage got cached and replayed as a verified answer.
+      !isServiceFailureReply(fullText) &&
       (classifyShape(message) === 'lookup' || classifyShape(message) === 'factual') &&
       (intent.projectNames?.length ?? 0) === 0
     ) {
@@ -2920,7 +3361,9 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
 
     // Chips built from the answer, not from a second model call.
     const adaptiveChips = buildAdaptiveChips({
-      projects: projects.slice(0, 4).map((p) => ({ id: p.id, name: p.name })),
+      // 8, not 4: this list is what the picker chips offer, and a dropdown
+      // that shows half the cards on screen is its own kind of wrong answer.
+      projects: projects.slice(0, 8).map((p) => ({ id: p.id, name: p.name })),
       sectors: sectorMatches ?? [],
       rendered: renderedTableKind,
       missingFields: postSearchUiState.missingFields ?? [],
@@ -2943,6 +3386,9 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
           ?? projects.find((p) => norm(p.name).includes(norm(named)) || norm(named).includes(norm(p.name)))
         return hit ? { id: hit.id, name: hit.name } : null
       })(),
+      userMessage: message,
+      city: DEFAULT_CITY,
+      hasBudget: Boolean(intent.budgetMax || intent.budgetMin),
     })
     if (adaptiveChips.length > 0) {
       postSearchUiState.chips = adaptiveChips

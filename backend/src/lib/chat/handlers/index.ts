@@ -1,4 +1,5 @@
 import type { ChatTopicHandler } from '../handlerContext'
+import { citywideQueryHandler } from './citywideQuery'
 import { builderReputationHandler } from './builderReputation'
 import { newcomerOrientationHandler } from './newcomerOrientation'
 import { amenityLifestyleHandler } from './amenityLifestyle'
@@ -42,10 +43,7 @@ import { unitConfigurationHandler } from './unitConfiguration'
  * project detail, open-query lane.
  */
 export const CHAT_TOPIC_HANDLERS: readonly ChatTopicHandler[] = [
-  // Proximity is NOT here. It was, briefly, and never ran: a proximity
-  // question classifies as DISCOVERY and the search lane answers and returns
-  // long before this registry is reached. It lives in the coverage lane
-  // instead — see nearbyCoverage() in discovery/nearby.ts.
+  citywideQueryHandler,
   builderReputationHandler,
   newcomerOrientationHandler,
   amenityLifestyleHandler,
@@ -61,6 +59,7 @@ export const CHAT_TOPIC_HANDLERS: readonly ChatTopicHandler[] = [
 ]
 
 export {
+  citywideQueryHandler,
   reraVerificationHandler,
   statutoryTaxHandler,
   possessionStatusHandler,

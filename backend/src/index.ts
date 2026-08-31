@@ -279,7 +279,9 @@ async function startup() {
       MISTRAL_API_KEY:          !!process.env.MISTRAL_API_KEY,
       CEREBRAS_API_KEY:         !!process.env.CEREBRAS_API_KEY,
       GROQ_API_KEY:             !!process.env.GROQ_API_KEY,
-      OPENAI_API_KEY:           !!process.env.OPENAI_API_KEY,
+      COHERE_API_KEY:           !!process.env.COHERE_API_KEY,
+      NVIDIA_API_KEY:           !!process.env.NVIDIA_API_KEY,
+      CLOUDFLARE_API_KEY:       !!process.env.CLOUDFLARE_API_KEY,
       GOOGLE_MAPS_API_KEY:      !!process.env.GOOGLE_MAPS_API_KEY,
       TAVILY_API_KEY:           !!process.env.TAVILY_API_KEY,
       SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -304,11 +306,37 @@ async function startup() {
    * So say exactly what is wrong and how to end it, and exit non-zero rather
    * than lingering as a process that never served a request.
    */
+  /**
+   * Retries before giving up, because the common cause is a race, not a clash.
+   *
+   * `tsx watch` starts the replacement before the outgoing process has released
+   * the socket. The replacement then hits EADDRINUSE, exits, and the OLD
+   * process — which never actually died — keeps serving stale code. The site
+   * responds, the logs scroll, and every subsequent fix appears to do nothing.
+   *
+   * That has now cost three separate debugging cycles on this project,
+   * including two where a correct fix was reported as not working. A handful of
+   * short retries covers the handover window; anything still holding the port
+   * after that is a genuinely different process and gets the message below.
+   */
+  const BIND_RETRIES = Number(process.env.PORT_BIND_RETRIES ?? 10)
+  const BIND_RETRY_MS = Number(process.env.PORT_BIND_RETRY_MS ?? 300)
+  let bindAttempts = 0
+
   server.on('error', (err: NodeJS.ErrnoException) => {
+    if (err.code === 'EADDRINUSE' && bindAttempts < BIND_RETRIES) {
+      bindAttempts++
+      logger.warn(
+        { port: PORT, attempt: bindAttempts, of: BIND_RETRIES },
+        'port busy — the previous process has probably not released it yet; retrying',
+      )
+      setTimeout(() => server.listen(PORT), BIND_RETRY_MS)
+      return
+    }
     if (err.code === 'EADDRINUSE') {
       logger.error(
-        { port: PORT },
-        `port ${PORT} is already held by another process — THIS server did not start, and the one still running is serving older code. ` +
+        { port: PORT, waitedMs: BIND_RETRIES * BIND_RETRY_MS },
+        `port ${PORT} is STILL held after ${BIND_RETRIES} retries — THIS server did not start, and the one still running is serving older code. ` +
         `Find it with:  npx kill-port ${PORT}   (or on Windows: netstat -ano | findstr :${PORT}  then  taskkill /PID <pid> /F)`,
       )
     } else {

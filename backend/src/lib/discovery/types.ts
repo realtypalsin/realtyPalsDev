@@ -35,7 +35,16 @@ export type BudgetStatus = 'within' | 'slightly_over' | 'over'
 export interface NearbyExpansion {
   requestedSector: string
   searchedSectors: string[]
-  reason: 'no_results_in_requested_sector' | 'no_inventory_in_exact_sector_nofallback'
+  reason:
+    | 'no_results_in_requested_sector'
+    | 'no_inventory_in_exact_sector_nofallback'
+    /**
+     * No sector was asked for at all — a citywide question. Distinct from
+     * `no_results_in_requested_sector`, which means we looked somewhere and
+     * found nothing. Conflating the two is how a citywide "which is the best
+     * project" was reported to the buyer as a failed sector search.
+     */
+    | 'citywide_band_spread'
 }
 
 export interface UnitTypeSummary {

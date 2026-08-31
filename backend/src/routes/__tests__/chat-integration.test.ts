@@ -166,15 +166,29 @@ describe('FALLBACK_CHAIN shape', () => {
     )
   })
 
+  /**
+   * Keys that are in `.env` and deliberately have no leg.
+   *
+   * The four OPENAI_API_KEY* values are GitHub PATs for GitHub Models, which
+   * retired on 30 Jul 2026 and answers 410. With the dead-host substitution
+   * removed they would now be sent to api.openai.com, where a PAT is a 401 —
+   * still a dead leg, just a different error. Exempting them by name keeps the
+   * rule below strict for every key that CAN work, rather than softening it.
+   *
+   * Delete an entry here the day a real key is put under that name.
+   */
+  const RETIRED_ENV_KEYS = new Set(['OPENAI_API_KEY', 'OPENAI_API_KEY1', 'OPENAI_API_KEY2', 'OPENAI_API_KEY3'])
+
   it('gives every key configured in the environment a chain entry', () => {
     // The narrow version of this only checked three named keys. GEMINI_API_KEY2
     // and MISTRAL_API_KEY1 were both set in .env and absent from the chain on
     // 30 Aug — two working keys doing nothing while the chain ran dry.
     const envKeys = new Set(FALLBACK_CHAIN.map(i => i.envKey))
     const configuredButUnused = Object.keys(process.env)
-      .filter(k => /^(GEMINI|MISTRAL|GROQ|CEREBRAS|OPENAI)_API_KEY\d*$/.test(k))
+      .filter(k => /^(GEMINI|MISTRAL|GROQ|CEREBRAS|OPENAI|COHERE|NVIDIA)_API_KEY\d*$/.test(k))
       .filter(k => (process.env[k] ?? '').length > 0)
       .filter(k => !envKeys.has(k))
+      .filter(k => !RETIRED_ENV_KEYS.has(k))
     assert.deepEqual(configuredButUnused, [], `configured but never tried: ${configuredButUnused.join(', ')}`)
   })
 

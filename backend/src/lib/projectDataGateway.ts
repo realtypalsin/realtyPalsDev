@@ -9,6 +9,7 @@
  */
 
 import { prisma } from './db'
+import { INTERNAL_ONLY_FIELDS } from './projectExposure'
 import {
   getFloorPlans,
   getPriceHistory,
@@ -644,13 +645,14 @@ export async function getAllProjectData(projectId: string): Promise<ProjectDataG
   )
 
   // Calculate completeness
-  const completeness = computeCompleteness(allFacts)
+  const facts = dropInternalFacts(allFacts)
+  const completeness = computeCompleteness(facts)
 
   return {
     projectId: project.id,
     projectName: project.name,
     found: true,
-    data: allFacts,
+    data: facts,
     completeness,
     sources: Array.from(sources),
     timestamp: new Date().toISOString(),
@@ -670,6 +672,50 @@ export async function getAllProjectData(projectId: string): Promise<ProjectDataG
  *   RequiredFields: ['price_min_cr', 'price_max_cr']
  *   Returns: Only payment-related facts
  */
+/**
+ * Drop any fact whose key `projectExposure` says must never leave the server.
+ *
+ * `INTERNAL_ONLY_FIELDS` already named `appreciation_potential_5yr`,
+ * `rental_yield_annual_percent` and `market_demand_score`, with the reason
+ * written next to each — "forward-looking estimate — the prompt forbids
+ * presenting projections as fact". This file selected all three anyway and built
+ * a buyer-facing fact out of them: `'5-Year Appreciation Potential':
+ * '48.5% estimated'`, carrying `confidence: 0.8`.
+ *
+ * Measured live: asked how much Godrej Woods had appreciated, the answer closed
+ * with "Financial projections estimate an additional 25-35% capital appreciation
+ * over a 3-year horizon". The model did not invent that. It was handed 48.5%
+ * over five years and did the arithmetic.
+ *
+ * The column is also the same defect as last session's `litigation_count = 0`:
+ * populated on 280 of 280 projects with only **seven distinct values** — 48.5 on
+ * 95 projects, 14.5 on 83, 72 on 50 — so it is a bucket assignment, not an
+ * estimate. A forward projection that is really a bucket, presented with a
+ * confidence score, on the one topic three separate rules forbid.
+ *
+ * Filtered here rather than removed from the three `select` blocks, because the
+ * next field added to those blocks would leak the same way. Two files disagreed
+ * about policy and the one without the policy won; this makes the policy the one
+ * that runs.
+ */
+function dropInternalFacts(
+  facts: Record<string, FactValidation>,
+): Record<string, FactValidation> {
+  const out: Record<string, FactValidation> = {}
+  const dropped: string[] = []
+  for (const [key, value] of Object.entries(facts)) {
+    if (key in INTERNAL_ONLY_FIELDS) {
+      dropped.push(key)
+      continue
+    }
+    out[key] = value
+  }
+  if (dropped.length > 0) {
+    console.warn(`[GATEWAY:INTERNAL_FACT_DROPPED] ${dropped.join(', ')}`)
+  }
+  return out
+}
+
 export async function getProjectDataForQuery(params: {
   projectId: string
   requiredFields: string[]
@@ -844,6 +890,7 @@ async function getBuilderWithValidation(
     }
   }
 
+  filteredFacts = dropInternalFacts(filteredFacts)
   const completeness = computeCompleteness(filteredFacts)
 
   return {

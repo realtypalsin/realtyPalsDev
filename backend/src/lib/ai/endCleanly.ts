@@ -30,9 +30,28 @@ const COMPLETE_ROW = /^\s*\|.*\|\s*$/
  */
 const MAX_TRIM_RATIO = 0.5
 
-export function endCleanly(text: string): string {
+export interface EndCleanlyOptions {
+  /**
+   * Hard cap on characters that may be dropped, overriding the ratio.
+   *
+   * The ratio guard assumes `text` IS the whole answer. The stream tail buffer
+   * breaks that assumption: it holds only the last ~180 characters, so a
+   * dangling fragment can easily be more than half of what it is looking at
+   * while being a rounding error against the real answer. Without this, the
+   * tail path refused to trim exactly the cases it exists for — a half-built
+   * final table row would be kept because dropping it "lost 60%".
+   */
+  maxTrimChars?: number
+}
+
+export function endCleanly(text: string, opts: EndCleanlyOptions = {}): string {
   const trimmed = text.trimEnd()
   if (!trimmed || ENDS_CLEANLY.test(trimmed)) return text
+
+  const allowed = (kept: string): boolean =>
+    opts.maxTrimChars !== undefined
+      ? trimmed.length - kept.length <= opts.maxTrimChars
+      : kept.length >= trimmed.length * MAX_TRIM_RATIO
 
   const lines = trimmed.split('\n')
   const last = lines[lines.length - 1]
@@ -41,7 +60,7 @@ export function endCleanly(text: string): string {
   // than leaving a half-built row the renderer will mangle.
   if (last.trimStart().startsWith('|') && !COMPLETE_ROW.test(last)) {
     const kept = lines.slice(0, -1).join('\n').trimEnd()
-    return kept.length >= trimmed.length * MAX_TRIM_RATIO ? kept : text
+    return allowed(kept) ? kept : text
   }
 
   // Otherwise the unit is the sentence. Look for the last terminator that is
@@ -58,5 +77,5 @@ export function endCleanly(text: string): string {
   if (lastStop <= 0) return text
 
   const kept = trimmed.slice(0, lastStop + 1)
-  return kept.length >= trimmed.length * MAX_TRIM_RATIO ? kept : text
+  return allowed(kept) ? kept : text
 }

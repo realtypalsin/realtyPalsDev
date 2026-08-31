@@ -95,7 +95,10 @@ describe('an open answer shows cards for the projects it named', () => {
     // projects — gave the buyer nothing to save, compare or open.
     const start = ROUTER.indexOf('OPEN QUERY LANE')
     assert.ok(start !== -1, 'open lane not found')
-    const lane = ROUTER.slice(start, start + 4000)
+    // 9000, not 4000: this scans SOURCE TEXT in a fixed window after the marker,
+    // so documentation added above the code it is looking for pushes that code
+    // out of range and fails a test about behaviour that never changed.
+    const lane = ROUTER.slice(start, start + 9000)
     assert.match(lane, /loadMentionedProjectCards/, 'open lane should load cards for named projects')
     assert.match(lane, /send\('properties'/, 'open lane should emit the cards')
   })
@@ -103,7 +106,10 @@ describe('an open answer shows cards for the projects it named', () => {
   it('cards come only from projects the answer actually named', () => {
     // The scope rule: never widen to a sector, never append similar projects.
     const start = ROUTER.indexOf('OPEN QUERY LANE')
-    const lane = ROUTER.slice(start, start + 4000)
+    // 9000, not 4000: this scans SOURCE TEXT in a fixed window after the marker,
+    // so documentation added above the code it is looking for pushes that code
+    // out of range and fails a test about behaviour that never changed.
+    const lane = ROUTER.slice(start, start + 9000)
     assert.match(
       lane,
       /loadMentionedProjectCards\(mentionedProjects\)/,

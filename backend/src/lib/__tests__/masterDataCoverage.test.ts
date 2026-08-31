@@ -76,8 +76,51 @@ describe('master data coverage', { skip: !available && 'newProj/75 master JSON n
 
   it('keeps the default facts block within a sane token budget on real data', () => {
     // Every turn pays this, and a comparison pays it per project.
+    //
+    // Raised from 6,000 to 6,500 on 30 Aug 2026, and the order of events is
+    // the point. A bulk enrichment pass filled decision_profile for the 189
+    // projects that had none, and the block went 5,9xx -> 7,989. The first
+    // instinct — raise the number until it passes — would have made this test
+    // useless, so instead the block was examined: 1,556 characters of it were
+    // four *_intelligence narratives that no prompt rule references, and 98
+    // more were their JSON scaffolding. Those are now gated behind the
+    // `deep_reasoning` topic, which brought it to 6,335.
+    //
+    // The remaining 335 is real per-project content the enrichment added and
+    // the product wants on every turn — location_concerns above all, which is
+    // the honest-negative field. Paying for that is the trade this file exists
+    // to make. Trimming waste first and then raising the bar by the smallest
+    // amount that admits the content is a different act from raising the bar
+    // to make a failure go away.
     const chars = JSON.stringify(buildProjectFacts(firstProject() as never)).length
-    assert.ok(chars < 6000, `default facts block is ${chars} chars (~${Math.round(chars / 4)} tokens)`)
+    assert.ok(chars < 6500, `default facts block is ${chars} chars (~${Math.round(chars / 4)} tokens)`)
+  })
+
+  it('keeps the analyst narratives out of an ordinary turn', () => {
+    // The regression this guards: 19% of every prompt, on four long-form
+    // narratives, for a question like "does it have a gym".
+    const base = buildProjectFacts(firstProject() as never)
+    const decision = base.decision_profile as Record<string, unknown>
+    assert.ok(decision, 'decision_profile should still be present')
+    for (const k of ['market_intelligence', 'financial_intelligence', 'property_intelligence', 'builder_intelligence']) {
+      assert.ok(!(k in decision), `${k} is billed on every turn and no prompt rule names it`)
+    }
+    // The fields base.ts rules 13-15 DO name must survive the trim.
+    for (const k of ['decision_thesis', 'why_buy', 'why_avoid']) {
+      assert.ok(k in decision, `${k} is named by a prompt rule and must stay`)
+    }
+  })
+
+  it('brings the narratives back when the question is actually analytical', () => {
+    const deep = buildProjectFacts(firstProject() as never, { topics: detectFactTopics('is sector 150 a better investment than sector 128?') })
+    const decision = deep.decision_profile as Record<string, unknown>
+    assert.ok('market_intelligence' in decision, 'a comparison should get the market narrative')
+  })
+
+  it('does not treat an amenity question as analytical', () => {
+    // "risk" and "investment" open the gate; a gym question must not.
+    assert.equal(detectFactTopics('does it have a gym').has('deep_reasoning'), false)
+    assert.equal(detectFactTopics('what is the payment plan').has('deep_reasoning'), false)
   })
 
   it('omits the heavy relations until the question asks for them', () => {
@@ -101,11 +144,17 @@ describe('master data coverage', { skip: !available && 'newProj/75 master JSON n
   })
 
   it('stays bounded even with every heavy relation pulled in', () => {
+    // The worst case: a comparison that also asks about price history, specs
+    // and construction. Rare, and the turn it serves is the one the product
+    // exists for. 9,000 -> 11,500 for the same reason as the default budget
+    // above: the enrichment added real content to all three relations. What
+    // matters is that this stays a CEILING with a number behind it, so an
+    // unbounded relation cannot be added without someone seeing this fail.
     const all = buildProjectFacts(firstProject() as never, {
-      topics: new Set<FactTopic>(['price_history', 'specifications', 'construction']),
+      topics: new Set<FactTopic>(['price_history', 'specifications', 'construction', 'deep_reasoning']),
     })
     const chars = JSON.stringify(all).length
-    assert.ok(chars < 9000, `full facts block is ${chars} chars (~${Math.round(chars / 4)} tokens)`)
+    assert.ok(chars < 11_500, `full facts block is ${chars} chars (~${Math.round(chars / 4)} tokens)`)
   })
 })
 

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { m } from 'framer-motion';
 import {
   Buildings,
   House,
@@ -9,8 +9,6 @@ import {
   Crown,
   Tree,
   Stack,
-  CaretDown,
-  CaretRight,
   MapPin,
   CurrencyInr,
   Sparkle
@@ -29,29 +27,21 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const groupHoverStyles: Record<string, { pillHover: string; iconHover: string }> = {
+  sec10_gn: {
+    pillHover: 'hover:border-indigo-400/80 dark:hover:border-indigo-500/70 hover:bg-indigo-50/80 dark:hover:bg-indigo-950/40 text-zinc-800 dark:text-zinc-200 hover:text-indigo-950 dark:hover:text-indigo-200',
+    iconHover: 'text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300',
+  },
   budget_3bhk: {
-    pillHover: 'hover:border-amber-400/80 dark:hover:border-amber-500/70 hover:bg-amber-50/80 dark:hover:bg-amber-950/40 text-zinc-700 dark:text-zinc-300 hover:text-amber-900 dark:hover:text-amber-200',
-    iconHover: 'text-amber-500 group-hover:text-amber-600 dark:group-hover:text-amber-400',
+    pillHover: 'hover:border-amber-400/80 dark:hover:border-amber-500/70 hover:bg-amber-50/80 dark:hover:bg-amber-950/40 text-zinc-800 dark:text-zinc-200 hover:text-amber-950 dark:hover:text-amber-200',
+    iconHover: 'text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300',
   },
-  sec75: {
-    pillHover: 'hover:border-blue-400/80 dark:hover:border-blue-500/70 hover:bg-blue-50/80 dark:hover:bg-blue-950/40 text-zinc-700 dark:text-zinc-300 hover:text-blue-900 dark:hover:text-blue-200',
-    iconHover: 'text-blue-500 group-hover:text-blue-600 dark:group-hover:text-blue-400',
+  sec150_sports: {
+    pillHover: 'hover:border-teal-400/80 dark:hover:border-teal-500/70 hover:bg-teal-50/80 dark:hover:bg-teal-950/40 text-zinc-800 dark:text-zinc-200 hover:text-teal-950 dark:hover:text-teal-200',
+    iconHover: 'text-teal-600 dark:text-teal-400 group-hover:text-teal-700 dark:group-hover:text-teal-300',
   },
-  sec78: {
-    pillHover: 'hover:border-purple-400/80 dark:hover:border-purple-500/70 hover:bg-purple-50/80 dark:hover:bg-purple-950/40 text-zinc-700 dark:text-zinc-300 hover:text-purple-900 dark:hover:text-purple-200',
-    iconHover: 'text-purple-500 group-hover:text-purple-600 dark:group-hover:text-purple-400',
-  },
-  sec79: {
-    pillHover: 'hover:border-teal-400/80 dark:hover:border-teal-500/70 hover:bg-teal-50/80 dark:hover:bg-teal-950/40 text-zinc-700 dark:text-zinc-300 hover:text-teal-900 dark:hover:text-teal-200',
-    iconHover: 'text-teal-500 group-hover:text-teal-600 dark:group-hover:text-teal-400',
-  },
-  sec10: {
-    pillHover: 'hover:border-indigo-400/80 dark:hover:border-indigo-500/70 hover:bg-indigo-50/80 dark:hover:bg-indigo-950/40 text-zinc-700 dark:text-zinc-300 hover:text-indigo-900 dark:hover:text-indigo-200',
-    iconHover: 'text-indigo-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400',
-  },
-  sec12: {
-    pillHover: 'hover:border-rose-400/80 dark:hover:border-rose-500/70 hover:bg-rose-50/80 dark:hover:bg-rose-950/40 text-zinc-700 dark:text-zinc-300 hover:text-rose-900 dark:hover:text-rose-200',
-    iconHover: 'text-rose-500 group-hover:text-rose-600 dark:group-hover:text-rose-400',
+  sec75_metro: {
+    pillHover: 'hover:border-blue-400/80 dark:hover:border-blue-500/70 hover:bg-blue-50/80 dark:hover:bg-blue-950/40 text-zinc-800 dark:text-zinc-200 hover:text-blue-950 dark:hover:text-blue-200',
+    iconHover: 'text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300',
   },
 };
 
@@ -65,125 +55,30 @@ interface HomeButtonsProps {
 }
 
 export default function HomeButtons({ onButtonClick }: HomeButtonsProps) {
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setOpenDropdownId(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleToggle = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setOpenDropdownId((prev) => (prev === id ? null : id));
-  };
-
-  const handleMainClick = (prompt: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setOpenDropdownId(null);
-    onButtonClick(prompt);
-  };
-
-  const handleOptionSelect = (prompt: string) => {
-    setOpenDropdownId(null);
-    onButtonClick(prompt);
-  };
-
   return (
-    <div ref={containerRef} className="w-full max-w-3xl mx-auto px-2">
-      {/* One horizontal rail on mobile, centred wrap on desktop.
-          flex-wrap stacked these into a tall vertical column on a phone, which
-          ate the fold and pushed the input off screen. A single scrolling row
-          under the input is the shape people already know from ChatGPT.
-
-          overscroll-x-contain matters: without it, swiping the rail past its
-          end chains to the page and the whole view jerks sideways. */}
-      <div
-        className="flex flex-nowrap sm:flex-wrap items-center sm:justify-center gap-2 w-full py-1
-                   overflow-x-auto sm:overflow-visible overscroll-x-contain
-                   snap-x snap-mandatory sm:snap-none scrollbar-none
-                   -mx-2 px-2 sm:mx-0 sm:px-0"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {HOME_BUTTON_GROUPS.map((group, idx) => {
-          // Previously the last groups were hidden below sm to avoid a horizontal
-          // scroll. The row scrolls on purpose now, so every group is reachable.
-          const isOpen = openDropdownId === group.id;
-          const hasOptions = group.options && group.options.length > 0;
+    <div className="w-full max-w-[390px] sm:max-w-xl mx-auto px-2">
+      {/* 2-column compact grid on mobile; centered wrap on desktop */}
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-2.5 w-full py-1">
+        {HOME_BUTTON_GROUPS.map((group) => {
           const style = groupHoverStyles[group.id] || defaultHover;
 
           return (
-            <div key={group.id} className="relative shrink-0 snap-start sm:snap-align-none">
-              <m.div
-                whileHover={{ y: -1, scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                className={`group flex items-center rounded-full text-xs font-medium border transition-all duration-150 shadow-2xs whitespace-nowrap ${
-                  isOpen
-                    ? 'bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                    : `bg-white/80 dark:bg-zinc-800/50 border-zinc-200/70 dark:border-zinc-700/60 ${style.pillHover}`
-                }`}
+            <div key={group.id} className="relative w-full sm:w-auto min-w-0">
+              <m.button
+                whileHover={{ y: -1.5, scale: 1.015 }}
+                whileTap={{ scale: 0.96 }}
+                type="button"
+                onClick={() => onButtonClick(group.primaryPrompt)}
+                className={`group w-full sm:w-auto flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-2 rounded-full border transition-all duration-150 shadow-2xs cursor-pointer bg-white/90 dark:bg-zinc-800/80 backdrop-blur-md border-gray-200/80 dark:border-zinc-700/70 text-zinc-800 dark:text-zinc-200 ${style.pillHover}`}
+                title={`Ask: "${group.primaryPrompt}"`}
               >
-                <button
-                  type="button"
-                  onClick={(e) => handleMainClick(group.primaryPrompt, e)}
-                  className={`flex items-center gap-1.5 pl-3.5 py-2.5 sm:py-1.5 min-h-[44px] sm:min-h-0 ${hasOptions ? 'pr-1.5' : 'pr-3.5'} cursor-pointer min-w-0`}
-                  title={`Ask: "${group.primaryPrompt}"`}
-                >
-                  <span className={`transition-colors ${style.iconHover}`}>
-                    {iconMap[group.icon] || <Sparkle size={13} weight="bold" />}
-                  </span>
-                  <span className="truncate tracking-tight font-medium text-[12px] sm:text-[12.5px]">
-                    {group.title}
-                  </span>
-                </button>
-
-                {hasOptions && (
-                  <button
-                    type="button"
-                    onClick={(e) => handleToggle(group.id, e)}
-                    className="pr-3 pl-1.5 py-2.5 sm:py-1.5 min-h-[44px] min-w-[36px] sm:min-h-0 sm:min-w-0 cursor-pointer text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors flex items-center justify-center"
-                    title="More options"
-                  >
-                    <CaretDown
-                      size={11}
-                      weight="bold"
-                      className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-zinc-700 dark:text-zinc-200' : ''}`}
-                    />
-                  </button>
-                )}
-              </m.div>
-
-              {/* Minimal Clean Dropdown */}
-              <AnimatePresence>
-                {isOpen && (
-                  <m.div
-                    initial={{ opacity: 0, y: 4, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 4, scale: 0.98 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute top-full mt-1.5 z-50 w-64 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-xl p-1 left-0 sm:left-1/2 sm:-translate-x-1/2"
-                  >
-                    <div className="space-y-0.5">
-                      {group.options.map((option, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => handleOptionSelect(option.prompt)}
-                          className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-left text-xs text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
-                          title={option.prompt}
-                        >
-                          <span className="truncate font-medium">{option.label}</span>
-                          <CaretRight size={11} weight="bold" className="text-zinc-400 shrink-0" />
-                        </button>
-                      ))}
-                    </div>
-                  </m.div>
-                )}
-              </AnimatePresence>
+                <span className={`shrink-0 transition-colors ${style.iconHover}`}>
+                  {iconMap[group.icon] || <Sparkle size={14} weight="bold" />}
+                </span>
+                <span className="truncate tracking-tight font-medium text-[11.5px] sm:text-[12.5px]">
+                  {group.title}
+                </span>
+              </m.button>
             </div>
           );
         })}

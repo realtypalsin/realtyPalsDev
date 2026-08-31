@@ -1,6 +1,7 @@
 // backend/src/lib/discovery/adaptiveChips.ts
 
 import { chip, type ChipAction } from './conversationEngine'
+import { buildTopicChips } from './topicChips'
 
 /** What the turn put in front of the buyer. */
 export interface AnsweredContext {
@@ -9,14 +10,30 @@ export interface AnsweredContext {
   /** Sectors the answer was about — compared, searched or named. */
   sectors: string[]
   /** Which table we rendered, if any. Drives the "go deeper" chips. */
-  rendered: 'projects' | 'micro-market' | 'sector-comparison' | 'payment' | 'cost' | null
+  rendered: 'projects' | 'micro-market' | 'sector-comparison' | 'payment' | 'cost' | 'city-shelf' | 'yield' | null
   /** Intent fields still unset, from the conversation engine. */
   missingFields: string[]
   /** True when the answer was about one specific project. */
   focusedProject?: { id?: string; name: string } | null
+  /**
+   * What the buyer actually asked. The topic fallback needs it, and without it
+   * this file can only ever describe what it drew — which is why five of ten
+   * audited turns had no usable chips at all.
+   */
+  userMessage?: string
+  /** For the topic fallback's wording. Defaults are safe for Noida-only V1. */
+  city?: string
+  hasBudget?: boolean
 }
 
 const MAX_CHIPS = 3
+
+/**
+ * The floor. Two, not three: three chips filled out of a topic table on a turn
+ * that rendered nothing would be padding, and padding is the thing that reads as
+ * a bot. Two real follow-ups is a choice.
+ */
+const MIN_CHIPS = 2
 
 /**
  * What a chip is *about*, as opposed to what it names.
@@ -49,7 +66,9 @@ export function buildAdaptiveChips(ctx: AnsweredContext): ChipAction[] {
   }
 
   const focus = ctx.focusedProject?.name
-  const sector = ctx.sectors[0]
+  const sector = (ctx.sectors ?? [])[0]
+  const projects = ctx.projects ?? []
+  const missingFields = ctx.missingFields ?? []
 
   // ── One project in view ────────────────────────────────────────────────────
   // Three questions about it, not three of the same question: what it costs,
@@ -75,32 +94,84 @@ export function buildAdaptiveChips(ctx: AnsweredContext): ChipAction[] {
   }
 
   // ── A shortlist on screen ──────────────────────────────────────────────────
-  if (ctx.projects.length >= 2) {
-    const [a, b] = ctx.projects
-    offer('compare', chip(
-      'adaptive_compare', 'TEXT_MESSAGE', `Compare ${a.name} and ${b.name}`,
-      { text: `Compare ${a.name} and ${b.name} — price, possession, builder and the trade-offs.` }, 2,
-    ))
-    offer('money', chip(
-      `deep_cost_${slug(a.name)}`, 'TEXT_MESSAGE', `Full cost of ${a.name}`,
-      { text: `Show the complete cost breakdown for ${a.name}, including charges and taxes.` }, 2,
-    ))
+  //
+  // Two things were wrong here and both came from naming projects[0].
+  //
+  // "Full cost of <first card>" is a guess about which of eight the buyer cares
+  // about, and it is wrong seven times out of eight. The UI has had a dropdown
+  // chip for this the whole time — MessageBubble renders any chip whose payload
+  // carries more than one project as a picker — and nothing ever populated it.
+  //
+  // "Compare A and B" duplicated the compare control already on the card
+  // ribbon, and picked the two projects for the buyer as well. Removed: a chip
+  // that repeats a button next to it spends one of only three slots.
+  if (projects.length >= 2) {
+    const pickable = projects.filter((p) => p.id).slice(0, 8).map((p) => ({ id: p.id!, name: p.name }))
+
+    if (pickable.length >= 2) {
+      offer('money', chip(
+        'adaptive_pick_cost', 'TEXT_MESSAGE', 'Full cost of…',
+        {
+          projects: pickable,
+          actionPrefix: 'Show the complete cost breakdown, including charges and taxes, for',
+          actionSuffix: '.',
+        }, 2,
+      ))
+      offer('place', chip(
+        'adaptive_pick_plan', 'TEXT_MESSAGE', 'Payment plan for…',
+        {
+          projects: pickable,
+          actionPrefix: 'Show the full payment schedule for',
+          actionSuffix: '.',
+        }, 2,
+      ))
+    } else {
+      // One identified project among them: name it rather than offer a
+      // dropdown with a single entry.
+      const a = projects[0]
+      if (a?.name) {
+        offer('money', chip(
+          `deep_cost_${slug(a.name)}`, 'TEXT_MESSAGE', `Full cost of ${a.name}`,
+          { text: `Show the complete cost breakdown for ${a.name}, including charges and taxes.` }, 2,
+        ))
+      }
+    }
+
+    // About the SET, not about one card — the one question a picker cannot ask.
     offer('trust', chip(
       'adaptive_shortlist_risk', 'TEXT_MESSAGE', 'Which of these is the safest bet?',
       { text: 'Of the projects you just showed me, which builder has the most reliable delivery record, and what should worry me about the others?' }, 2,
     ))
   }
 
+  /**
+   * The citywide band shelf.
+   *
+   * The shelf deliberately refuses to crown one project, so the follow-up it
+   * owes the buyer is the narrowing it declined to guess at. Three bands, three
+   * chips — this is the one turn where the chips ARE the answer's second half,
+   * and offering "full cost of <first card>" instead would be answering a
+   * question the shelf just explained nobody can answer yet.
+   */
+  if (ctx.rendered === 'city-shelf') {
+    offer('money', chip('shelf_band_under1', 'TEXT_MESSAGE', 'Under ₹1 Cr',
+      { text: 'Show me the best projects under 1 crore, with the reason for each and its main trade-off.' }, 1))
+    offer('compare', chip('shelf_band_mid', 'TEXT_MESSAGE', '₹1–2 Cr',
+      { text: 'Show me the best projects between 1 and 2 crore, with the reason for each and its main trade-off.' }, 1))
+    offer('place', chip('shelf_band_premium', 'TEXT_MESSAGE', 'Above ₹2 Cr',
+      { text: 'Show me the best projects above 2 crore, with the reason for each and its main trade-off.' }, 1))
+  }
+
   // ── A sector comparison ────────────────────────────────────────────────────
   // The natural follow-up is what is actually for sale in the one they were
   // pointed at.
-  if (ctx.rendered === 'sector-comparison' && ctx.sectors.length >= 2) {
-    const s = ctx.sectors[0]
+  if (ctx.rendered === 'sector-comparison' && (ctx.sectors ?? []).length >= 2) {
+    const s = (ctx.sectors ?? [])[0]
     offer('place', chip(
       `adaptive_sector_${slug(s)}`, 'TEXT_MESSAGE', `What's for sale in ${s}`,
       { text: `Show me projects available in ${s} with prices and possession dates.` }, 3,
     ))
-  } else if (sector && ctx.projects.length > 0) {
+  } else if (sector && projects.length > 0) {
     offer('place', chip(
       `adaptive_area_${slug(sector)}`, 'TEXT_MESSAGE', `What's ${sector} like to live in?`,
       { text: `What is ${sector} like to live in — metro access, schools, hospitals, and the local downsides?` }, 3,
@@ -116,7 +187,7 @@ export function buildAdaptiveChips(ctx: AnsweredContext): ChipAction[] {
     offer('money', chip('adaptive_statutory', 'TEXT_MESSAGE', 'Stamp duty and GST on this',
       { text: 'Break down the stamp duty, registration and GST I would pay on this purchase.' }, 1))
   }
-  if (ctx.rendered === 'micro-market' && ctx.projects.length === 0) {
+  if (ctx.rendered === 'micro-market' && projects.length === 0) {
     offer('place', chip('adaptive_narrow', 'TEXT_MESSAGE', 'Show me what fits my budget',
       { text: 'Show me projects that fit my budget, with prices and possession.' }, 3))
   }
@@ -129,7 +200,7 @@ export function buildAdaptiveChips(ctx: AnsweredContext): ChipAction[] {
     ['sector', 'Which sector suits me?', 'Which Noida sector suits my needs best?'],
   ]
   for (const [field, label, text] of asks) {
-    if (!ctx.missingFields.includes(field)) continue
+    if (!missingFields.includes(field)) continue
     offer('ask', chip(`adaptive_ask_${field}`, 'TEXT_MESSAGE', label, { text }, 4))
   }
 
@@ -167,7 +238,32 @@ export function buildAdaptiveChips(ctx: AnsweredContext): ChipAction[] {
     }
   }
 
-  // Still alone, and no second question worth asking: offer nothing. An empty
-  // row is honest; one orphan chip is not.
-  return out.length === 1 && out[0].tone === 'ask' ? [] : out
+  /**
+   * The floor: never fewer than MIN_CHIPS, and never a row of pure filters.
+   *
+   * The old ending returned `[]` here, which was the right call given what this
+   * file could see — one orphan "I need a 3 BHK" after a flood-risk answer is
+   * worse than silence. But an empty row is what scored 1/5 and 2/5 across half
+   * the audited shapes, and the reason was never that there was nothing worth
+   * offering. It was that this file cannot see the question. `topicChips` can.
+   *
+   * The ask axis no longer counts toward the floor on its own: a filter is a
+   * request for input, not a follow-up, and three of them in a row is the form
+   * the chat is supposed to replace.
+   */
+  const substantive = out.filter((c) => c.tone !== 'ask').length
+  if (out.length < MIN_CHIPS || substantive === 0) {
+    const topical = buildTopicChips(
+      ctx.userMessage ?? '',
+      { sector, hasBudget: Boolean(ctx.hasBudget), city: ctx.city ?? 'Noida' },
+      MAX_CHIPS - out.length,
+      seen,
+    )
+    for (const c of topical) {
+      if (out.length >= MAX_CHIPS) break
+      push(c)
+    }
+  }
+
+  return out
 }

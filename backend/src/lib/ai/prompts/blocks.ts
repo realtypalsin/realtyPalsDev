@@ -261,7 +261,23 @@ export function buildProjectsBlock(
   sectorCtx?: SectorContext,
   expansion?: NearbyExpansion,
   nearbyResults?: ScoredProject[],
-  notFoundNames?: string[]
+  notFoundNames?: string[],
+  /**
+   * Did retrieval actually run this turn?
+   *
+   * Defaults true so every existing caller keeps its behaviour. It matters
+   * because "we searched and found nothing" and "we never searched" produce
+   * the same empty array, and this function used to answer both with
+   * SECTOR_NOT_COVERED — a claim about the world made from a fact about our
+   * own control flow.
+   *
+   * Measured 31 Aug: "best society in sector 137" was gated at
+   * `[DISCOVERY:GATE] ran: false, reason: needsClarification` because bhk,
+   * budget and purpose were unset. Nothing was ever queried. The buyer was
+   * told "Sector 137 is not currently in our verified database" while ten
+   * projects sat in it.
+   */
+  discoveryRan: boolean = true,
 ): string {
   const hasExact = exactResults.length > 0
   const hasNearby = (nearbyResults?.length ?? 0) > 0
@@ -282,6 +298,12 @@ export function buildProjectsBlock(
     : ''
 
   if (!hasExact && !hasNearby) {
+    // Retrieval was skipped, so we know nothing about coverage. Say nothing
+    // about it: the buyer's question still needs answering from whatever else
+    // is in the prompt, and a coverage claim here would be invented.
+    if (!discoveryRan) {
+      return notFoundBlock + `\n\n## Search Not Run\nNo project search was performed for this turn, so you have NO information about what does or does not exist in any sector. You MUST NOT say that a sector, project or builder is absent from our database, and you MUST NOT list projects. Answer from the verified context you were given, and if the buyer asked for inventory, ask the one question you need to search properly.`
+    }
     if (sectorCtx) {
       return notFoundBlock + `\n\n## Search Result: No Exact Matches\nNo properties match the exact criteria. Use the Sector Overview above to write a helpful market context response. Suggest: adjacent sectors, relaxing one filter (budget ±10%, different BHK), or what IS available in the sector.`
     }

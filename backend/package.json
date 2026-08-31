@@ -26,7 +26,16 @@
     "audit:routing": "tsx scripts/corpus/route-check.ts",
     "judge": "tsx scripts/corpus/judge-answers.ts",
     "check-all": "npm run lint && npm run typecheck && npm test",
-    "health": "tsx scripts/health-check.ts"
+    "health": "tsx scripts/health-check.ts",
+    "verify:services": "tsx scripts/verify-services.ts",
+    "smoke": "tsx scripts/smoke-queries.ts",
+    "audit:gaps": "tsx scripts/audit-gaps-report.ts",
+    "fix:builder-identity": "tsx scripts/fix-builder-identity.ts",
+    "audit:duplicates": "tsx scripts/list-duplicate-builders.ts",
+    "audit:queries": "tsx scripts/audit-queries.ts",
+    "verify:all": "npm run verify:services && npm run verify:chain",
+    "audit:master-json": "tsx scripts/audit-master-json.ts",
+    "fix:track-record": "tsx scripts/fix-builder-track-record.ts"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"

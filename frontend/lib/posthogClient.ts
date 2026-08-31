@@ -55,9 +55,9 @@ function load(): Promise<void> | null {
         // in the PostHog project settings.
         advanced_disable_feature_flags: true,
         advanced_disable_feature_flags_on_first_load: true,
-        loaded: ph => {
-          if (process.env.NODE_ENV === 'development') ph.debug()
-        },
+        disable_session_recording: true,
+        disable_surveys: true,
+        loaded: () => {},
       })
       client = posthog
       flush()

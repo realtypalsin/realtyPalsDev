@@ -1,0 +1,120 @@
+[
+  {
+    "q": "How much have prices in Sector 150 appreciated over the last few years?",
+    "shape": "APPRECIATION — price_history",
+    "ms": 16382,
+    "text": "Property values in Sector 150 have appreciated strongly over recent years, driven by low-density green planning and infrastructure growth along the Noida Expressway corridor. \n\nRecorded appreciation trends for residential apartments:\n- Over the last 1 year: approximately 8.8%\n- Over the last 3 years: approximately 48.3%\n- Over the last 5 years: approximately 113.9%\n- Over the last 10 years: approximately 210.7%\n\nFor investment returns, consult a SEBI-registered investment advisor.",
+    "cards": [],
+    "chips": [
+      "Ready-to-move homes",
+      "What should I check first?",
+      "Help me set a budget"
+    ]
+  },
+  {
+    "q": "What are the hidden costs beyond the sticker price in Noida?",
+    "shape": "COST — statutory + market band",
+    "ms": 11580,
+    "text": "| Micro-market | Sectors | Avg rate | Range | Character |\n| :--- | :--- | ---: | :--- | :--- |\n| **General Corridor** | Sector 99, Sector 12, Sector 10 | ₹5,900/sqft | ₹5,200 – ₹7,100 | Residential |\n| **Aerotropolis & F1 Sports Corridor** | Sector 22D Yamuna Expressway | ₹7,200/sqft | ₹7,200 | Airport-Adjacent Premium & Speculative |\n| **IT & Institutional Revival Hub** | Techzone 4 | ₹7,900/sqft | ₹7,900 | Value & Mid-Premium |\n| **Gateway Sector to Gr. Noida West** | Sector 124, Sector 16B, Sector 12, Sector 110, Sector 119, Sector 146, Sector 108, Sector 134, Sector 104, Sector 144, Sector 16, Sector 151, Sector 120, Sector 168, Sector 10, Sector 121, Sector 1, Sector 152, Sector 100, Sector 16C | ₹8,800/sqft | ₹8,800 | Mid-to-Luxury Residential |\n| **Established Urban Hub** | Sector 50, Sector 93A, Sector 70, Sector 74, Sector 93B, Sector 94, Sector 45, Sector 62, Sector 43, Sector 46 | ₹9,500/sqft | ₹9,500 | Residential High Rise |\n| **Greater Noida West Growth Corridor** | Sector 4, Sector 2 | ₹9,500/sqft | ₹9,500 | Residential High Rise |\n\nBeyond the base sticker price, buying a property in Noida involves statutory government levies and developer cost-sheet additions that typically add 10% to 18% to your total financial outlays. \n\nAlways request a complete, itemized cost sheet from the developer before booking to account for these line items upfront.",
+    "cards": [],
+    "chips": [
+      "Show me what fits my budget",
+      "I need a 3 BHK"
+    ]
+  },
+  {
+    "q": "Which Noida sector gives the best rental yield?",
+    "shape": "INVESTMENT — yield ranking",
+    "ms": 9788,
+    "text": "Central Noida sectors situated along metro lines and corporate hubs—specifically Sectors 75, 76, and 137—deliver the highest residential rental yields in Noida, averaging 3.0% to 3.5% annually. \n\nThese micro-markets benefit from immediate metro connectivity and dense corporate employment corridors along the Noida-Greater Noida Expressway and Sector 62, ensuring steady tenant demand and minimal vacancy periods. By contrast, ultra-luxury corridors like Sector 150 or premium golf-facing developments typically register lower residential yields of 2.0% to 2.5%, as high capital values outpace rental growth. \n\nFor investors prioritizing higher cash flow rather than residential capital appreciation, pre-leased commercial high-street retail spaces across Noida generally command superior yields ranging from 6.0% to 8.0%.\n\nFor investment returns, consult a SEBI-registered investment advisor.",
+    "cards": [],
+    "chips": [
+      "I need a 3 BHK",
+      "Which sector suits me?"
+    ]
+  },
+  {
+    "q": "Which builder in Noida has the best delivery record?",
+    "shape": "BUILDER — cross-builder ranking",
+    "ms": 3448,
+    "text": "### Developer track record (Noida & Greater Noida)\n\n| Developer | Delivery score | Avg handover delay | Delivered | Construction quality | RERA compliance |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n| **Purvanchal Projects** | 97/100 | On time | — | 98/100 | 99/100 |\n| **ABA Corp** | 96/100 | On time | — | 98/100 | 98/100 |\n| **Laureate Buildwell** | 96/100 | On time | — | 99/100 | 99/100 |\n| **ATS Infrastructure** | 96/100 | 8.5 months | — | 98/100 | 99/100 |\n| **Stellar Group** | 95/100 | On time | — | 96/100 | 98/100 |\n| **Gulshan Group** | 95/100 | On time | — | 96/100 | 98/100 |\n\nA dash means we have not scored that dimension for the developer — it is not a low score.\n\n**On this data**, Purvanchal Projects, ABA Corp, Laureate Buildwell carry the strongest delivery records of those we hold. Delivery history is the best available predictor of handover risk, but it is a record of past projects, not a guarantee about this one.",
+    "cards": [],
+    "chips": [
+      "Projects by Purvanchal Projects",
+      "Projects by ABA Corp",
+      "Projects by Laureate Buildwell"
+    ]
+  },
+  {
+    "q": "Should I buy under construction or ready to move in Noida?",
+    "shape": "ADVISORY — a real trade-off",
+    "ms": 3121,
+    "text": "### Ready to move, or under construction?\n\nBoth are available across Noida and Greater Noida. Tell me a sector or a budget and I'll show you what is ready now versus what is still building.\n\nThe practical difference: a ready-to-move home with an Occupancy Certificate carries **0% GST**, while an under-construction purchase carries **5%**. On a ₹2 Cr purchase that alone is a material difference.",
+    "cards": [],
+    "chips": [
+      "Ready to move in Noida",
+      "Stamp duty & GST"
+    ]
+  },
+  {
+    "q": "What is the maintenance charge for Godrej Nest?",
+    "shape": "DRILLDOWN — a single cost column",
+    "ms": 9615,
+    "text": "The monthly maintenance charge for Godrej Nest is ₹3.4 per sq. ft. per month.\n\nThe recurring maintenance fee is officially recorded at ₹3.4 per sq. ft. per month.\nThis establishes your predictable monthly out-of-pocket operational cost for community upkeep, security, and amenities management.",
+    "cards": [
+      "Godrej Nest"
+    ],
+    "chips": [
+      "Alternatives in Sector 150",
+      "Full cost of Godrej Nest",
+      "Is Godrej Nest RERA clean?"
+    ]
+  },
+  {
+    "q": "Which sector is best for families with school-going kids?",
+    "shape": "LIFESTYLE — schools + safety",
+    "ms": 3878,
+    "text": "### Noida & Greater Noida Locality Guide for Families & Investors\n\n| Micro-Market / Sector | Price Spectrum | Locality Highlights | Top Listed Projects |\n| :--- | :--- | :--- | :--- |\n| **Sector 107** (Noida) | ₹18,500/sq.ft | Rapid access to both Sector 76 metro and Expressway | Not recorded |\n| **Sector 128** (Noida) | ₹15,800/sq.ft | Direct expressway access without internal signals | [Jaypee Greens Pavilion Court](#entity:01e14266-bd55-432b-9489-59e502a9b633), [Jaypee Kensington Boulevard](#entity:09f087b6-5288-488d-8482-e572f09e4181) |\n| **Sector 150** (Noida) | ₹14,500/sq.ft | 80% green mandatory footprint | [ACE Parkway](#entity:147ee95e-d3a8-490e-b1ca-ff148089fd92) |\n| **Sector 79** (Noida) | ₹12,800/sq.ft | Low density compared to Sector 75/76 | [Ashiana Amaltas](#entity:07923cce-1c9b-4619-a7a3-5396caeb6646), [Ajnara The Belvedere](#entity:0794fc2d-8f0c-47ad-ac2a-6f6d81378f56) |\n| **Sector 78** (Noida) | ₹12,200/sq.ft | Expansive clubhouses and sports facilities inside societies | [Antriksh Golf View](#entity:5bb536ad-aecf-4595-9c4b-6e638f707211) I, [Mahagun Marvella](#entity:11c4a12a-6767-48f6-90b9-1e8d294a7406) |\n\n### Recommendation\nFor **metro connectivity and immediate family infrastructure**, prioritize **Sector 75 / 76**. For **expressway corporate commute and modern high-rises**, explore **Sector 137 / 150**.",
+    "cards": [],
+    "chips": [
+      "Flats in Sector 76",
+      "Flats in Sector 137",
+      "Compare Sector 76 vs 137"
+    ]
+  },
+  {
+    "q": "Is Sector 128 worth the premium over Sector 137?",
+    "shape": "COMPARISON — value judgement",
+    "ms": 12063,
+    "text": "Sector 128 commands a distinct lifestyle premium over Sector 137, but whether that premium is worth paying depends entirely on whether you prioritize low-density green luxury over immediate transit convenience and rental liquidity.\n\nSector 128 is anchored by the Jaypee Greens golf course township, featuring wide avenues, golf-facing villas, low-coverage high-rises, and expansive open green buffers. It is built for buyers seeking exclusivity, privacy, and low population density, though it requires relying on personal vehicles as it sits further from active metro lines.\n\nSector 137 operates as a high-density, high-velocity urban hub. It features an operational Aqua Line metro station, dense retail and convenience markets within walking distance of major societies, and robust rental demand driven by IT professionals working along the Expressway corridor. It offers significantly higher vibrancy and immediate social infrastructure at a lower entry price per square foot, but sacrifices open breathing room and quietude.\n\nYou pay the premium in Sector 128 for space, aesthetics, and long-term exclusivity. In Sector 137, you trade away green acreage for transit connectivity and everyday convenience.\n\nAre you leaning toward self-use with an emphasis on open space and quiet surroundings, or are you prioritizing immediate transit access and rental liquidity?",
+    "cards": [],
+    "chips": [
+      "Buying guide",
+      "Popular areas"
+    ]
+  },
+  {
+    "q": "Which projects in Noida have zero litigation and clear title?",
+    "shape": "LEGAL — the honesty filter",
+    "ms": 11302,
+    "text": "Supernova is cited as a project in Noida with zero litigation and clear titles following recent judicial resolutions. - Supernova in Noida is reported to have zero litigation and clear titles (web-search). - Recent court rulings have resolved past legal issues and ensured regulatory compliance for such developments (web-search). Are you looking specifically at large mixed-use complexes like Supernova, or verifying titles for a residential project in another sector?",
+    "cards": [],
+    "chips": [
+      "Ready-to-move homes",
+      "What should I check first?",
+      "Help me set a budget"
+    ]
+  },
+  {
+    "q": "What is the cheapest 3BHK I can buy in Noida right now?",
+    "shape": "DISCOVERY — superlative, city-wide",
+    "ms": 8252,
+    "text": "Entry pricing for a 3BHK in Noida spans a wide range depending on the micro-market, from more accessible pockets in Greater Noida West to established sectors along the Expressway. \n\nTo help me pull the exact lowest-priced verified options that fit your parameters, what is your maximum budget ceiling?",
+    "cards": [],
+    "chips": [
+      "Sector 75",
+      "Sector 150",
+      "Sector 79"
+    ]
+  }
+]

@@ -1,6 +1,7 @@
 // backend/src/lib/chat/coverageAnswer.ts
 
 import { prisma } from '../db'
+import { logSectorGap } from './coverageGap'
 
 export interface CoverageAnswer {
   text: string
@@ -234,10 +235,18 @@ export async function sectorCoverage(sector: string): Promise<CoverageAnswer | n
       : ''
 
     if (held.length === 0) {
+      // "We do not track it" is accurate and reads like a dead end. A buyer
+      // asking about a sector is telling us where they want to live, which is
+      // the single most useful thing they can tell us — so the answer says we
+      // are coming, and the ask is recorded for the team rather than lost.
+      void logSectorGap(bare)
       return {
         kind: 'sector_absent',
         alternatives,
-        text: `We do not currently track any projects in ${bare}, so I have nothing verified to tell you about it.${offer}`,
+        text:
+          `We're not covering ${bare} yet — it's on the list, and I've flagged your interest ` +
+          `so our team knows there's demand there.${offer} ` +
+          `If you'd like, our advisory team can watch ${bare} for you and reach out when we do.`,
       }
     }
 

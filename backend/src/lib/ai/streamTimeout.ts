@@ -20,8 +20,28 @@ export class StreamStalledError extends Error {
   }
 }
 
-/** 60 seconds of SILENCE, the same budget Groq and OpenAI use. */
+/**
+ * Silence budget once the stream is producing. 60s was one window for both
+ * phases; it is kept for the mid-stream phase, where a slow-but-progressing
+ * generation must never be cut off mid-sentence.
+ */
 export const DEFAULT_INACTIVITY_MS = 60_000
+
+/**
+ * Silence budget BEFORE the first chunk, which is a different failure.
+ *
+ * A single window for both phases meant a leg that was never going to answer
+ * still held the turn for a full minute before rolling over, and the turn then
+ * paid the next leg's latency on top. Measured over the corpus, the calls that
+ * set p99 were not long answers — the 39.4s call that set it emitted about 536
+ * tokens, so almost all of that time was spent waiting for a stream that had
+ * not started.
+ *
+ * 25s matches what gemini.ts already uses for its own first-token deadline, so
+ * every leg in the chain now behaves the same way. A provider that has sent
+ * nothing in 25 seconds is not about to be the fast path.
+ */
+export const DEFAULT_FIRST_TOKEN_MS = Number(process.env.STREAM_FIRST_TOKEN_MS ?? 25_000)
 
 export interface InactivityGuard {
   /** Pass to the SDK as `{ signal }` so an abort tears the fetch down. */
@@ -43,26 +63,50 @@ export interface InactivityGuard {
  * Guards one streaming call. Arm it BEFORE the create() await so a header stall
  * is caught in the same window as a mid-body stall.
  */
-export function createInactivityGuard(provider: string, inactivityMs = DEFAULT_INACTIVITY_MS): InactivityGuard {
+export function createInactivityGuard(
+  provider: string,
+  inactivityMs = DEFAULT_INACTIVITY_MS,
+  // Never longer than the mid-stream budget. A caller that passes only one
+  // number means "this is my timeout" and must not silently get a longer one
+  // for the phase before any content arrives.
+  firstTokenMs = Math.min(inactivityMs, DEFAULT_FIRST_TOKEN_MS),
+): InactivityGuard {
   const controller = new AbortController()
   let timer: NodeJS.Timeout | null = null
   let fired = false
   let tokensSent = false
+  // Which phase we are in. The first chunk is what moves us from the short
+  // first-token budget to the longer mid-stream one, not the first `reset()`
+  // call — the guard is armed before create(), so reset() runs once before
+  // anything has arrived.
+  let started = false
 
   const reset = () => {
     if (timer) clearTimeout(timer)
+    const budget = started ? inactivityMs : firstTokenMs
     timer = setTimeout(() => {
       fired = true
-      console.warn(`[${provider.toUpperCase()}] inactivity timeout after ${inactivityMs}ms tokensSent=${tokensSent}`)
+      console.warn(
+        `[${provider.toUpperCase()}] ${started ? 'inactivity' : 'first-token'} timeout after ${budget}ms tokensSent=${tokensSent}`,
+      )
       controller.abort()
-    }, inactivityMs)
+    }, budget)
+  }
+
+  /** Called on the first chunk: widens the window for the rest of the stream. */
+  const markStarted = () => {
+    if (started) return
+    started = true
+    reset()
   }
 
   reset()
 
   return {
     signal: controller.signal,
-    reset,
+    // Every chunk both widens the phase and restarts the clock, so a caller
+    // that only knows about reset() gets the correct behaviour for free.
+    reset: () => { markStarted(); reset() },
     clear: () => { if (timer) clearTimeout(timer) },
     markTokenSent: () => { tokensSent = true },
     rethrow(err: unknown): never {

@@ -258,11 +258,11 @@ export default function Sidebar({
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="md:hidden fixed top-2.5 sm:top-3 left-3 z-[65] w-9.5 h-9.5 min-w-[38px] min-h-[38px] flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white active:scale-95 transition-all cursor-pointer pointer-events-auto rounded-full bg-white/90 dark:bg-zinc-800/80 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-2xs"
+          className="md:hidden fixed top-2.5 sm:top-3 left-3 z-[65] w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center text-zinc-800 dark:text-zinc-200 hover:text-black dark:hover:text-white active:scale-95 transition-all cursor-pointer pointer-events-auto rounded-full bg-white/85 dark:bg-zinc-800/85 backdrop-blur-md border border-gray-200/70 dark:border-zinc-700/60 shadow-2xs hover:bg-white dark:hover:bg-zinc-700"
           aria-label="Open sidebar menu"
           title="Open menu"
         >
-          <List size={20} weight="bold" />
+          <List size={22} weight="bold" />
         </button>
       )}
 
@@ -291,8 +291,8 @@ export default function Sidebar({
               className="flex items-center transition-opacity hover:opacity-80 cursor-pointer"
               title="Start fresh discovery"
             >
-              <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals Logo" width={136} height={30} className="object-contain block dark:hidden drop-shadow-xs" />
-              <Image src="/images/icons/ExpandedRealtyPalsWhite.png" alt="RealtyPals Logo" width={136} height={30} className="object-contain hidden dark:block drop-shadow-xs" />
+              <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals Logo" width={136} height={30} style={{ width: 'auto', height: 'auto' }} className="object-contain block dark:hidden drop-shadow-xs" priority />
+              <Image src="/images/icons/ExpandedRealtyPalsWhite.png" alt="RealtyPals Logo" width={136} height={30} style={{ width: 'auto', height: 'auto' }} className="object-contain hidden dark:block drop-shadow-xs" priority />
             </Link>
             <button
               type="button"

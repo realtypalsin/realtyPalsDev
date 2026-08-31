@@ -5,6 +5,34 @@ import { prisma } from '../lib/db'
 import { createAdminSession, requireAdmin, destroyAdminSession } from '../lib/adminAuth'
 import { computeCompleteness } from '../lib/completeness'
 import { checkRateLimit } from '../lib/cache'
+import { z } from 'zod'
+
+/**
+ * A number the admin actually supplied, or null — never a substituted zero.
+ *
+ * The distinction is the whole product. `null` means "we have not checked";
+ * `0` means "we checked and there are none". Several writers coerced an
+ * untouched form field to 0, so an admin who never opened a section published
+ * a verified-clean record for it — 280 projects carried `litigation_count: 0`
+ * and 117 builders carried `delayed_projects_count: 0` that nobody had looked
+ * up. Zero on a litigation count is the single most damaging value to be wrong
+ * about, because it is the field a cautious buyer relies on.
+ *
+ * NaN is folded into null too: `parseInt('n/a')` is NaN, which Prisma rejects
+ * at write time with a 500 instead of at validation time with a message.
+ */
+function numOrNull(val: unknown, parse: (s: string) => number = (s) => parseInt(s, 10)): number | null {
+  if (val === undefined || val === null || val === '') return null
+  const n = typeof val === 'number' ? val : parse(String(val).trim())
+  return Number.isFinite(n) ? n : null
+}
+
+/** Accepts a real array or a comma-separated string; trims and drops blanks. */
+function parseStringArray(val: unknown): string[] {
+  if (Array.isArray(val)) return val.map((s) => String(s).trim()).filter(Boolean)
+  if (typeof val === 'string') return val.split(',').map((s) => s.trim()).filter(Boolean)
+  return []
+}
 
 // ProjectDocument has no @relation to Project, and rows may carry either
 // project_id or project_slug. Resolve the :id param (which may be an id OR a
@@ -1191,10 +1219,19 @@ router.post('/builders', requireAdmin, async (req: Request, res: Response) => {
     headquarters,
     website,
     logo_url,
+    cin,
+    rera_promoter_id,
+    founder,
+    parent_group,
+    delivered_projects,
+    ongoing_projects,
+    delayed_projects_count,
+    average_delay_months,
     credai_member,
     delivered_units,
     rera_compliance_score,
     iso_certified,
+    description,
     company_overview,
   } = req.body
 
@@ -1216,11 +1253,26 @@ router.post('/builders', requireAdmin, async (req: Request, res: Response) => {
         headquarters: headquarters || null,
         website: website || null,
         logo_url: logo_url || null,
+        cin: cin || null,
+        rera_promoter_id: rera_promoter_id || null,
+        founder: founder || null,
+        parent_group: parent_group || null,
+        delivered_projects: parseStringArray(delivered_projects),
+        ongoing_projects: parseStringArray(ongoing_projects),
+        // null, not 0. These two are the honest-negative fields — "how many of
+        // this builder's projects ran late, and by how long". Defaulting an
+        // untouched form to 0 turns "nobody has checked" into "verified clean
+        // record", which is a claim we cannot support and the most damaging
+        // direction to be wrong in. `numOrNull` keeps NaN out too: parseInt on
+        // a stray string yields NaN, which Prisma rejects at write time with a
+        // 500 rather than at validation time with a message.
+        delayed_projects_count: numOrNull(delayed_projects_count),
+        average_delay_months: numOrNull(average_delay_months, parseFloat),
         credai_member: credai_member || false,
         delivered_units: delivered_units ? parseInt(delivered_units) : null,
         rera_compliance_score: rera_compliance_score ? parseInt(rera_compliance_score) : null,
         iso_certified: iso_certified || false,
-        description: company_overview || null,
+        description: description || company_overview || null,
       },
       include: {
         _count: { select: { projects: true } },
@@ -1242,11 +1294,16 @@ router.patch('/builders/:id', requireAdmin, async (req: Request, res: Response) 
   try {
     const { id: _, created_at: __, _count: ___, projects: ____, ...validFields } = updates
 
-    // Coerce types for numeric fields
+    // Coerce types for numeric and array fields
     const data: any = { ...validFields }
-    if (data.founded_year) data.founded_year = parseInt(data.founded_year)
-    if (data.delivered_units) data.delivered_units = parseInt(data.delivered_units)
-    if (data.rera_compliance_score) data.rera_compliance_score = parseInt(data.rera_compliance_score)
+    // Every one of these clears to null rather than to 0 — see numOrNull.
+    for (const f of ['founded_year', 'delivered_units', 'rera_compliance_score', 'delayed_projects_count'] as const) {
+      if (data[f] !== undefined) data[f] = numOrNull(data[f])
+    }
+    if (data.average_delay_months !== undefined) data.average_delay_months = numOrNull(data.average_delay_months, parseFloat)
+    for (const f of ['delivered_projects', 'ongoing_projects'] as const) {
+      if (data[f] !== undefined) data[f] = parseStringArray(data[f])
+    }
     if (data.company_overview) { data.description = data.company_overview; delete data.company_overview }
 
     const builder = await prisma.builder.update({
@@ -1261,6 +1318,156 @@ router.patch('/builders/:id', requireAdmin, async (req: Request, res: Response) 
   } catch (err) {
     console.error('[admin] builder update failed:', err)
     res.status(500).json({ error: 'Failed to update builder' })
+  }
+})
+
+// GET /api/v1/admin/sectors — list all sector intelligence
+router.get('/sectors', requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const sectors = await prisma.sectorIntelligence.findMany({
+      orderBy: [{ city: 'asc' }, { sector: 'asc' }]
+    })
+    res.json({ sectors })
+  } catch (err) {
+    console.error('[admin] sectors query failed:', err)
+    res.status(500).json({ error: 'Failed to fetch sector intelligence' })
+  }
+})
+
+/**
+ * What a sector-intelligence PUT is allowed to change.
+ *
+ * The first version spread `req.body` straight into the Prisma update. That is
+ * mass assignment: any column on the model becomes writable by whatever the
+ * client sends, `id` and `created_at` included, and an unrecognised key is a
+ * Prisma exception surfaced as a 500 rather than a validation message. Every
+ * other writer in this file works from an allowlist; this one now does too.
+ *
+ * Numbers are coerced through `numOrNull`, so clearing a field stores null
+ * rather than 0 — an AQI of 0 is not a clean reading, it is a missing one.
+ */
+const SectorIntelligenceUpdate = z.object({
+  aqi_annual_avg: z.union([z.number(), z.string(), z.null()]).optional(),
+  aqi_winter_peak: z.union([z.number(), z.string(), z.null()]).optional(),
+  aqi_monsoon_low: z.union([z.number(), z.string(), z.null()]).optional(),
+  monitoring_station_name: z.string().trim().max(200).nullish(),
+  flood_waterlogging_risk: z.enum(['LOW', 'MODERATE', 'HIGH', 'BUFFER_ZONE']).nullish(),
+  flood_zone_description: z.string().trim().max(1000).nullish(),
+  drainage_network_quality: z.enum(['EXCELLENT', 'SATISFACTORY', 'DEVELOPING']).nullish(),
+  airport_distance_km: z.union([z.number(), z.string(), z.null()]).optional(),
+  nearest_metro_station: z.string().trim().max(200).nullish(),
+  metro_distance_km: z.union([z.number(), z.string(), z.null()]).optional(),
+  expressway_proximity_km: z.union([z.number(), z.string(), z.null()]).optional(),
+  micro_market: z.string().trim().max(200).nullish(),
+}).strict()
+
+const SECTOR_NUMERIC_FIELDS = [
+  'aqi_annual_avg', 'aqi_winter_peak', 'aqi_monsoon_low',
+  'airport_distance_km', 'metro_distance_km', 'expressway_proximity_km',
+] as const
+
+// PUT /api/v1/admin/sectors/:id — update sector intelligence
+router.put('/sectors/:id', requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params
+
+  const parsed = SectorIntelligenceUpdate.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({
+      error: 'Invalid sector intelligence payload',
+      details: parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`),
+    })
+  }
+
+  const data: Record<string, unknown> = { ...parsed.data }
+  for (const f of SECTOR_NUMERIC_FIELDS) {
+    if (data[f] !== undefined) data[f] = numOrNull(data[f], parseFloat)
+  }
+  // Stamped by the server, never by the client — it is the record of when a
+  // human last vouched for these numbers, and a client-set value would make it
+  // worthless as an audit signal.
+  data.last_verified_at = new Date()
+
+  try {
+    const sector = await prisma.sectorIntelligence.update({ where: { id }, data })
+    res.json({ sector })
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      return res.status(404).json({ error: 'Sector not found' })
+    }
+    console.error('[admin] sector update failed:', err)
+    res.status(500).json({ error: 'Failed to update sector intelligence' })
+  }
+})
+
+/**
+ * GET /api/v1/admin/coverage-gaps — what buyers asked for that we could not serve.
+ *
+ * Two kinds, deliberately separate because they are different decisions taken
+ * by different people:
+ *
+ *   project  a named development with no row. "Buildings to add."
+ *   sector   an area we hold nothing in.      "Areas to expand into."
+ *
+ * A sector repeating here is the strongest demand signal this product makes —
+ * a buyer telling us where they want to live, in a place we cannot sell them
+ * anything. Ranked by how often it has been asked, because that is the number
+ * that should drive the decision.
+ */
+router.get('/coverage-gaps', requireAdmin, async (req: Request, res: Response) => {
+  const kind = String(req.query.kind ?? 'all')
+  const days = Math.min(365, Math.max(1, Number(req.query.days ?? 30)))
+  const since = new Date(Date.now() - days * 86_400_000)
+
+  const types =
+    kind === 'project' ? ['coverage_gap']
+    : kind === 'sector' ? ['sector_gap']
+    : ['coverage_gap', 'sector_gap']
+
+  try {
+    const rows = await prisma.auditLog.findMany({
+      where: { entity_type: { in: types }, created_at: { gte: since } },
+      orderBy: { created_at: 'desc' },
+      take: 1000,
+      select: { entity_type: true, entity_name: true, summary: true, changes: true, created_at: true },
+    })
+
+    // Grouped by what was asked for, not by when — the same project asked
+    // about forty times is one thing to add, not forty rows to read.
+    const byName = new Map<string, {
+      name: string; kind: string; asks: number; firstAsked: Date; lastAsked: Date; queries: string[]
+    }>()
+    for (const r of rows) {
+      const name = r.entity_name ?? '(unnamed)'
+      const key = `${r.entity_type}::${name.toLowerCase()}`
+      const q = (r.changes as { query?: string } | null)?.query
+      const hit = byName.get(key)
+      if (hit) {
+        hit.asks++
+        hit.firstAsked = r.created_at < hit.firstAsked ? r.created_at : hit.firstAsked
+        if (q && hit.queries.length < 5 && !hit.queries.includes(q)) hit.queries.push(q)
+      } else {
+        byName.set(key, {
+          name,
+          kind: r.entity_type === 'sector_gap' ? 'sector' : 'project',
+          asks: 1,
+          firstAsked: r.created_at,
+          lastAsked: r.created_at,
+          queries: q ? [q] : [],
+        })
+      }
+    }
+
+    const gaps = [...byName.values()].sort((a, b) => b.asks - a.asks || +b.lastAsked - +a.lastAsked)
+    res.json({
+      windowDays: days,
+      totalAsks: rows.length,
+      distinct: gaps.length,
+      projects: gaps.filter((g) => g.kind === 'project'),
+      sectors: gaps.filter((g) => g.kind === 'sector'),
+    })
+  } catch (err) {
+    console.error('[admin] coverage-gaps query failed:', err)
+    res.status(500).json({ error: 'Failed to fetch coverage gaps' })
   }
 })
 

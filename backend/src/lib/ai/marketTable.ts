@@ -19,6 +19,17 @@ export interface MarketTableOptions {
   limit?: number
   /** Ordering. Price ascending suits a budget question, descending a premium one. */
   order?: 'price_asc' | 'price_desc'
+  /**
+   * Sectors the buyer actually named, if any. When set, the table is scoped to
+   * the micro-markets those sectors belong to instead of the whole city.
+   */
+  focusSectors?: string[]
+}
+
+/** "Sector 74", "sector-74" and "74" are the same place. */
+function sameSector(a: string, b: string): boolean {
+  const key = (s: string) => s.toLowerCase().replace(/sector/g, '').replace(/[^a-z0-9]/g, '')
+  return key(a) === key(b)
 }
 
 /** The Noida micro-market table, from our own rows. */
@@ -26,10 +37,26 @@ export function renderMicroMarketTable(
   markets: MicroMarketSummary[],
   options: MarketTableOptions = {},
 ): string {
-  const { limit = 6, order = 'price_asc' } = options
+  const { limit = 6, order = 'price_asc', focusSectors } = options
   if (!markets || markets.length < 2) return ''
 
-  const rows = [...markets]
+  // A buyer who names sectors is asking about those sectors.
+  //
+  // "Which is better for a family: Sector 74, 75, 76 or 78?" rendered the full
+  // city table — six micro-markets, one of them twenty sectors wide, and not
+  // one of 75, 76 or 78 in it. The prose underneath then quoted ₹12,200/sqft
+  // for Sector 78 while the table above said ₹9,500 for the band containing 74.
+  // Two different answers to the same question, stacked.
+  //
+  // So: keep only the micro-markets the named sectors actually fall in. If
+  // fewer than two survive there is no comparison left to draw, and a
+  // one-row table is worse than no table — the prose already covers it.
+  const focused = focusSectors?.length
+    ? markets.filter((m) => m.sectors?.some((s) => focusSectors.some((f) => sameSector(s, f))))
+    : markets
+  if (focusSectors?.length && focused.length < 2) return ''
+
+  const rows = [...focused]
     .filter((m) => m.microMarket)
     .sort((a, b) =>
       order === 'price_desc'
@@ -46,9 +73,15 @@ export function renderMicroMarketTable(
 
   const body = rows.map((m) => {
     const rate = m.avgPricePerSqft ? `${rupees(m.avgPricePerSqft)}/sqft` : ABSENT
+    // A range whose ends are equal is not a range. Four of six rows printed
+    // "₹8,800 – ₹8,800", which reads as a measurement spread when it is one
+    // observation — and on the twenty-sector row it implied twenty sectors
+    // priced identically to the rupee.
     const range =
       m.priceRange?.min && m.priceRange?.max
-        ? `${rupees(m.priceRange.min)} – ${rupees(m.priceRange.max)}`
+        ? m.priceRange.min === m.priceRange.max
+          ? rupees(m.priceRange.min)
+          : `${rupees(m.priceRange.min)} – ${rupees(m.priceRange.max)}`
         : ABSENT
     // One characterising phrase, not the full tag list: a table the buyer has
     // to scroll sideways on a phone is not a table they read.
@@ -348,7 +381,11 @@ export function renderSectorComparisonTable(a: SectorStats, b: SectorStats): str
   if (!a?.sector || !b?.sector) return ''
 
   const rows: Array<[string, string, string]> = [
-    ['Projects we hold', String(a.totalProjects), String(b.totalProjects)],
+    // Not "Projects we hold". A buyer comparing two sectors is asking about
+    // the market, and a row phrased as our inventory count answers a question
+    // they did not ask — it reads as bookkeeping, and it invites the reading
+    // that a sector with fewer rows in our database has fewer buildings in it.
+    ['Projects listed', String(a.totalProjects), String(b.totalProjects)],
     ['Ready to move', String(a.readyCount), String(b.readyCount)],
     ['Price band', a.priceRange, b.priceRange],
     ['Landmark societies', a.topProjects, b.topProjects],
@@ -374,4 +411,112 @@ export function wantsMarketTable(message: string, hasProjectFocus: boolean): boo
     /\b(rate|rates|price|prices|per sq|psf|cost)\b/.test(m) ||
     /\bshortlist\b|\boptions\b/.test(m)
   )
+}
+
+// ── Citywide band shelf ──────────────────────────────────────────────────────
+
+/**
+ * "Which is the best project in Noida?" — no sector, no budget, no buyer profile.
+ *
+ * There is no honest single answer, and the old behaviour did not give one: the
+ * retrieval branch behind this question ordered by `created_at DESC`, so the
+ * "best project in Noida" was whichever row was seeded most recently, scored
+ * against an intent that is empty by definition. Seed order presented as a
+ * ranking is the fake-confidence failure this codebase forbids elsewhere.
+ *
+ * The answer is a shelf, not a winner: the strongest project we hold in each of
+ * three price bands, with the rule that chose them printed above it. Three
+ * defensible picks, no crowned favourite for a buyer we know nothing about, and
+ * the buyer sees our actual range rather than our newest imports.
+ *
+ * Rendered in code for the same reason the cost sheet and the affordability
+ * table are: every column is one we hold, a gap prints "Not recorded", and the
+ * model cannot invent a "5-Yr Upside" column it has no data for.
+ */
+export interface BandShelfRow extends ProjectRow {
+  /** Lowest asking price we hold, in crore. Absent means unpriced. */
+  entryPriceCr?: number | null
+  rera_number?: string | null
+  litigation_count?: number | null
+}
+
+/** The bands, in the order a buyer reads them. */
+const SHELF_BANDS: Array<{ label: string; lo: number; hi: number }> = [
+  { label: 'Under ₹1 Cr', lo: 0, hi: 1 },
+  { label: '₹1–2 Cr', lo: 1, hi: 2 },
+  { label: 'Above ₹2 Cr', lo: 2, hi: Number.POSITIVE_INFINITY },
+]
+
+/** Lowest real asking price for a row, in crore. */
+function shelfEntryPrice(p: BandShelfRow): number | null {
+  if (typeof p.entryPriceCr === 'number' && p.entryPriceCr > 0) return p.entryPriceCr
+  const unit = (p.unit_types ?? [])
+    .map((u) => u.price_min_cr ?? u.price_max_cr)
+    .filter((n): n is number => typeof n === 'number' && n > 0)
+  if (unit.length > 0) return Math.min(...unit)
+  return typeof p.price_min_cr === 'number' && p.price_min_cr > 0 ? p.price_min_cr : null
+}
+
+/**
+ * The shelf, or '' when fewer than two bands have anything in them.
+ *
+ * Two bands is the floor because one band is not a shelf — it is a shortlist
+ * with extra framing, and `renderProjectTable` already does that better.
+ */
+export function renderCityBandShelf(projects: BandShelfRow[], city = 'Noida'): string {
+  if (!projects || projects.length === 0) return ''
+
+  const chosen: Array<{ band: string; row: BandShelfRow; price: number }> = []
+  for (const band of SHELF_BANDS) {
+    const inBand = projects
+      .map((p) => ({ p, price: shelfEntryPrice(p) }))
+      .filter((x) => x.price !== null && x.price >= band.lo && x.price < band.hi)
+    if (inBand.length === 0) continue
+    // Already ordered by the retrieval rule; the first in each band is its pick.
+    chosen.push({ band: band.label, row: inBand[0].p, price: inBand[0].price as number })
+  }
+
+  if (chosen.length < 2) return ''
+
+  const header =
+    '| Budget | Project | Builder | Sector | Entry price | Possession |\n' +
+    '| :--- | :--- | :--- | :--- | :--- | :--- |'
+
+  const body = chosen.map(({ band, row, price }) => {
+    // `humanPlanType` and not the raw column: measured live, one row printed
+    // "ready_to_move" beside another that printed "Ready to Move", because
+    // `possession_label` is populated on some projects and not others and the
+    // fallback was the enum. Two spellings of the same state in one table reads
+    // as two different states.
+    const possession = row.possession_label ?? humanPlanType(row.status) ?? ABSENT
+    return `| **${cell(band)}** | ${cell(row.name ?? '')} | ${cell(row.builder?.name ?? '')} | ${cell(sectorName(row.sector))} | ${cell(`from ₹${price} Cr`)} | ${cell(possession)} |`
+  })
+
+  // The rule is printed, not implied. A buyer who disagrees with the ranking can
+  // see what it ranked on, which is the difference between a recommendation and
+  // a leaderboard.
+  const rule =
+    `Strongest ${city} project we hold in each budget band, ranked on RERA registration, ` +
+    `the builder's own delivery record, and recorded litigation — not on price alone.`
+
+  return `${rule}\n\n${header}\n${body.join('\n')}`
+}
+
+/**
+ * True when the question is citywide and superlative — no place, no budget.
+ *
+ * Narrow on purpose, and narrower than it looks: the shelf is only right when we
+ * genuinely have nothing to narrow by. A buyer who has said "under 1.5 crore"
+ * gets a ranked shortlist, because at that point one band IS the answer.
+ */
+export function wantsCityBandShelf(
+  message: string,
+  opts: { hasSector: boolean; hasBudget: boolean; hasProjectFocus: boolean },
+): boolean {
+  if (opts.hasSector || opts.hasBudget || opts.hasProjectFocus) return false
+  const m = (message || '').toLowerCase()
+  if (!m) return false
+  const superlative = /\b(best|top|cheapest|costliest|most expensive|safest|nicest|good(?:est)?|recommend|suggest|which\s+(?:one|project|society|property))\b/.test(m)
+  const inventory = /\b(project|projects|society|societies|propert(?:y|ies)|flat|flats|apartment|apartments|builder|builders|place|option|options)\b/.test(m)
+  return superlative && inventory
 }

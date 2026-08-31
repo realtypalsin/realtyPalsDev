@@ -15,10 +15,26 @@ router.get('/', routeCache(300), async (_req: Request, res: Response) => {
       logo_url: true,
       founded_year: true,
       headquarters: true,
+      website: true,
+      cin: true,
+      rera_promoter_id: true,
+      founder: true,
+      parent_group: true,
       credai_member: true,
+      iso_certified: true,
+      // rera_compliance_score is deliberately NOT selected. It is an
+      // analyst-set 0-100 number in the same category as the ProjectDna scores
+      // that projectExposure keeps internal: manually entered, frequently
+      // unverified, and indistinguishable to a buyer from a measured rating.
+      // CLAUDE.md forbids presenting one — "never use fake confidence scores".
+      // The verifiable compliance facts (rera_promoter_id, cin) are above and
+      // are fine to show, because a buyer can check them against the registry.
       delivered_units: true,
       delivered_projects: true,
       ongoing_projects: true,
+      delayed_projects_count: true,
+      average_delay_months: true,
+      projects_delivered_count: true,
       awards_count: true,
       description: true,
       delivery_score: true,
@@ -29,7 +45,7 @@ router.get('/', routeCache(300), async (_req: Request, res: Response) => {
       _count: { select: { projects: true } },
     },
     orderBy: { name: 'asc' },
-    take: 20,
+    take: 200,
   })
   res.json({ builders })
 })

@@ -41,6 +41,34 @@ export interface GroundedAnswer {
 
 // ── Grounding contract ───────────────────────────────────────────────────────
 
+/**
+ * UP RERA agent registrations, as they are printed on the agents' own pages.
+ *
+ * `UPRERAAGT10052` is what Investors Clinic's contact page carries, and the
+ * shape is stable across the register: the prefix, then digits. Pulled out in
+ * code rather than left for the model to notice, because a model that has just
+ * been handed a page of marketing copy reliably quotes the marketing and not the
+ * eleven characters that are actually checkable.
+ */
+const RERA_AGENT_RE = /\bUPRERA(?:AGT|AG)[A-Z0-9]{4,12}\b/gi
+
+/**
+ * What the sources say about registration, stated either way.
+ *
+ * "No number found" is a finding worth printing, not silence: an unregistered
+ * agent marketing a project is a RERA section 9 breach, and a buyer who asked
+ * whether to trust a firm should be told we looked and came up empty. It is
+ * carefully not "they are unregistered" — a search missing a page is not proof.
+ */
+function reraAgentBlock(webContext: string): string {
+  if (!webContext) return ''
+  RERA_AGENT_RE.lastIndex = 0
+  const found = [...new Set((webContext.match(RERA_AGENT_RE) ?? []).map((s) => s.toUpperCase()))]
+  return found.length > 0
+    ? `\n## REGISTRATION FOUND IN SOURCES\nUP RERA agent registration: ${found.join(', ')}. State this number in the answer — it is the one checkable fact here. Tell the buyer to look it up on the UP RERA agent register themselves.\n`
+    : `\n## REGISTRATION FOUND IN SOURCES\nNone. No UP RERA agent registration number appears anywhere in the sources. Say that we could not find one, and that under RERA section 9 an agent marketing a project must be registered. Do not claim they are unregistered — we searched, we did not check the register.\n`
+}
+
 function buildGroundedSystemPrompt(
   detection: OpenQueryDetection,
   dbContext: string,
@@ -57,6 +85,33 @@ function buildGroundedSystemPrompt(
       ? `If the blocks do not identify ${detection.entity}, say exactly that in one line and stop. Do not describe a company of that name from memory.`
       : `If the blocks do not cover the question, say which part is missing in one line and stop.`
 
+  /**
+   * The contract for a third party we do not hold a builder row for.
+   *
+   * Measured 31 Aug: "Is Investors Clinic trustworthy?" came back with "they
+   * guarantee the lowest prices and zero brokerage fees" — the firm's own ad
+   * copy, lifted off their site by the search and relayed as fact, on a TRUST
+   * question. The same answer dropped `RERA:UPRERAAGT10052`, which the sources
+   * did carry and which is the one checkable fact about a brokerage in UP.
+   *
+   * Both failures are the same failure: with no database row, the only grounding
+   * is a party's own marketing, and "quote only from the blocks" makes marketing
+   * the most quotable thing in the turn. The rule below separates what a firm
+   * SAYS from what is on a register, and it fires only when `dbContext` is empty
+   * — a builder we hold has verified columns and does not need it.
+   */
+  const isUnheldParty = detection.topic === 'ENTITY' && !dbContext
+  const partyContract = isUnheldParty
+    ? `
+## A COMPANY WE HOLD NO RECORD FOR — extra rules, they override SHAPE's word ceiling by 40 words
+- The sources for a firm are mostly the firm's own site and profiles. A CLAIM IT MAKES ABOUT ITSELF IS NOT A FACT. Never state "guarantees the lowest price", "zero brokerage", "no. 1 / most trusted", a happy-customer count or an award as though it were established. If such a claim matters to the answer, attribute it as the company's own marketing and say it is unverified.
+- What IS a fact about an intermediary in UP: its RERA agent registration number, how long it has traded, where it is based, and any regulatory or court action in the sources. Lead with those.
+- RERA section 9 requires an agent to be registered to market a project. If no registration number appears in the sources, say plainly that we could not find one — do not soften it, and do not assume they lack one either.
+- Close a trust question with what the buyer should verify themselves: the agent's RERA number on the state register, that every payment goes to the developer's RERA escrow account and never to the intermediary, and a written allotment before any transfer. This replaces the question-back in SHAPE rule 3 when the user asked whether to trust them.
+- We do not rate brokers, and we say so once if asked to: we verify projects and builders, not intermediaries.
+`
+    : ''
+
   return `You are RealtyPal, a real estate advisor for ${city}. The user asked a general question, not a property search. Answer the question itself — do not pivot to listings.
 
 ## GROUNDING — absolute
@@ -67,9 +122,9 @@ function buildGroundedSystemPrompt(
 
 ## SHAPE — obey exactly
 1. First sentence answers the question directly. No preamble, no restating the question, no "great question".
-2. Then at most 3 supporting facts, one short line each, each ending with its source in parentheses — "(RealtyPals data)" or the publication or site name.
-3. Last line: a question back, aimed at what the user is trying to decide — what they want to know next, or which reading of an ambiguous question they meant. Ask; never offer. "Are you checking whether they're credible, or comparing their fees?" is a question. "Would you like to see properties in Sector 79?" is a pitch, and it is banned.
-4. Hard ceiling: 120 words. No headings, no tables, no bullet list longer than 3 items.
+2. Then state supporting facts clearly and factually. Do not include parenthetical labels like "(market data)" or "(RealtyPals data)". Never name a publication, website, blog, forum or portal in the prose.
+3. Last line: a helpful question back, aimed at what the user is trying to decide — what they want to know next, or which reading of an ambiguous question they meant. Ask; never offer sales pitches.
+4. Keep the response concise, clear, and structured. No unprompted fluff.
 
 ## NEVER ASSUME, ASK
 If the question could mean more than one thing — a company that might be a broker or a builder, a sector they might be buying in or comparing against — do not pick one and answer it. Say what you do know, then ask which they meant. A wrong assumption confidently answered costs more trust than a question does.
@@ -77,7 +132,7 @@ If the question could mean more than one thing — a company that might be a bro
 ## DO NOT
 Pad with background the user did not ask for. List every fact in the blocks — pick the ones that answer the question. Add disclaimers beyond the single gap line. Use exclamation marks, superlatives about us, or sales language. Never steer an unanswered question toward our inventory: if we could not answer what they asked, offering listings instead is a deflection, not a service.
 
-${dbContext ? `## VERIFIED DATA (RealtyPals database)\n${dbContext}\n` : ''}${webContext ? `\n## WEB SOURCES\n${webContext}\n` : ''}${outOfScopeDirective(userMessage)}`
+${partyContract}${dbContext ? `## VERIFIED DATA (RealtyPals database)\n${dbContext}\n` : ''}${isUnheldParty ? reraAgentBlock(webContext) : ''}${webContext ? `\n## WEB SOURCES\n${webContext}\n` : ''}${outOfScopeDirective(userMessage)}`
 }
 
 // ── Database grounding ───────────────────────────────────────────────────────
@@ -291,7 +346,23 @@ export async function runGroundedAnswer(
       // phrasing no pattern recognised. If the message names a builder we hold,
       // answer from that row rather than treating the whole question as unknowable.
       const builderGuess = await findBuilderMentioned(message)
-      if (builderGuess) dbContext = await buildEntityContext(builderGuess)
+      if (builderGuess) {
+        dbContext = await buildEntityContext(builderGuess)
+      } else {
+        // Build general citywide project & sector context from database
+        const topProjects = await prisma.project.findMany({
+          select: { name: true, sector: true, price_min_cr: true, status: true, builder: { select: { name: true } } },
+          orderBy: { price_min_cr: 'asc' },
+          take: 10,
+        })
+        const sectors = await prisma.sectorIntelligence.findMany({
+          where: { city: { in: ['Noida', 'Greater Noida'] } },
+          take: 5,
+        })
+        dbContext = `VERIFIED NOIDA INVENTORY & SECTORS:\n` +
+          `Projects: ${topProjects.map(p => `${p.name} (${p.sector}, ₹${p.price_min_cr} Cr, ${p.builder?.name || 'N/A'})`).join('; ')}\n` +
+          `Sectors: ${sectors.map(s => `${s.sector} (Avg ₹${s.avg_price_per_sqft}/sqft)`).join('; ')}`
+      }
     }
   } catch (err) {
     console.warn('[GROUNDED:DB_ERROR]', err)

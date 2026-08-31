@@ -44,6 +44,14 @@ interface Builder {
   founded_year: number | null
   headquarters: string | null
   website: string | null
+  cin: string | null
+  rera_promoter_id: string | null
+  founder: string | null
+  parent_group: string | null
+  delivered_projects: string[]
+  ongoing_projects: string[]
+  delayed_projects_count: number | null
+  average_delay_months: number | null
   credai_member: boolean
   delivered_units: number | null
   rera_compliance_score: number | null
@@ -60,6 +68,14 @@ type FormState = {
   founded_year: string
   headquarters: string
   website: string
+  cin: string
+  rera_promoter_id: string
+  founder: string
+  parent_group: string
+  delivered_projects: string
+  ongoing_projects: string
+  delayed_projects_count: string
+  average_delay_months: string
   credai_member: boolean
   company_overview: string
   delivered_units: string
@@ -72,8 +88,10 @@ type FilterTag = 'all' | 'credai' | 'iso' | 'active_projects'
 type SortField = 'name' | 'founded' | 'hq' | 'projects'
 
 const EMPTY_FORM: FormState = {
-  name: '', slug: '', founded_year: '', headquarters: '', website: '', credai_member: false,
-  company_overview: '', delivered_units: '', rera_compliance_score: '90', iso_certified: false, logo_url: ''
+  name: '', slug: '', founded_year: '', headquarters: '', website: '',
+  cin: '', rera_promoter_id: '', founder: '', parent_group: '',
+  delivered_projects: '', ongoing_projects: '', delayed_projects_count: '0', average_delay_months: '0',
+  credai_member: false, company_overview: '', delivered_units: '', rera_compliance_score: '90', iso_certified: false, logo_url: ''
 }
 
 function toSlug(name: string) {
@@ -128,6 +146,66 @@ function BuilderFormFields({
           />
         </div>
 
+        {/* CIN */}
+        <div>
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Corporate CIN (MCA)</span>
+          </label>
+          <input
+            type="text"
+            value={form.cin}
+            onChange={(e) => set('cin')(e.target.value)}
+            placeholder="e.g. U70102DL2010PTC207944"
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-mono font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
+          />
+        </div>
+
+        {/* RERA Promoter ID */}
+        <div>
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
+            <span>UP-RERA Promoter ID</span>
+          </label>
+          <input
+            type="text"
+            value={form.rera_promoter_id}
+            onChange={(e) => set('rera_promoter_id')(e.target.value)}
+            placeholder="e.g. UPRERAPRM1045"
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-mono font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
+          />
+        </div>
+
+        {/* Founder / MD */}
+        <div>
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Founder / Managing Director</span>
+          </label>
+          <input
+            type="text"
+            value={form.founder}
+            onChange={(e) => set('founder')(e.target.value)}
+            placeholder="e.g. Getamber Anand"
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
+          />
+        </div>
+
+        {/* Parent Group */}
+        <div>
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Parent Corporate Group</span>
+          </label>
+          <input
+            type="text"
+            value={form.parent_group}
+            onChange={(e) => set('parent_group')(e.target.value)}
+            placeholder="e.g. ATS Group"
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
+          />
+        </div>
+
         {/* Founded Year */}
         <div>
           <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
@@ -168,7 +246,7 @@ function BuilderFormFields({
             type="url"
             value={form.website}
             onChange={(e) => set('website')(e.target.value)}
-            placeholder="https://ats.co.in"
+            placeholder="https://atsgreens.com"
             className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
           />
         </div>
@@ -187,6 +265,67 @@ function BuilderFormFields({
             className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-mono font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
           />
         </div>
+
+        {/* Delayed Projects Count */}
+        <div>
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Delayed Projects Count</span>
+          </label>
+          <input
+            type="number"
+            value={form.delayed_projects_count}
+            onChange={(e) => set('delayed_projects_count')(e.target.value)}
+            placeholder="0"
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-mono font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
+          />
+        </div>
+
+        {/* Average Delay Months */}
+        <div>
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Average Delay (Months)</span>
+          </label>
+          <input
+            type="number"
+            step="0.1"
+            value={form.average_delay_months}
+            onChange={(e) => set('average_delay_months')(e.target.value)}
+            placeholder="0.0"
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-mono font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
+          />
+        </div>
+      </div>
+
+      {/* Delivered Projects Array (Comma Separated) */}
+      <div>
+        <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+          <Building2 className="w-3.5 h-3.5 text-zinc-400" />
+          <span>Delivered Projects Portfolio (Comma Separated)</span>
+        </label>
+        <input
+          type="text"
+          value={form.delivered_projects}
+          onChange={(e) => set('delivered_projects')(e.target.value)}
+          placeholder="ATS Village, ATS One Hamlet, ATS Pristine"
+          className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
+        />
+      </div>
+
+      {/* Ongoing Projects Array (Comma Separated) */}
+      <div>
+        <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5 flex items-center gap-1.5">
+          <Building2 className="w-3.5 h-3.5 text-zinc-400" />
+          <span>Ongoing Projects (Comma Separated)</span>
+        </label>
+        <input
+          type="text"
+          value={form.ongoing_projects}
+          onChange={(e) => set('ongoing_projects')(e.target.value)}
+          placeholder="ATS Le Grandiose, ATS Pious Orchards, ATS Kingston Heath"
+          className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-zinc-400"
+        />
       </div>
 
       {/* RERA Compliance Score Input */}
@@ -394,6 +533,14 @@ export default function AdminBuilders() {
           founded_year: addForm.founded_year ? parseInt(addForm.founded_year) : null,
           headquarters: addForm.headquarters || null,
           website: addForm.website || null,
+          cin: addForm.cin || null,
+          rera_promoter_id: addForm.rera_promoter_id || null,
+          founder: addForm.founder || null,
+          parent_group: addForm.parent_group || null,
+          delivered_projects: addForm.delivered_projects ? addForm.delivered_projects.split(',').map(s => s.trim()).filter(Boolean) : [],
+          ongoing_projects: addForm.ongoing_projects ? addForm.ongoing_projects.split(',').map(s => s.trim()).filter(Boolean) : [],
+          delayed_projects_count: addForm.delayed_projects_count ? parseInt(addForm.delayed_projects_count) : 0,
+          average_delay_months: addForm.average_delay_months ? parseFloat(addForm.average_delay_months) : 0,
           credai_member: addForm.credai_member,
           company_overview: addForm.company_overview || null,
           delivered_units: addForm.delivered_units ? parseInt(addForm.delivered_units) : null,
@@ -428,6 +575,14 @@ export default function AdminBuilders() {
       founded_year: b.founded_year ? String(b.founded_year) : '',
       headquarters: b.headquarters || '',
       website: b.website || '',
+      cin: b.cin || '',
+      rera_promoter_id: b.rera_promoter_id || '',
+      founder: b.founder || '',
+      parent_group: b.parent_group || '',
+      delivered_projects: Array.isArray(b.delivered_projects) ? b.delivered_projects.join(', ') : '',
+      ongoing_projects: Array.isArray(b.ongoing_projects) ? b.ongoing_projects.join(', ') : '',
+      delayed_projects_count: b.delayed_projects_count !== null && b.delayed_projects_count !== undefined ? String(b.delayed_projects_count) : '0',
+      average_delay_months: b.average_delay_months !== null && b.average_delay_months !== undefined ? String(b.average_delay_months) : '0',
       credai_member: b.credai_member,
       company_overview: b.description || '',
       delivered_units: b.delivered_units ? String(b.delivered_units) : '',
@@ -449,6 +604,14 @@ export default function AdminBuilders() {
           founded_year: editForm.founded_year ? parseInt(editForm.founded_year) : null,
           headquarters: editForm.headquarters || null,
           website: editForm.website || null,
+          cin: editForm.cin || null,
+          rera_promoter_id: editForm.rera_promoter_id || null,
+          founder: editForm.founder || null,
+          parent_group: editForm.parent_group || null,
+          delivered_projects: editForm.delivered_projects ? editForm.delivered_projects.split(',').map(s => s.trim()).filter(Boolean) : [],
+          ongoing_projects: editForm.ongoing_projects ? editForm.ongoing_projects.split(',').map(s => s.trim()).filter(Boolean) : [],
+          delayed_projects_count: editForm.delayed_projects_count ? parseInt(editForm.delayed_projects_count) : 0,
+          average_delay_months: editForm.average_delay_months ? parseFloat(editForm.average_delay_months) : 0,
           credai_member: editForm.credai_member,
           company_overview: editForm.company_overview || null,
           delivered_units: editForm.delivered_units ? parseInt(editForm.delivered_units) : null,
@@ -462,9 +625,9 @@ export default function AdminBuilders() {
         throw new Error(error.error || `HTTP ${res.status}`)
       }
       const updated = await res.json()
-      setBuilders((prev) => prev.map((x) => x.id === id ? { ...x, ...updated } : x))
-      setSelectedBuilder(null)
-      toast.success('Changes saved')
+      setBuilders((prev) => prev.map((b) => (b.id === id ? { ...b, ...updated } : b)))
+      setSelectedBuilder((prev) => (prev && prev.id === id ? { ...prev, ...updated } : prev))
+      toast.success('Builder profile saved')
     } catch (err: any) {
       console.error('[builders] update error:', err)
       toast.error(err.message || 'Error updating builder')

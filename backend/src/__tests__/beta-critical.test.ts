@@ -10,7 +10,7 @@ import { stripInternalFields } from '../lib/projectRepository'
 import { buildAdaptiveChips } from '../lib/discovery/adaptiveChips'
 import { classifyShape, profileFor } from '../lib/ai/inferenceProfile'
 import { intentFingerprint } from '../lib/ai/semanticCache'
-import { isFreeTierKey, FALLBACK_CHAIN } from '../lib/config'
+import { isFreeTierKey, FALLBACK_CHAIN, OPENAI_BASE_URL } from '../lib/config'
 
 /**
  * The paths a 50-200 user beta cannot afford to have break.
@@ -218,11 +218,19 @@ describe('beta: the long-tail failures found on 29 Aug', () => {
   it('a lone filter chip is never the whole offer', () => {
     // 39 of 120 turns offered "I need a 3 BHK" and nothing else — nonsense
     // after "what is the RERA number", and it reads as having run out of ideas.
+    //
+    // The remedy used to be an empty row, which was honest and scored 1/5. It is
+    // now a real follow-up beside the filter: the same property, asserted as what
+    // the buyer gets rather than as what they are spared.
     const chips = buildAdaptiveChips({
       projects: [], sectors: [], rendered: null,
       missingFields: ['bhk'], focusedProject: null,
     })
-    assert.deepEqual(chips, [])
+    assert.ok(chips.length >= 2, `lone chip offered: ${chips.map((c) => c.label).join(', ')}`)
+    assert.ok(
+      chips.some((c) => c.tone !== 'ask'),
+      `every chip is a filter: ${chips.map((c) => c.label).join(', ')}`,
+    )
   })
 
   it('a project-fact answer offers three different questions, not four fixed ones', () => {
@@ -314,6 +322,42 @@ describe('beta: the fallback chain is one chain', () => {
   it('leads with a leg that can call tools', () => {
     assert.ok(FALLBACK_CHAIN[0]?.supportsTools, `chain leads with tool-blind ${FALLBACK_CHAIN[0]?.label}`)
   })
+
+  it('no leg points at a host that has been retired', () => {
+    // GitHub Models closed to new customers on 16 Jun 2026 and retired on
+    // 30 Jul 2026; probed 30 Aug it answers 410, and it always will.
+    // models.inference.ai.azure.com stopped resolving in DNS before that.
+    //
+    // Four legs pointed at them anyway. A dead leg is not free: it fails, gets
+    // classified durable, cools for an hour, and is probed again — four wasted
+    // round-trips at the head of nearly every turn, and below them every
+    // remaining leg was tool-blind. This test is the gate that stops a retired
+    // host being reintroduced by a config edit.
+    const retired = /models\.github\.ai|models\.inference\.ai\.azure\.com/
+    for (const leg of FALLBACK_CHAIN) {
+      assert.ok(!retired.test(leg.baseUrl ?? ''), `${leg.label} points at a retired host: ${leg.baseUrl}`)
+    }
+    assert.ok(!retired.test(OPENAI_BASE_URL ?? ''), `OPENAI_BASE_URL is a retired host: ${OPENAI_BASE_URL}`)
+  })
+
+  it('a leg on a non-OpenAI host names its own model', () => {
+    // openai.ts defaults to MODELS.MAIN, a gpt-4o name. Cohere and NVIDIA both
+    // answer 404 for it, so a Cohere leg that forgets its model is a leg that
+    // cannot work — and it fails at request time, not at boot.
+    for (const leg of FALLBACK_CHAIN) {
+      if (!leg.baseUrl) continue
+      assert.ok(leg.model && !/^gpt-4o/.test(leg.model), `${leg.label} on ${leg.baseUrl} needs its own model, got ${leg.model}`)
+    }
+  })
+
+  it('keeps a tool-capable leg that is not Google', () => {
+    // Every tool-capable leg was a Gemini key. When the billed balance ran out
+    // and the free keys hit their per-minute limit, the chain had no way to
+    // read a project row at all — and a leg that cannot look anything up
+    // either refuses or invents.
+    const nonGoogleWithTools = FALLBACK_CHAIN.filter((l) => l.supportsTools && l.provider !== 'gemini')
+    assert.ok(nonGoogleWithTools.length > 0, 'every tool-capable leg is Gemini — one provider outage blinds the chain')
+  })
 })
 
 describe('beta: a chip is never offered twice', () => {
@@ -390,17 +434,29 @@ describe('beta: one buyer never sees another buyer answer', () => {
 })
 
 describe('beta: chips never waste a tap', () => {
-  it('offers nothing rather than filler', () => {
-    assert.deepEqual(
-      buildAdaptiveChips({
-        projects: [],
-        sectors: [],
-        rendered: null,
-        missingFields: [],
-        focusedProject: null,
-      }),
-      [],
-    )
+  /**
+   * Was "offers nothing rather than filler", asserting `[]`.
+   *
+   * That was the right property for a file that could only see what it had drawn:
+   * one orphan "I need a 3 BHK" after a flood-risk answer is worse than silence.
+   * But an empty row is what scored 1/5 and 2/5 on chips across half the audited
+   * shapes, and the cause was never a shortage of things worth offering — it was
+   * that `adaptiveChips` never received the question. Now it does, and the
+   * property that matters is the floor: at least two, and never all filters.
+   */
+  it('holds the floor of two, and never a row of pure filters', () => {
+    const chips = buildAdaptiveChips({
+      projects: [],
+      sectors: [],
+      rendered: null,
+      missingFields: [],
+      focusedProject: null,
+    })
+    assert.ok(chips.length >= 2, `floor breached: ${chips.length}`)
+    assert.ok(chips.some((c) => c.tone !== 'ask'), 'offered only input requests')
+    for (const c of chips) {
+      assert.ok(typeof c.payload.text === 'string' && (c.payload.text as string).length > 15)
+    }
   })
 
   it('names a project that is genuinely on screen', () => {
