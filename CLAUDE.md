@@ -314,7 +314,11 @@ High Intent Events (track all):
 `backend/src/lib/config.ts` is the source of truth. Do not restate the chain
 anywhere else — derive from `FALLBACK_CHAIN`.
 
-**Order:** Gemini → Mistral → Cerebras → Groq → OpenAI.
+**Order:** Gemini → Cohere → NVIDIA → Mistral → Groq → Cerebras.
+
+The tiers are ordered by **whether a leg can call a tool**, never by speed or by
+which key is billed. Tier 1 is Gemini; tier 2 is Cohere and NVIDIA, both
+tool-capable and neither of them Google; tier 3 is the tool-blind legs.
 
 Gemini is wired **directly** via `@google/genai` (`backend/src/lib/ai/gemini.ts`),
 not through `@ai-sdk/google`. Each numbered key variant (`GEMINI_API_KEY1`,
@@ -509,7 +513,51 @@ the tool definitions passed to Gemini and the `toolsEnabled` argument to
 before that, setting the env var alone gave Gemini a tool catalogue alongside a
 prompt reading "You cannot call tools here." The constant defaults to **off**;
 `.env` sets `ENABLE_GEMINI_TOOLS=true`, so tools are on in this deployment.
-The OpenAI legs are also `supportsTools: true`; Mistral, Cerebras and Groq are not.
+The Cohere and NVIDIA legs are also `supportsTools: true`; Mistral, Groq and
+Cerebras are not.
+
+**GitHub Models is retired — it is not coming back.** It closed to new customers
+on 16 Jun 2026 and shut down on 30 Jul 2026; probed 30 Aug it answers `410
+github_models_retirement_brownout`, and `models.inference.ai.azure.com` stopped
+resolving in DNS before that. The four `OPENAI_API_KEY*` legs that pointed there
+were dead: each failed, was classified durable, cooled for an hour, and was
+probed again — four wasted round-trips at the head of nearly every turn — and
+*below them every remaining leg was tool-blind*. So when Gemini's quota went, the
+chain lost the ability to read a project row at all, which is where the invented
+projects came from. The redirect that rewrote the dead Azure host to the retired
+GitHub one is gone; `OPENAI_BASE_URL` pointing at either now warns and is ignored.
+
+**Cohere and NVIDIA replaced them, and cost no new adapter.** Both speak the
+OpenAI chat-completions protocol including tool calls, so they are
+`provider: 'openai'` legs carrying a `baseUrl`. One adapter, one stall timer, one
+cooldown key space. `openai.ts` now honours `config.model` — it previously
+hardcoded `MODELS.MAIN`, a gpt-4o name that neither vendor serves.
+
+**The models are chosen from measurement, and the rejects matter more than the
+picks.** Probed 30 Aug against the real tool schema, cold then warm:
+`cohere/command-a-03-2025` 1.1s/0.9s, `nvidia openai/gpt-oss-20b` 2.3s/2.4s,
+`nvidia nemotron-3.5-lightning` 2.7s/2.3s — all three emit a clean `tool_call`
+and stream. Rejected: `command-a-plus-05-2026` (newer, but dropped the required
+argument — `sector_projects({})` — and streamed 32 chunks of empty content);
+`nvidia openai/gpt-oss-120b` (5.3s then **35.1s** on the identical call — that
+variance *is* the p99 we are removing); `nemotron-3-super-120b` (answered "I need
+to use the tool" as prose instead of calling it); `meta/llama-3.3-70b` and
+`nemotron-super-49b` (410, both EOL 26 Aug 2026); `gemma-4-31b`, `minimax-m3`,
+`deepseek-v4-flash`, `mistral-nemotron` (no response inside 120s, twice). **A
+provider's catalogue listing a model is not evidence it answers.**
+
+`beta-critical.test.ts` pins three properties: no leg may point at a retired
+host, a leg on a non-default host must name its own model, and at least one
+tool-capable leg must not be Gemini.
+
+Cloudflare Workers AI is a candidate for a third tier-2 leg but is **not wired**:
+its endpoint is scoped per account and `CLOUDFLARE_ACCOUNT_ID` is not set.
+
+**Env-var spellings are aliased at load.** `.env` carries `NIVIDIA_API_KEY` and
+`CLOUDFARE_API_KEY`. A leg reading the correct spelling finds nothing and skips
+silently, which is indistinguishable from "no key configured" in the log.
+`ENV_ALIASES` in `config.ts` maps them and warns. Rename them in `.env` and the
+warning goes away.
 
 A caller that passes a stub `onToolCall` must also pass `config.tools: false`.
 Offering a catalogue to a model whose tool results come back empty makes it loop
