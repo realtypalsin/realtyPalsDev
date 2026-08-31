@@ -19,7 +19,7 @@ const BEST_PROJECT_REGEX = /\b(which (is|are) (the )?best|what (is|are) (the )?b
 const CHEAPEST_PROJECT_REGEX = /\b(which (is|are) (the )?cheapest|cheapest (project|flat|apartment|society|property)|most affordable (project|flat|apartment|society|property))\b/i
 
 /** Patterns for investment budget allocation & yield queries. */
-const INVESTMENT_ALLOCATION_REGEX = /\b(i have|where should i invest|how to invest|best investment|risk-adjusted return|double my money|highest (rental yield|appreciation|roi)|which sector will appreciate|rental yield|expected rent|rent can i expect|rental return|yield.*expect)\b/i
+const INVESTMENT_ALLOCATION_REGEX = /\b(where should i invest|how to invest|best investment strategy|risk-adjusted return|double my money|capital allocation|investment plan|allocate my (budget|money|capital)|highest (appreciation|roi)|which sector will appreciate|investment portfolio)\b/i
 
 /** Patterns for temporal, recent trends & upcoming infrastructure queries. */
 const TEMPORAL_INFRA_REGEX = /\b(last 12 months|recent (trends?|price|appreciation)|upcoming infrastructure|jewar airport|noida airport|film city|metro expansion|infrastructure projects?|what has changed)\b/i
@@ -705,7 +705,7 @@ export const citywideQueryHandler: ChatTopicHandler = {
     }
 
     // ── 10. Investment Budget Allocation & Capital Growth ─────────────────────────
-    if (INVESTMENT_ALLOCATION_REGEX.test(msgLower) || ctx.intent?.purpose === 'investment') {
+    if (INVESTMENT_ALLOCATION_REGEX.test(msgLower)) {
       const budget = ctx.intent?.budgetMax ? `₹${ctx.intent.budgetMax} Cr` : '₹1 Cr'
 
       const replyText = `### Real Estate Investment Strategy: ${budget} Capital Allocation\n\n` +
