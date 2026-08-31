@@ -61,10 +61,21 @@ export function MobileCardShelf({
   canCompare?: boolean
   compareActive?: boolean
   /** The card grid, rendered only once expanded so collapsed costs nothing. */
-  children: React.ReactNode
+  children: React.ReactNode | ((props: {
+    visibleProjects: ProjectCardType[]
+    hasMore: boolean
+    showAll: boolean
+    setShowAll: React.Dispatch<React.SetStateAction<boolean>>
+  }) => React.ReactNode)
 }) {
-  const [open, setOpen] = useState(false)
+  // Auto-expand on mobile if there's only 1 project
+  const [open, setOpen] = useState(projects.length === 1)
+  const [showAll, setShowAll] = useState(false)
   if (projects.length === 0) return null
+
+  const MAX_MOBILE_CARDS = 6
+  const visibleProjects = showAll ? projects : projects.slice(0, MAX_MOBILE_CARDS)
+  const hasMore = projects.length > MAX_MOBILE_CARDS
 
   const band = priceBand(projects)
   const noun = projects.length === 1 ? 'project' : 'projects'
@@ -127,7 +138,13 @@ export function MobileCardShelf({
         </div>
       </div>
 
-      {open && <div className="px-3 pb-3">{children}</div>}
+      {open && (
+        <div className="px-3 pb-3">
+          {typeof children === 'function'
+            ? children({ visibleProjects, hasMore, showAll, setShowAll })
+            : children}
+        </div>
+      )}
     </div>
   )
 }

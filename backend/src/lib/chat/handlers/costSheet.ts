@@ -19,7 +19,8 @@ export const costSheetHandler: ChatTopicHandler = {
 
   handle: async ctx => {
     const matchedTarget = ctx.catalog.find(p => p.name.toLowerCase() === ctx.activeProjectName?.toLowerCase() || p.id === ctx.activeProjectName) ||
-      ctx.catalog.find(p => ctx.message.toLowerCase().includes(p.name.toLowerCase()))
+      ctx.catalog.find(p => ctx.message.toLowerCase().includes(p.name.toLowerCase())) ||
+      (ctx.cachedProjects && ctx.cachedProjects.length > 0 ? ctx.catalog.find(p => p.id === ctx.cachedProjects[0].id) : null)
 
     let costProject = null
     if (matchedTarget) {
@@ -76,12 +77,12 @@ Name a project and I'll pull whichever of these we hold verified for it.`
       return true
     }
 
-    // Rendered here. The cost sheet is the answer most exposed to a drifting
-    // number: the model was composing a rate table from injected values while
-    // also being told to state statutory percentages from memory. Now every row
-    // is either read from this project's own cost_sheet or absent, and the
-    // rupees-vs-lakhs convention on parking/IFMS/club is handled in one place.
-    const costTable = renderCostSheetTable(costProject?.cost_sheet as CostSheetRow | null)
+    // Rendered here. Complete breakdown table including BSP, developer charges & UP taxes
+    const costTable = renderCostSheetTable(costProject?.cost_sheet as CostSheetRow | null, {
+      name: costProject?.name,
+      price_range_label: costProject?.price_range_label,
+      status: costProject?.status
+    })
     if (costTable) {
       ctx.send('token', { token: `### Cost breakdown — ${costProject?.name}\n\n${costTable}\n\n` })
     }
@@ -114,11 +115,7 @@ No headings. No emoji. Around 120 words.`
       messages: systemMsgHistory,
       send: ctx.send,
       onToolCall: async () => ({}),
-      // No tools: this prompt already carries the facts it needs. Offering a
-      // catalogue alongside a stub handler made the model loop through every
-      // tool cycle and return nothing at all.
       config: { maxTokens: 1500, tools: false },
-      // We rendered the table above; drop any the model draws anyway.
       suppressTables: Boolean(costTable),
       groqFallbackSuffix: '',
       userMessage: ctx.message,
@@ -128,11 +125,11 @@ No headings. No emoji. Around 120 words.`
       {
         id: `chip_plans_${Date.now()}`,
         actionType: 'TEXT_MESSAGE',
-        label: `${costProject?.name} Payment Plans`,
+        label: `${costProject?.name} Payment Plans & Offers`,
         icon: 'file-text',
         analyticsId: 'chip_plans',
         priority: 1,
-        payload: { text: `What are the official payment plans and current offers for ${costProject?.name}?` },
+        payload: { text: `What are the official payment plans and current builder offers for ${costProject?.name}?` },
       },
       {
         id: `chip_emi_${Date.now()}`,
@@ -144,12 +141,21 @@ No headings. No emoji. Around 120 words.`
         payload: { text: `Calculate monthly EMI for ${costProject?.name} on a 20-year loan at current rates` },
       },
       {
+        id: `chip_amenities_${Date.now()}`,
+        actionType: 'TEXT_MESSAGE',
+        label: `${costProject?.name} Amenities & Clubhouse`,
+        icon: 'buildings',
+        analyticsId: 'chip_amenities',
+        priority: 3,
+        payload: { text: `What amenities and clubhouse facilities are available in ${costProject?.name}?` },
+      },
+      {
         id: `chip_compare_${Date.now()}`,
         actionType: 'TEXT_MESSAGE',
         label: `Compare ${costProject?.name} vs Competitors`,
         icon: 'scales',
         analyticsId: 'chip_compare',
-        priority: 3,
+        priority: 4,
         payload: { text: `What other projects compete with ${costProject?.name}, and how do their prices differ?` },
       },
     ]

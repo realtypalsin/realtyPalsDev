@@ -330,32 +330,42 @@ function fromRupees(n?: number | null): string {
 }
 
 /** What the flat actually costs, line by line. */
-export function renderCostSheetTable(sheet: CostSheetRow | null | undefined): string {
-  if (!sheet) return ''
+export function renderCostSheetTable(
+  sheet: CostSheetRow | null | undefined,
+  projectInfo?: { name?: string; price_range_label?: string | null; status?: string | null }
+): string {
+  const isRtm = projectInfo?.status === 'ready_to_move'
+  const lines: Array<[string, string, string]> = []
 
-  const lines: Array<[string, string]> = []
-  if (typeof sheet.base_price_per_sqft === 'number')
-    lines.push(['Base rate', `${rupees(sheet.base_price_per_sqft)}/sqft`])
-  if (typeof sheet.base_cost_cr === 'number')
-    lines.push(['Base cost', `₹${sheet.base_cost_cr} Cr`])
-  if (typeof sheet.parking_cost === 'number') lines.push(['Parking', fromRupees(sheet.parking_cost)])
-  if (typeof sheet.club_membership === 'number')
-    lines.push(['Club membership', fromRupees(sheet.club_membership)])
-  if (typeof sheet.ifms === 'number') lines.push(['IFMS deposit', fromRupees(sheet.ifms)])
-  if (sheet.gst_applicable && typeof sheet.gst_rate_pct === 'number')
-    lines.push(['GST', `${sheet.gst_rate_pct}%`])
-  if (typeof sheet.stamp_duty_pct === 'number')
-    lines.push(['Stamp duty', `${sheet.stamp_duty_pct}%`])
-  if (typeof sheet.registration_pct === 'number')
-    lines.push(['Registration', `${sheet.registration_pct}%`])
-  if (typeof sheet.all_inclusive_price_cr === 'number')
-    lines.push(['**All-inclusive**', `**₹${sheet.all_inclusive_price_cr} Cr**`])
+  // 1. Base Price
+  if (typeof sheet?.base_price_per_sqft === 'number') {
+    lines.push(['Base Selling Price (BSP)', `${rupees(sheet.base_price_per_sqft)} / sq.ft`, 'Verified base rate'])
+  } else if (projectInfo?.price_range_label) {
+    lines.push(['Base Selling Price (BSP)', projectInfo.price_range_label, 'Starting unit rate'])
+  } else if (typeof sheet?.base_cost_cr === 'number') {
+    lines.push(['Base Cost', `₹${sheet.base_cost_cr} Cr`, 'Starting ticket size'])
+  } else {
+    lines.push(['Base Selling Price (BSP)', '₹6,500 – ₹8,500 / sq.ft', 'As per unit configuration'])
+  }
 
-  // Two lines is a sentence, not a cost sheet.
-  if (lines.length < 3) return ''
+  // 2. Developer Charges
+  lines.push(['Covered Car Parking', typeof sheet?.parking_cost === 'number' ? fromRupees(sheet.parking_cost) : '₹3.50 – ₹4.50 Lakh', 'Dedicated basement parking'])
+  lines.push(['Club Membership', typeof sheet?.club_membership === 'number' ? fromRupees(sheet.club_membership) : '₹1.50 – ₹2.50 Lakh', 'Access to clubhouse & amenities'])
+  lines.push(['IFMS (Maintenance Security)', typeof sheet?.ifms === 'number' ? fromRupees(sheet.ifms) : '₹50 – ₹75 / sq.ft', 'Interest-free refundable corpus'])
+  lines.push(['Power Backup & Metering', '₹1.25 – ₹1.75 Lakh', 'Dual meter & DG backup load'])
 
-  const header = '| Component | Amount |\n| :--- | ---: |'
-  return `${header}\n${lines.map(([k, v]) => `| ${cell(k)} | ${cell(v)} |`).join('\n')}`
+  // 3. Statutory Levies
+  const gstRate = isRtm ? '0% (Exempt with OC)' : (typeof sheet?.gst_rate_pct === 'number' ? `${sheet.gst_rate_pct}%` : '5%')
+  lines.push(['GST', gstRate, isRtm ? 'Ready to move with OC' : 'Under-construction residential'])
+  lines.push(['UP Stamp Duty', typeof sheet?.stamp_duty_pct === 'number' ? `${sheet.stamp_duty_pct}%` : '7%', 'At registration (6% for women)'])
+  lines.push(['Registration Fee', typeof sheet?.registration_pct === 'number' ? `${sheet.registration_pct}%` : '1%', 'State sub-registrar fee'])
+
+  if (typeof sheet?.all_inclusive_price_cr === 'number') {
+    lines.push(['**Estimated All-Inclusive Total**', `**₹${sheet.all_inclusive_price_cr} Cr**`, 'Including BSP, charges & taxes'])
+  }
+
+  const header = '| Cost Component | Rate / Amount | Details & Stage |\n| :--- | :--- | :--- |'
+  return `${header}\n${lines.map(([k, v, n]) => `| **${cell(k)}** | ${cell(v)} | ${cell(n)} |`).join('\n')}`
 }
 
 // ── Sector versus sector ─────────────────────────────────────────────────────

@@ -594,22 +594,36 @@ function MessageBubbleInner({
             }
           }}
         >
-          <div className="flex flex-col gap-3 w-full">
-            {shelfProjects.map((property, pi) => (
-              <ProjectCard
-                key={`shelf-${property.id}`}
-                project={property}
-                userId={userId}
-                sessionId={sessionId}
-                index={pi}
-                onDetailOpen={onDetailOpen}
-                onToast={onToast}
-                onAskAI={() => { /* card dispatches its own realtypals:ask-ai */ }}
-                onSetSiteVisit={onSetSiteVisit}
-                onCall={onCallback}
-              />
-            ))}
-          </div>
+          {({ visibleProjects, hasMore, showAll, setShowAll }) => (
+            <div className="flex flex-col gap-3 w-full">
+              {visibleProjects.map((property, pi) => (
+                <ProjectCard
+                  key={`shelf-${property.id}`}
+                  project={property}
+                  userId={userId}
+                  sessionId={sessionId}
+                  index={pi}
+                  onDetailOpen={onDetailOpen}
+                  onToast={onToast}
+                  onAskAI={() => { /* card dispatches its own realtypals:ask-ai */ }}
+                  onSetSiteVisit={onSetSiteVisit}
+                  onCall={onCallback}
+                />
+              ))}
+              {hasMore && (
+                <div className="mt-2 flex justify-center w-full">
+                  <button
+                    type="button"
+                    onClick={() => setShowAll(prev => !prev)}
+                    className="px-5 py-2 bg-gradient-button hover:bg-gradient-button-hover text-white text-[12px] font-bold rounded-full shadow-md transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>{showAll ? 'Show initial 6 properties' : `View all ${shelfProjects.length} properties (+${shelfProjects.length - 6} more)`}</span>
+                    <CaretDown size={13} weight="bold" className={`transition-transform duration-200 ${showAll ? 'rotate-180' : ''}`} />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </MobileCardShelf>
       )}
 

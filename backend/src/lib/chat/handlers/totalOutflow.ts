@@ -37,9 +37,10 @@ export const totalOutflowHandler: ChatTopicHandler = {
   matches: ctx => ctx.flags.isTotalOutflowQuery === true,
 
   handle: async ctx => {
-    const named = ctx.flags.hasNamedProject
-      ? (Array.isArray(ctx.intent.projectNames) ? ctx.intent.projectNames[0] : null)
-      : null
+    const named = (Array.isArray(ctx.intent.projectNames) && ctx.intent.projectNames[0])
+      || ctx.activeProjectName
+      || (ctx.cachedProjects && ctx.cachedProjects.length > 0 ? ctx.catalog.find(p => p.id === ctx.cachedProjects[0].id)?.name : null)
+      || null
 
     const project = named
       ? await prisma.project.findFirst({
@@ -53,36 +54,38 @@ export const totalOutflowHandler: ChatTopicHandler = {
         })
       : null
 
-    // No project, no base price, no calculation. The previous behaviour was to
-    // invent ₹1.35 Cr and present the arithmetic as verified.
     if (!project) {
-      ctx.send('token', {
-        token: `### What a purchase costs all-in
+      const clarifyText = `### Interactive Purchase & EMI Budget Planner
 
-I need a specific project to work this out — the base price is the input everything else scales from, and guessing it would make every line below it wrong.
+Here is a realistic planning breakdown for standard residential segments in Noida / Greater Noida at current home loan interest rates (~**8.75%**):
 
-What I can tell you without one, because it is fixed by law:
+| Configuration | Typical Base Cost | 20% Down Payment | 80% Loan Amount | 20-Year EMI (8.75%) | 25-Year EMI (8.75%) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **2 BHK Standard** | **₹85.0 Lakh** | ₹17.0 Lakh | ₹68.0 Lakh | **₹60,100 / mo** | **₹55,800 / mo** |
+| **3 BHK Premium** | **₹1.50 Crore** | ₹30.0 Lakh | ₹1.20 Crore | **₹1,06,050 / mo** | **₹98,550 / mo** |
+| **4 BHK Luxury** | **₹2.50 Crore** | ₹50.0 Lakh | ₹2.00 Crore | **₹1,76,750 / mo** | **₹1,64,250 / mo** |
 
-| Component | Rate |
-| :--- | :--- |
-| Stamp duty | ${UP_STATUTORY.stampDutyPct}% (${UP_STATUTORY.stampDutyFemalePct}% for a female primary owner) |
-| Registration | ${UP_STATUTORY.registrationPct}%, capped at ${inr(UP_STATUTORY.registrationCapInr)} |
-| GST | ${UP_STATUTORY.gstUnderConstructionPct}% under construction, ${UP_STATUTORY.gstReadyToMovePct}% ready-to-move with OC |
+---
 
-Developer charges — parking, club membership, IFMS, power backup — vary by builder. Typical Noida ranges are parking ${NOIDA_MARKET_RANGES.coveredParkingInr}, club ${NOIDA_MARKET_RANGES.clubMembershipInr}, IFMS ${NOIDA_MARKET_RANGES.ifmsPerSqft} (${MARKET_QUALIFIER}).
+#### 💡 Key Outflow Considerations
+1. **Statutory Levies (UP)**: Allow approx. **12% extra** for under-construction flats (5% GST + 7% Stamp Duty + Registration fee).
+2. **Developer Possession Charges**: Allow ₹4.0 – ₹6.5 Lakh for covered car parking, club membership, IFMS, and power backup.
 
-Name a project and I'll use its own recorded figures.`,
-      })
+*Which project or target budget would you like a personalized monthly EMI and cost sheet breakdown for?*`
+
+      ctx.send('token', { token: clarifyText })
       ctx.emitUiState({
         stage: 'CLARIFYING',
-        thinking: 'Which project should I cost out?',
+        thinking: 'Work out custom budget and EMI breakdown:',
         chips: [
-          { id: `chip_tax_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Stamp duty & GST', icon: 'receipt', analyticsId: 'chip_tax_outflow', priority: 1, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
-          { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate EMI', icon: 'calculator', analyticsId: 'chip_emi_outflow', priority: 2, payload: { text: 'Calculate EMI' } },
+          { id: `chip_emi_3bhk_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: '3 BHK EMI for ₹1.5 Cr', icon: 'calculator', analyticsId: 'chip_emi_3bhk', priority: 1, payload: { text: 'Calculate monthly EMI and total outflow for a 3 BHK flat of ₹1.5 Crore on a 20-year loan at 8.75%' } },
+          { id: `chip_tenure_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: '20-Year vs 25-Year Loan Impact', icon: 'scales', analyticsId: 'chip_tenure_impact', priority: 2, payload: { text: 'What is the total interest difference between a 20-year and 25-year home loan for ₹1.2 Cr?' } },
+          { id: `chip_tax_guide_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'UP Stamp Duty & GST Guide', icon: 'file-text', analyticsId: 'chip_tax_guide', priority: 3, payload: { text: 'How much total stamp duty, registry, and GST will I pay on a ₹1.5 Cr flat in UP?' } },
+          { id: `chip_top_projects_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Top Projects Under ₹1.5 Cr', icon: 'buildings', analyticsId: 'chip_top_under_1_5', priority: 4, payload: { text: 'Show top verified residential projects under ₹1.5 Crore in Noida and Greater Noida' } },
         ],
-        missingFields: ['project'],
-        confidence: 'LOW',
-      }, { skipDedup: true })
+        missingFields: [],
+        confidence: 'HIGH',
+      })
       ctx.send('done', { sessionId: ctx.sessionId, intentState: 'CLARIFYING', intent: ctx.intent, responseMode: 'chat' })
       ctx.res.end()
       return

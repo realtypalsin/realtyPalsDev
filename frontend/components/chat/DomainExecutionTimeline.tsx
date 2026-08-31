@@ -110,24 +110,24 @@ export function DomainExecutionTimeline({
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="inline-flex items-center gap-1.5 py-1 text-[13px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors cursor-pointer group select-none outline-none"
+        className="inline-flex items-center gap-1.5 py-1 text-[13px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors cursor-pointer group select-none outline-none max-w-full"
       >
         {isStreaming ? (
-          <span className="flex items-center gap-1.5">
-            <span className="relative flex h-2 w-2">
+          <span className="flex items-center gap-1.5 min-w-0 max-w-[calc(100vw-110px)] sm:max-w-none">
+            <span className="relative flex h-2 w-2 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600 dark:bg-blue-400" />
             </span>
-            <span className="text-zinc-700 dark:text-zinc-300 font-medium">{triggerLabel}</span>
+            <span className="text-zinc-700 dark:text-zinc-300 font-medium truncate">{triggerLabel}</span>
           </span>
         ) : (
-          <span>{triggerLabel}</span>
+          <span className="truncate max-w-[calc(100vw-110px)] sm:max-w-none">{triggerLabel}</span>
         )}
 
         <CaretDown
           size={12}
           weight="bold"
-          className={`text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-transform duration-200 ${
+          className={`shrink-0 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-transform duration-200 ${
             isExpanded ? 'rotate-180' : ''
           }`}
         />
