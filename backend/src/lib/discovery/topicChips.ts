@@ -42,6 +42,8 @@ interface Topic {
 export interface TopicContext {
   /** Sector the turn was about, if any — lets a chip name a real place. */
   sector?: string | null
+  /** Project name if the turn was about a specific project. */
+  projectName?: string | null
   /** Whether the buyer has told us a budget. Drives ask-vs-offer wording. */
   hasBudget: boolean
   city: string
@@ -59,6 +61,15 @@ const mk = (
  * about affordability in a flood-prone sector is about affordability.
  */
 const TOPICS: Topic[] = [
+  {
+    name: 'payment-plans',
+    test: /\b(payment\s*plans?|payment\s*structure|payment\s*schedule|payment\s*terms?|clp|down\s*payment\s*plan|flexi\s*plan|possession\s*linked|construction\s*linked|booking\s*amount|current\s*offers?|offers?\s+for|discounts?|subvention)\b/i,
+    build: ({ projectName }) => [
+      ['money', mk('topic_pp_cost_sheet', projectName ? `${projectName} Cost Sheet` : 'Full Cost Sheet Breakdown', projectName ? `Show me the official cost sheet breakdown for ${projectName} including BSP, PLC, parking, IFMS, and taxes.` : 'Show me the official cost sheet breakdown including BSP, PLC, parking, IFMS, and taxes.')],
+      ['compare', mk('topic_pp_clp_vs_plp', projectName ? `${projectName} CLP vs Flexi` : 'CLP vs Flexi Comparison', projectName ? `For ${projectName}, what is the financial difference and risk between the Construction Linked Plan (CLP) and Flexi / PLP payment plan?` : 'What is the financial difference and risk between the Construction Linked Plan (CLP) and Flexi / PLP plan?')],
+      ['trust', mk('topic_pp_offers', projectName ? `${projectName} Current Offers` : 'Current Builder Offers', projectName ? `What are the current official builder discounts, payment subventions, or inaugural offers for ${projectName}?` : 'What are the current official builder discounts or inaugural payment offers available?')],
+    ],
+  },
   {
     name: 'affordability',
     test: /\b(afford|affordab|salary|income|earn(?:ing)?|in[- ]hand|take[- ]home|emi|loan|eligib|foir|down\s*payment)\b/i,
@@ -117,7 +128,7 @@ const TOPICS: Topic[] = [
   },
   {
     name: 'sector-profile',
-    test: /\b(posh|rich|richest|wealthy|affluent|elite|upscale|cheapest|cheap|affordable\s+sector|best\s+sector|which\s+sector|middle[- ]class|family|schools?|hospital|safe|liveab)\b/i,
+    test: /\b(posh|rich|richest|wealthy|affluent|upscale|cheapest|cheap|affordable\s+sector|best\s+sector|which\s+sector|posh\s+sector|posh\s+neighborhood|middle[- ]class|family\s+sector|safe\s+sector|liveab)\b/i,
     build: ({ sector, city }) => [
       ['place', mk('topic_sector_inventory', sector ? `What's for sale in ${sector}` : `Where do you actually hold stock?`, sector ? `Show me the projects you hold in ${sector} with prices and possession dates.` : `Which sectors in ${city} do you hold the most projects in, and what do they cost?`)],
       ['money', mk('topic_sector_cheapest', 'Cheapest sector you cover', 'Which of the sectors you cover has the lowest price per square foot, and what is the trade-off for buying there?')],

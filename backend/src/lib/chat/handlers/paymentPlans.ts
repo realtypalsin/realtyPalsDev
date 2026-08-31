@@ -140,9 +140,33 @@ No headings. No emoji. Around 120 words. If a cell said "Not recorded", you may 
     })
 
     const planChips = [
-      { id: `chip_emi_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Calculate Monthly EMI', icon: 'calculator', analyticsId: 'chip_emi', priority: 1, payload: { text: 'Calculate EMI' } },
-      { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Cost Sheet & Taxes', icon: 'file-text', analyticsId: 'chip_cost_sheet', priority: 2, payload: { text: 'Show cost sheet and price breakdown' } },
-      { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule Site Visit', icon: 'calendar', analyticsId: 'chip_site_visit', priority: 3, payload: { text: 'Schedule a site visit' } },
+      {
+        id: `chip_emi_${Date.now()}`,
+        actionType: 'TEXT_MESSAGE',
+        label: `Calculate EMI for ${planProject?.name}`,
+        icon: 'calculator',
+        analyticsId: 'chip_plan_emi',
+        priority: 1,
+        payload: { text: `Calculate monthly EMI for ${planProject?.name} for 20 years at current interest rates` },
+      },
+      {
+        id: `chip_cost_${Date.now()}`,
+        actionType: 'TEXT_MESSAGE',
+        label: `${planProject?.name} Cost Sheet Breakdown`,
+        icon: 'file-text',
+        analyticsId: 'chip_plan_cost',
+        priority: 2,
+        payload: { text: `Show full cost sheet breakdown and taxes for ${planProject?.name}` },
+      },
+      {
+        id: `chip_compare_${Date.now()}`,
+        actionType: 'TEXT_MESSAGE',
+        label: `Compare ${planProject?.name} vs Competitors`,
+        icon: 'scales',
+        analyticsId: 'chip_plan_compare',
+        priority: 3,
+        payload: { text: `What other projects compete with ${planProject?.name}, and how do their prices and plans differ?` },
+      },
     ]
 
     ctx.emitUiState({

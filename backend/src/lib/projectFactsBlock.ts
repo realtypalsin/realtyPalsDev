@@ -288,9 +288,18 @@ export function buildProjectFacts(
   }
 
   if (row.payment_plans?.length) {
-    facts.payment_plans = row.payment_plans.slice(0, maxItems).map(p =>
-      p.description ? `${p.plan_name}: ${p.description}` : p.plan_name,
-    )
+    facts.payment_plans = row.payment_plans.slice(0, maxItems).map((p: any) => {
+      const milestones = Array.isArray(p.milestones) && p.milestones.length > 0
+        ? ' [Milestones: ' + p.milestones.map((m: any) => {
+            const name = m.milestone || m.name || `Stage ${m.stage || ''}`
+            const pct = m.pct != null ? `${m.pct}%` : m.percentage != null ? `${m.percentage}%` : ''
+            const timeline = m.due || m.timeline || m.trigger || ''
+            return `${name}${pct ? ` (${pct})` : ''}${timeline ? ` — ${timeline}` : ''}`
+          }).join(' → ') + ']'
+        : ''
+      const desc = p.description ? `: ${p.description}` : ''
+      return `${p.plan_name}${desc}${milestones}`
+    })
   }
 
   const sheet = cleanRelation('cost_sheet', row.cost_sheet)

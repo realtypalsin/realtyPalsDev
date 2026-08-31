@@ -397,6 +397,7 @@ router.post('/', async (req: Request, res: Response) => {
                 message,
                 {
                   sector: (prevIntent as { sector?: string | null })?.sector ?? null,
+                  projectName: (prevIntent as { projectNames?: string[] })?.projectNames?.[0] ?? null,
                   hasBudget: Boolean((prevIntent as { budgetMax?: number })?.budgetMax),
                   city: DEFAULT_CITY,
                 },

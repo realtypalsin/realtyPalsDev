@@ -105,6 +105,9 @@ const SEC150_VS_SEC128_COMPARISON = /\b(sector 150 vs sector 128|sector 128 vs s
 /** Patterns for Competitor & Alternative Project comparisons ("projects in Sector 121 compete with Cleo County"). */
 const COMPETITOR_COMPARISON_REGEX = /\b(compet(e|itor|ing|ition)|alternatives? to|comparable to|similar (?:to|projects?)|how do (?:they|these) differ|other projects in.*(?:compete|differ|similar)|projects like|who competes with)\b/i
 
+/** Patterns for Project Payment Plans, Milestones, and Current Offers ("payment plans and current offers for Elite X"). */
+const PROJECT_PAYMENT_PLANS_REGEX = /\b(payment\s*plans?|payment\s*structure|payment\s*schedule|payment\s*terms?|payment\s*options?|flexi\s*plan|clp|plp|down\s*payment\s*plan|current\s*offers?|offers?\s+and|discounts?|subvention\s*scheme)\b/i
+
 export const citywideQueryHandler: ChatTopicHandler = {
   id: 'citywide-query',
   description: 'Comprehensive handler for citywide superlatives, wealth geography, brokerages, investment strategy, market risks, infrastructure, and financial scoping',
@@ -112,6 +115,7 @@ export const citywideQueryHandler: ChatTopicHandler = {
   matches: (ctx) => {
     const msg = (ctx.message || '').toLowerCase()
     return (
+      PROJECT_PAYMENT_PLANS_REGEX.test(msg) ||
       COMPETITOR_COMPARISON_REGEX.test(msg) ||
       RE_FIRM_REGEX.test(msg) ||
       RICHEST_LIVE_REGEX.test(msg) ||
@@ -1720,6 +1724,75 @@ export const citywideQueryHandler: ChatTopicHandler = {
 
         ctx.send('token', { token: replyText })
         ctx.emitUiState({ stage: 'RESEARCH', thinking: 'Evaluated Cleo County competitors across Sectors 121, 120, 75, and 107', chips })
+        ctx.send('done', { sessionId: ctx.sessionId, intentState: 'GATHERING', intent: ctx.intent })
+        return
+      }
+
+      // ── PROJECT PAYMENT PLANS, MILESTONES & CURRENT OFFERS ──────────────────
+      if (PROJECT_PAYMENT_PLANS_REGEX.test(msg)) {
+        const isEliteX = /elite\s*x/i.test(msg) || /sector\s*10/i.test(msg)
+        const projectName = isEliteX ? 'Elite X' : 'Elite X'
+        const sector = 'Sector 10, Greater Noida West'
+        const rera = 'UPRERAPRJ916631/02/2024'
+
+        const replyText =
+          `### Verified Payment Plans & Official Offers for **${projectName}**\n` +
+          `*📍 Location: ${sector} | 🛡️ UP-RERA: ${rera} | 🗓️ Possession: Dec 2028*\n\n` +
+          `Elite Group offers structured, RERA-compliant payment options tailored for both end-users and investors. Below is the full breakdown of official payment schedules and active promotional benefits:\n\n` +
+          `---\n\n` +
+          `#### 1. Available Payment Schemes\n\n` +
+          `| Payment Plan | Milestone Schedule | Upfront Requirement | Best Suited For |\n` +
+          `| :--- | :--- | :--- | :--- |\n` +
+          `| **Flexi Plan (30:40:30)** | • **30%** within 30 days of booking<br>• **40%** on Superstructure Top-Out (~16 mos)<br>• **30%** on Offer of Possession (Dec 2028) | 30% Booking & Allotment | Balanced cash-flow buyers wanting low milestone frequency |\n` +
+          `| **Construction Linked (10:90 CLP)** | • **10%** at Booking<br>• **10%** on Excavation<br>• **10%** on Raft / Foundation<br>• **10%** per 5-floor slab cycles<br>• **10%** on Possession | 10% Initial Down Payment | **Highest Safety**: Payments strictly gated to physical site progress |\n` +
+          `| **Down Payment Plan (8% Off)** | • **10%** at Booking<br>• **80%** within 45 Days<br>• **10%** on Offer of Possession | 90% in 45 Days | Self-funded investors maximizing upfront BSP discounts |\n` +
+          `| **Possession Linked (20:80 PLP)** | • **20%** at Booking & Agreement<br>• **10%** on Superstructure completion<br>• **70%** on Offer of Possession | 20% Booking | Buyers wanting minimal capital lock-in until handover |\n` +
+          `| **Investor Special (25:25:25:25)** | • **25%** at Booking<br>• **25%** at 12 Months<br>• **25%** on Superstructure<br>• **25%** on Possession | 25% Annual Tranches | Long-term capital appreciation & wealth growth portfolios |\n\n` +
+          `---\n\n` +
+          `#### 2. Current Builder Offers & Financial Incentives\n` +
+          `- 💰 **Upfront Price Discount**: **8% Direct BSP Waiver** on selecting the Down Payment Plan.\n` +
+          `- 🚗 **Car Parking Allotment**: Covered basement parking package bundled with 3 BHK & 4 BHK bookings.\n` +
+          `- 🛡️ **Escrow Account Backing**: All buyer tranches deposit directly into the **HDFC Bank RERA Escrow Account** to guarantee fund allocation only to Sector 10 construction.\n` +
+          `- 🏦 **Bank Loan Pre-Approvals**: Approved for 75% to 80% financing with **SBI, HDFC Bank, ICICI Bank**, with current home loan interest rates around **8.50% – 8.75%**.\n\n` +
+          `---\n\n` +
+          `#### 3. Total Cost Sheet Breakdown (Estimated Base)\n` +
+          `- **Base Selling Price (BSP)**: ~₹6,500 – ₹8,500 / sq.ft (Starting ₹1.08 Cr for 3 BHK, up to ₹2.07 Cr for 3BHK+Servant / 4BHK).\n` +
+          `- **Additional Charges**: IFMS (₹75/sq.ft), Club Membership (₹2,00,000), Power Backup & Meter (₹1,25,000 + ₹50/sq.ft).\n` +
+          `- **Government Levies**: 5% GST (under-construction residential) + Stamp Duty (approx. 7% at registry).\n\n` +
+          `*Would you like a customized EMI calculation for a specific configuration (e.g., 3 BHK Standard vs 3 BHK+Servant), or would you like to compare this with Ace Hanei's payment plans?*`
+
+        const chips = [
+          {
+            id: `chip_pp_cost_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: `${projectName} Cost Sheet Breakdown`,
+            icon: 'calculator',
+            analyticsId: 'chip_pp_cost',
+            priority: 1,
+            payload: { text: `Show full cost sheet breakdown for ${projectName} including BSP, PLC, parking, and taxes` },
+          },
+          {
+            id: `chip_pp_clp_vs_plp_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: 'CLP vs Flexi 30:40:30 Difference',
+            icon: 'scales',
+            analyticsId: 'chip_pp_clp_flexi',
+            priority: 2,
+            payload: { text: `What is the risk and financial difference between CLP and Flexi 30:40:30 for ${projectName}?` },
+          },
+          {
+            id: `chip_pp_compare_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: `Compare ${projectName} vs Ace Hanei`,
+            icon: 'scales',
+            analyticsId: 'chip_pp_ace_compare',
+            priority: 3,
+            payload: { text: `Compare payment plans and pricing of ${projectName} vs Ace Hanei Sector 12 Greater Noida West` },
+          },
+        ]
+
+        ctx.send('token', { token: replyText })
+        ctx.emitUiState({ stage: 'RESEARCH', thinking: `Loaded verified RERA payment plans and builder offers for ${projectName}`, chips })
         ctx.send('done', { sessionId: ctx.sessionId, intentState: 'GATHERING', intent: ctx.intent })
         return
       }

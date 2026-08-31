@@ -255,7 +255,12 @@ export function buildAdaptiveChips(ctx: AnsweredContext): ChipAction[] {
   if (out.length < MIN_CHIPS || substantive === 0) {
     const topical = buildTopicChips(
       ctx.userMessage ?? '',
-      { sector, hasBudget: Boolean(ctx.hasBudget), city: ctx.city ?? 'Noida' },
+      {
+        sector,
+        projectName: ctx.focusedProject?.name ?? ctx.projects[0]?.name ?? null,
+        hasBudget: Boolean(ctx.hasBudget),
+        city: ctx.city ?? 'Noida',
+      },
       MAX_CHIPS - out.length,
       seen,
     )
