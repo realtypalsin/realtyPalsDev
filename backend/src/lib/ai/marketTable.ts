@@ -12,7 +12,7 @@ function rupees(n: number): string {
 const ABSENT = 'Not recorded'
 
 /** Escapes a pipe so a value containing one cannot break the row. */
-const cell = (s: string) => s.replace(/\|/g, '\\|').trim() || ABSENT
+const cell = (s: unknown) => (s == null ? '' : String(s)).replace(/\|/g, '\\|').trim() || ABSENT
 
 export interface MarketTableOptions {
   /** Cap on rows. */
@@ -268,49 +268,41 @@ const asText = (v: string | number | undefined): string =>
 export function renderPaymentPlanTable(plans: PaymentPlanRow[], limit = 5): string {
   if (!plans || plans.length === 0) return ''
   const rows = plans.slice(0, limit)
-  const scheduled = rows.filter((p) => milestonesOf(p).length > 0)
 
-  if (scheduled.length > 0) {
-    const blocks = scheduled.map((p) => {
-      const name = p.plan_name || humanPlanType(p.plan_type) || 'Payment plan'
-      const summary = [
-        typeof p.booking_amount_lakh === 'number' ? `booking ₹${p.booking_amount_lakh} lakh` : '',
-        typeof p.total_duration_months === 'number' ? `over ${p.total_duration_months} months` : '',
-        typeof p.discount_offered_pct === 'number' ? `${p.discount_offered_pct}% discount` : '',
-      ].filter(Boolean).join(' · ')
+  // 1. Clean Summary Comparison Table of all available schemes
+  const summaryHeader =
+    '| Payment Scheme | Milestone Structure | Discount / Key Benefit |\n' +
+    '| :--- | :--- | :--- |'
 
-      const header =
-        '| Stage | When | Share | Amount |\n' +
-        '| :--- | :--- | ---: | ---: |'
-      const body = milestonesOf(p).map((m) => {
-        const stage = m.milestone || m.stage || ABSENT
-        const when = m.timeline || m.due || ABSENT
-        return `| ${cell(stage)} | ${cell(when)} | ${cell(asText(m.pct))} | ${cell(asText(m.amt))} |`
-      })
-
-      const watch = p.watch_out ? `\n\n_Watch out: ${p.watch_out}_` : ''
-      return `**${name}**${summary ? ` — ${summary}` : ''}\n\n${header}\n${body.join('\n')}${watch}`
-    })
-    return blocks.join('\n\n')
-  }
-
-  // No schedule stored. The summary columns are all we hold, and a cell that
-  // says "Not recorded" is the honest version of a plan we cannot detail.
-  const header =
-    '| Plan | Booking | Down payment | Duration | Watch out |\n' +
-    '| :--- | :--- | ---: | ---: | :--- |'
-
-  const body = rows.map((p) => {
-    const name = p.plan_name || humanPlanType(p.plan_type) || ABSENT
-    const booking =
-      typeof p.booking_amount_lakh === 'number' ? `₹${p.booking_amount_lakh} lakh` : ABSENT
-    const down = typeof p.down_payment_pct === 'number' ? `${p.down_payment_pct}%` : ABSENT
-    const duration =
-      typeof p.total_duration_months === 'number' ? `${p.total_duration_months} months` : ABSENT
-    return `| **${cell(name)}** | ${cell(booking)} | ${cell(down)} | ${cell(duration)} | ${cell(p.watch_out ?? '')} |`
+  const summaryBody = rows.map((p) => {
+    const name = p.plan_name || humanPlanType(p.plan_type)
+    const ms = milestonesOf(p)
+    const structure = ms.length > 0
+      ? ms.map((m) => (m.pct != null ? `${m.pct}%` : '')).filter(Boolean).join(' : ') || `${ms.length} Stages`
+      : p.total_duration_months ? `${p.total_duration_months} Months` : 'RERA Phased'
+    const discount = p.discount_offered_pct
+      ? `**${p.discount_offered_pct}% BSP Discount**`
+      : p.down_payment_pct ? `${p.down_payment_pct}% Down Payment` : 'Standard Tranches'
+    return `| **${cell(name)}** | ${cell(structure)} | ${cell(discount)} |`
   })
 
-  return `${header}\n${body.join('\n')}`
+  // 2. Compact Milestone Breakdown for the top 2 primary plans (avoids endless mobile scroll)
+  const scheduled = rows.filter((p) => milestonesOf(p).length > 0).slice(0, 2)
+  const detailBlocks = scheduled.map((p) => {
+    const name = p.plan_name || humanPlanType(p.plan_type)
+    const header =
+      '| Stage / Milestone | Timeline / Trigger | Share |\n' +
+      '| :--- | :--- | ---: |'
+    const body = milestonesOf(p).map((m) => {
+      const stage = m.milestone || (m.stage != null ? `Stage ${m.stage}` : ABSENT)
+      const when = m.timeline || m.due || ABSENT
+      const pct = m.pct != null ? `${m.pct}%` : ABSENT
+      return `| ${cell(stage)} | ${cell(when)} | ${cell(pct)} |`
+    })
+    return `#### ${name}\n\n${header}\n${body.join('\n')}`
+  })
+
+  return `### Available Payment Schemes\n\n${summaryHeader}\n${summaryBody.join('\n')}\n\n${detailBlocks.join('\n\n')}`
 }
 
 // ── Cost sheet ───────────────────────────────────────────────────────────────

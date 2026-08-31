@@ -1355,15 +1355,41 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
       }
       case 'TEXT_MESSAGE':
       case 'REMOVE_FILTER': {
-        const textPayload = String(action.payload?.text || action.label || '').toLowerCase();
+        const payload = (action.payload || {}) as Record<string, any>;
+        let text = typeof payload.text === 'string' && payload.text.trim().length > 0
+          ? payload.text.trim()
+          : '';
+
+        // If payload.text is missing, reconstruct it from prefix + projects + suffix OR action.label
+        if (!text) {
+          const prefix = String(payload.actionPrefix || '').trim();
+          const suffix = String(payload.actionSuffix || '').trim();
+          const projects = Array.isArray(payload.projects) ? payload.projects : [];
+          const projectNames = projects.map((p: any) => p?.name || p).filter(Boolean).join(' and ');
+
+          if (prefix && projectNames) {
+            text = `${prefix} ${projectNames}${suffix ? ` ${suffix}` : ''}`.trim();
+          } else if (prefix) {
+            text = `${prefix}${suffix ? ` ${suffix}` : ''}`.trim();
+          } else {
+            text = String(action.label || '').trim();
+          }
+        }
+
+        if (!text) {
+          console.warn('[CHIP] Skipped dispatching completely empty chip action:', action);
+          return;
+        }
+
+        const textPayloadLower = text.toLowerCase();
         const chipIdStr = String(action.id || '').toLowerCase();
 
         if (
           chipIdStr.includes('site_visit') ||
           chipIdStr.includes('callback') ||
-          textPayload.includes('site visit') ||
-          textPayload.includes('callback') ||
-          textPayload.includes('schedule a visit')
+          textPayloadLower.includes('site visit') ||
+          textPayloadLower.includes('callback') ||
+          textPayloadLower.includes('schedule a visit')
         ) {
           if (lastShortlist.length > 0) {
             setSiteVisitProject(lastShortlist[0]);
@@ -1372,8 +1398,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         }
 
         dispatchAction({
-          type: action.actionType,
-          payload: action.payload
+          type: 'TEXT_MESSAGE',
+          payload: { ...payload, text }
         });
         return;
       }

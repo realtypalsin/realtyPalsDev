@@ -57,12 +57,17 @@ export async function generateDynamicChips(
   }
 
   const pIds = projectsList.map(p => p.id).join(':')
+  const projectNames = projectsList.map(p => p.name).filter(Boolean).join(' and ') || topProject.name
 
   // Legal / RERA chip
   if (project.builder?.rera_compliance_score !== null && project.builder?.rera_compliance_score !== undefined) {
     coreChips.push(
       chip(`TEXT_MESSAGE:legal_check:${pIds}`, 'TEXT_MESSAGE', 'Check RERA & Legal status',
-        { actionPrefix: 'Check RERA compliance and legal clearances for', projects: projectsList }, coreChips.length + 1)
+        {
+          text: `Check RERA compliance and legal clearances for ${projectNames}`,
+          actionPrefix: 'Check RERA compliance and legal clearances for',
+          projects: projectsList
+        }, coreChips.length + 1)
     )
   }
 
@@ -70,7 +75,11 @@ export async function generateDynamicChips(
   if (project.builder?.legal_flag?.includes('booking')) {
     coreChips.push(
       chip(`TEXT_MESSAGE:booking_process:${pIds}`, 'TEXT_MESSAGE', 'Explain booking steps',
-        { actionPrefix: 'Explain typical initial booking amounts and next steps for', projects: projectsList }, coreChips.length + 1)
+        {
+          text: `Explain typical initial booking amounts and next steps for ${projectNames}`,
+          actionPrefix: 'Explain typical initial booking amounts and next steps for',
+          projects: projectsList
+        }, coreChips.length + 1)
     )
   }
 
@@ -78,7 +87,12 @@ export async function generateDynamicChips(
   if (topProject.price_min_cr) {
     coreChips.push(
       chip(`TEXT_MESSAGE:exit_strategy:${pIds}`, 'TEXT_MESSAGE', '5-year exit strategy',
-        { actionPrefix: 'Analyze market liquidity if I want to sell', projects: projectsList, actionSuffix: 'in 5 years.' }, coreChips.length + 1)
+        {
+          text: `Analyze market liquidity and 5-year capital appreciation if I want to sell ${projectNames} in 5 years.`,
+          actionPrefix: 'Analyze market liquidity if I want to sell',
+          actionSuffix: 'in 5 years.',
+          projects: projectsList
+        }, coreChips.length + 1)
     )
   }
 
@@ -89,10 +103,13 @@ export async function generateDynamicChips(
   })
 
   if (unitTypes.length > 0) {
-    const bhks = [...new Set(unitTypes.map((u: { bhk: number }) => u.bhk))].sort()
     coreChips.push(
       chip(`TEXT_MESSAGE:payment_plan:${pIds}`, 'TEXT_MESSAGE', 'Review payment plans',
-        { actionPrefix: 'Show payment-plan options for', projects: projectsList }, coreChips.length + 1)
+        {
+          text: `Show payment-plan options and builder offers for ${projectNames}`,
+          actionPrefix: 'Show payment-plan options for',
+          projects: projectsList
+        }, coreChips.length + 1)
     )
   }
 
@@ -101,7 +118,11 @@ export async function generateDynamicChips(
   if (amenCount > 0) {
     coreChips.push(
       chip(`TEXT_MESSAGE:amenities:${pIds}`, 'TEXT_MESSAGE', 'Explore amenities',
-        { actionPrefix: 'What amenities are available in', projects: projectsList }, coreChips.length + 1)
+        {
+          text: `What amenities and clubhouse facilities are available in ${projectNames}?`,
+          actionPrefix: 'What amenities are available in',
+          projects: projectsList
+        }, coreChips.length + 1)
     )
   }
 
@@ -112,12 +133,20 @@ export async function generateDynamicChips(
   if (connectivity) {
     coreChips.push(
       chip(`TEXT_MESSAGE:connectivity:${pIds}`, 'TEXT_MESSAGE', 'Check connectivity',
-        { actionPrefix: 'Show nearest metro stations and highway access for', projects: projectsList }, coreChips.length + 1)
+        {
+          text: `Show nearest metro stations and highway connectivity for ${projectNames}`,
+          actionPrefix: 'Show nearest metro stations and highway access for',
+          projects: projectsList
+        }, coreChips.length + 1)
     )
   }
 
   if (coreChips.length === 0) {
-    coreChips.push(chip(`TEXT_MESSAGE:tell_more:${pIds}`, 'TEXT_MESSAGE', 'Tell me more', { actionPrefix: 'Tell me more about', projects: projectsList }, 1))
+    coreChips.push(chip(`TEXT_MESSAGE:tell_more:${pIds}`, 'TEXT_MESSAGE', 'Tell me more', {
+      text: `Tell me more about ${projectNames}`,
+      actionPrefix: 'Tell me more about',
+      projects: projectsList
+    }, 1))
   }
 
   // Filter out any chips that were already discussed OR match topics recently discussed
