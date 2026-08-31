@@ -110,16 +110,18 @@ export function buildAdaptiveChips(ctx: AnsweredContext): ChipAction[] {
 
     if (pickable.length >= 2) {
       offer('money', chip(
-        'adaptive_pick_cost', 'TEXT_MESSAGE', 'Full cost of…',
+        'adaptive_pick_cost', 'TEXT_MESSAGE', `Cost breakdown for ${pickable[0]?.name || 'projects'}`,
         {
+          text: `Show the complete cost breakdown, including charges and taxes, for ${pickable[0]?.name || 'the shortlisted projects'}.`,
           projects: pickable,
           actionPrefix: 'Show the complete cost breakdown, including charges and taxes, for',
           actionSuffix: '.',
         }, 2,
       ))
       offer('place', chip(
-        'adaptive_pick_plan', 'TEXT_MESSAGE', 'Payment plan for…',
+        'adaptive_pick_plan', 'TEXT_MESSAGE', `Payment plan for ${pickable[0]?.name || 'projects'}`,
         {
+          text: `Show the full payment schedule and offers for ${pickable[0]?.name || 'the shortlisted projects'}.`,
           projects: pickable,
           actionPrefix: 'Show the full payment schedule for',
           actionSuffix: '.',

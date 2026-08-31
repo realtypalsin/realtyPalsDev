@@ -1307,7 +1307,7 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     // second carrying MARKET_QUALIFIER, and the all-inclusive load band. The fix
     // is reaching it, not writing a second one.
     const isCostSheetRequest =
-      /\b(cost sheets?|price breakdowns?|all inclusive|other charges|possession charges|car parking charge)\b/i.test(topicText) ||
+      /\b(cost sheets?|price breakdowns?|cost breakdowns?|all inclusive|other charges|possession charges|car parking charge)\b/i.test(topicText) ||
       /\b(hidden|extra|additional|unexpected)\s+(costs?|charges?|fees?|expenses?)\b/i.test(topicText) ||
       /\b(?:costs?|charges?|fees?|expenses?)\s+(?:beyond|besides|apart\s+from|other\s+than|over\s+and\s+above|on\s+top\s+of)\b/i.test(topicText) ||
       /\b(?:beyond|on\s+top\s+of|over\s+and\s+above)\s+(?:the\s+)?(?:sticker|base|quoted|listed|ticket)?\s*price\b/i.test(topicText) ||

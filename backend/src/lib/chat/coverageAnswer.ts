@@ -36,7 +36,7 @@ const BUILDER_QUESTION =
  * open-ended heading vocabulary a blocklist usually fails on.
  */
 const NOT_A_BUILDER =
-  /^(the|a|an|new|best|top|all|any|some|many|few|most|least|one|two|three|both|each|every|no|not|very|quite|this|that|these|those|my|your|our|their|its|is|are|was|were|be|been|being|do|does|did|has|have|had|can|could|should|would|will|shall|may|might|must|if|than|then|when|where|which|what|who|how|why|about|from|with|for|and|or|but|noida|greater|delhi|ncr|gurgaon|sector|realtypals|ready|under|luxury|premium|residential|commercial|upcoming|verified|bhk|flat|flats|apartment|apartments|house|home|homes|good|cheap|affordable|expensive|such|more|other|another|same|similar|comparable|different|unknown|reputed|reputable|reliable|trusted|small|big|large|local|nearby|near)$/i
+  /^(the|a|an|new|best|top|all|any|some|many|few|most|least|one|two|three|both|each|every|no|not|very|quite|this|that|these|those|my|your|our|their|its|is|are|was|were|be|been|being|do|does|did|has|have|had|can|could|should|would|will|shall|may|might|must|if|than|then|when|where|which|what|who|how|why|about|from|with|for|and|or|but|noida|greater|delhi|ncr|gurgaon|sector|realtypals|ready|move|moving|under|construction|possession|launch|resale|rental|investment|enduser|family|society|societies|luxury|premium|residential|commercial|upcoming|verified|bhk|flat|flats|apartment|apartments|house|home|homes|good|cheap|affordable|expensive|such|more|other|another|same|similar|comparable|different|unknown|reputed|reputable|reliable|trusted|small|big|large|local|nearby|near|show|showing|view|viewing|list|listing|find|finding|explore|exploring|check|checking|tell|give|get)$/i
 
 /** An adverb is never part of a builder's name — "relatively unknown builder". */
 const ADVERB = /ly$/i
@@ -124,10 +124,10 @@ export async function builderCoverage(message: string): Promise<CoverageAnswer |
   const match = message.match(BUILDER_QUESTION)
   if (!match) return null
 
-  const raw = match[1].trim()
-  // EVERY word, not just the first. See NOT_A_BUILDER.
+  const raw = match[1]?.trim() || ''
   const tokens = raw.split(/\s+/)
-  if (tokens.some((w) => NOT_A_BUILDER.test(w) || ADVERB.test(w))) return null
+  const validTokens = tokens.filter((w: string) => !NOT_A_BUILDER.test(w) && !ADVERB.test(w))
+  if (validTokens.length === 0) return null
 
   // The message names a project we hold. Whatever the buyer believes about who
   // built it, the project is ours to answer about — so hand the turn back to
@@ -135,7 +135,7 @@ export async function builderCoverage(message: string): Promise<CoverageAnswer |
   const named = await namedProjectInMessage(message)
   if (named) return null
 
-  const wanted = normalise(raw)
+  const wanted = normalise(validTokens.join(' '))
   // Four characters minimum: three-letter tokens are almost all generic.
   if (wanted.length < 4) return null
 
