@@ -55,7 +55,7 @@ function load(): Promise<void> | null {
         // in the PostHog project settings.
         advanced_disable_feature_flags: true,
         advanced_disable_feature_flags_on_first_load: true,
-        disable_session_recording: true,
+        disable_session_recording: false,
         disable_surveys: true,
         loaded: () => {},
       })
