@@ -84,10 +84,13 @@ export function unheldLandmark(message: string): string | null {
 
 /** The proximity phrasings buyers actually use. */
 const PROXIMITY =
-  /\b(near(?:by|est)?|close\s+to|closest|around|next\s+to|beside|adjacent|walking\s+distance|how\s+far|within\s+\d+\s*(?:km|kms|kilomet\w*|min\w*)|in\s+the\s+vicinity|surrounding|neighbou?ring|around\s+here|nearabouts)\b/i
+  /\b(near(?:by|est)?|close\s+to|closest|next\s+to|beside|adjacent|walking\s+distance|how\s+far|within\s+\d+\s*(?:km|kms|kilomet\w*|min\w*)|in\s+the\s+vicinity|surrounding|neighbou?ring|around\s+(?:sector|here|there|metro|airport|expressway|\d+|noida)|nearabouts)\b/i
 
 /** True when this message is asking a proximity question at all. */
 export function isProximityQuestion(message: string): boolean {
+  // Guard against non-spatial idioms like "way around", "work around", or strategy questions
+  if (/\b(?:way|work|turn|play)\s+around\b/i.test(message)) return false
+  if (/\b(?:make\s+money|save\s+money|how\s+to|investing|strategy|career)\b/i.test(message)) return false
   return PROXIMITY.test(message)
 }
 

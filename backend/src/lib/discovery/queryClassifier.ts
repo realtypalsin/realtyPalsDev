@@ -114,8 +114,19 @@ export function classifyQueryDeterministic(
     }
   }
 
-  // 1. Property SEARCH Action: "show me", "find", "search", "list", "looking for", "available", "2 BHK in Sector 76"
-  const isSearchAction = /\b(show|find|search|list|get|looking for|available|flats|apartments|homes)\b/i.test(msg) ||
+  // 1. DRILLDOWN: User asks specific property attributes of a project (payment plan, cost sheet, rera, floor plan, amenities, etc.)
+  const attributeKeywords = /\b(payment\s+plans?|cost\s+sheets?|price\s+breakdown|carpet|carpet\s+area|super\s+area|emi|maintenance|parking|amenities|facilities|layout|configuration|timeline|possession|construction|status|builder|reputation|trust|verification|rera|floor\s+plans?|floors|top\s+floor|height|tower|towers|address|full\s+address|complete\s+address|location|where|vastu|facing|orientation|security|safety|cctv|aqi|green|architect|designer|theme|tagline|specs)\b/i
+  if (attributeKeywords.test(msg)) {
+    return {
+      queryKind: 'DRILLDOWN',
+      renderTarget: 'text',
+      confidence: 'HIGH',
+      reason: 'Attribute question -> DRILLDOWN (text)',
+    }
+  }
+
+  // 2. Property SEARCH Action: "show me flats", "find properties", "search", "list", "looking for", "available", "2 BHK in Sector 76"
+  const isSearchAction = /\b(show\s+me|find\s+me|search|list\s+(all|the)?|looking\s+for|available\s+in|flats|apartments|homes)\b/i.test(msg) ||
     (/\b(\d\s*bhk)\b/i.test(msg) && /\b(sector|in|under|budget|crore|lakh)\b/i.test(msg))
   const isSpecificAttributeQuestion = /\b(what is|where is|give me|explain|how many|what are|details of|about)\b/i.test(msg)
 
@@ -134,17 +145,6 @@ export function classifyQueryDeterministic(
       renderTarget: 'both',
       confidence: 'HIGH',
       reason: 'Property search query -> DISCOVERY (both)',
-    }
-  }
-
-  // 2. DRILLDOWN: User asks specific property attributes of a project (floor, address, payment plan, vastu, security, amenities, etc.)
-  const attributeKeywords = /\b(payment\s+plan|cost|price|carpet|carpet\s+area|super\s+area|emi|maintenance|parking|amenities|facilities|layout|configuration|timeline|possession|construction|status|builder|reputation|trust|verification|rera|floor|floors|top\s+floor|height|tower|towers|address|full\s+address|complete\s+address|location|where|vastu|facing|orientation|security|safety|cctv|aqi|green|architect|designer|theme|tagline|description|details|overview|specs)\b/i
-  if (attributeKeywords.test(msg)) {
-    return {
-      queryKind: 'DRILLDOWN',
-      renderTarget: 'text',
-      confidence: 'HIGH',
-      reason: 'Attribute question -> DRILLDOWN (text)',
     }
   }
 
