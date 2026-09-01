@@ -20,8 +20,9 @@ export function initPostHog(): PostHog {
   }
 
   posthog = new PostHog(apiKey, {
-    host: process.env.POSTHOG_HOST || 'https://us.posthog.com',
-    flushInterval: 30000, // 30s batch
+    host: process.env.POSTHOG_HOST || 'https://us.i.posthog.com',
+    flushInterval: 1000,
+    flushAt: 1,
   })
 
   return posthog
@@ -57,6 +58,7 @@ export function trackEvent(
         timestamp: new Date().toISOString(),
       },
     })
+    client.flush().catch(() => {})
   } catch (err) {
     console.error('PostHog capture failed:', err)
   }
