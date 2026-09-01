@@ -48,6 +48,9 @@ function load(): Promise<void> | null {
         person_profiles: 'always',
         capture_pageview: true,
         autocapture: true,
+        advanced_disable_feature_flags: true,
+        advanced_disable_feature_flags_on_first_load: true,
+        disable_surveys: true,
         disable_session_recording: false,
         session_recording: {
           maskAllInputs: false,

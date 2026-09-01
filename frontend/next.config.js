@@ -72,6 +72,7 @@ const nextConfig = {
       },
     ],
   },
+  skipTrailingSlashRedirect: true,
   async rewrites() {
     const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:3001').replace(/\/$/, '')
     return [
@@ -82,6 +83,10 @@ const nextConfig = {
       {
         source: '/ingest/:path*',
         destination: 'https://us.i.posthog.com/:path*',
+      },
+      {
+        source: '/ingest/decide',
+        destination: 'https://us.i.posthog.com/decide',
       },
       {
         source: '/api/:path*',
