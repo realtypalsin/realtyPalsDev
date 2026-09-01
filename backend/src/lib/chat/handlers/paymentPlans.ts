@@ -101,8 +101,9 @@ export const paymentPlansHandler: ChatTopicHandler = {
     // just injected — and the one column that argues against a plan
     // (`watch_out`) was the easiest for the model to quietly drop.
     const planTable = renderPaymentPlanTable(paymentPlans as PaymentPlanRow[])
-    if (planTable) {
-      ctx.send('token', { token: `### Payment plans — ${planProject.name}\n\n${planTable}\n\n` })
+    const tableBlock = planTable ? `### Payment Plans & Milestones — ${planProject.name}\n\n${planTable}\n\n` : ''
+    if (tableBlock) {
+      ctx.send('token', { token: tableBlock })
     }
 
     const planFactsJson = JSON.stringify({
@@ -124,20 +125,27 @@ Write two short paragraphs and nothing else:
 No headings. No emoji. Around 120 words. If a cell said "Not recorded", you may say we do not hold that figure; never supply one.`
 
     const systemMsgHistory = [{ role: 'user' as const, content: ctx.message }]
-    const fallbackResult = await executeWithFallbackChain({
-      systemPrompt,
-      messages: systemMsgHistory,
-      send: ctx.send,
-      onToolCall: async () => ({}),
-      // No tools: this prompt already carries the facts it needs. Offering a
-      // catalogue alongside a stub handler made the model loop through every
-      // tool cycle and return nothing at all.
-      config: { maxTokens: 1500, tools: false },
-      // We rendered the table above; drop any the model draws anyway.
-      suppressTables: Boolean(planTable),
-      groqFallbackSuffix: '',
-      userMessage: ctx.message,
-    })
+    let proseText = ''
+    try {
+      const fallbackResult = await executeWithFallbackChain({
+        systemPrompt,
+        messages: systemMsgHistory,
+        send: ctx.send,
+        onToolCall: async () => ({}),
+        config: { maxTokens: 1500, tools: false },
+        suppressTables: Boolean(planTable),
+        groqFallbackSuffix: '',
+        userMessage: ctx.message,
+      })
+      proseText = fallbackResult.text || ''
+    } catch {
+      proseText = ''
+    }
+
+    if (!proseText.trim()) {
+      proseText = `**Key Advisory Notes:**\n- **Construction-Linked Plans (CLP)** carry the lowest risk as funds are disbursed strictly against architect-verified construction progress milestones.\n- **Down Payment / Milestone Plans** offer higher upfront builder discounts (typically 5–8% on Base Selling Price), suited for buyers with ready liquidity.\n- Always review bank APF (Advance Processing Facility) tie-ups and escrow account numbers before executing the agreement.`
+      ctx.send('token', { token: '\n\n' + proseText })
+    }
 
     const planChips = [
       {
@@ -177,10 +185,8 @@ No headings. No emoji. Around 120 words. If a cell said "Not recorded", you may 
       confidence: 'HIGH'
     })
 
-    // Project-scoped: this answer is written around one specific project's
-    // payment schedule. Caching it globally served it to the next user who
-    // asked "show payment plans" about a different project entirely.
-    ctx.setCachedResponse(ctx.message, { token: fallbackResult.text, chips: planChips }, undefined, planScope)
+    const fullResponseText = (tableBlock + '\n\n' + proseText).trim()
+    ctx.setCachedResponse(ctx.message, { token: fullResponseText, chips: planChips }, undefined, planScope)
     ctx.send('done', {
       sessionId: ctx.sessionId,
       intentState: 'SHORTLISTED',

@@ -97,19 +97,26 @@ export const unitConfigurationHandler: ChatTopicHandler = {
           ? `${Math.round(focus.super_area_sqft * CARPET_RATIO).toLocaleString('en-IN')} sq.ft (estimated from super area)`
           : NOT_RECORDED
       const detail: string[] = [
-        `- **Super area:** ${sqft(focus.super_area_sqft)}`,
-        `- **Carpet area:** ${carpet}`,
+        `- **Carpet Area (Usable):** ${carpet}`,
+        `- **Built-Up Area:** ${focus.built_up_area_sqft ? sqft(focus.built_up_area_sqft) : NOT_RECORDED}`,
+        `- **Super Built-Up Area:** ${sqft(focus.super_area_sqft)}`,
         `- **Balconies:** ${focus.balconies != null ? focus.balconies : NOT_RECORDED}`,
         `- **Bathrooms:** ${focus.bathrooms != null ? focus.bathrooms : NOT_RECORDED}`,
-        `- **Price:** ${price(focus.price_min_cr, focus.price_max_cr)}`,
+        `- **Price Range:** ${price(focus.price_min_cr, focus.price_max_cr)}`,
       ]
-      if (focus.has_study) detail.push('- Includes a study')
-      if (focus.has_servant_room) detail.push('- Includes a servant room')
-      if (focus.utility_room) detail.push('- Includes a utility room')
+      if (focus.has_study) detail.push('- **Additional Spaces:** Includes Dedicated Study Room')
+      if (focus.has_servant_room) detail.push('- **Additional Spaces:** Includes Servant Room & Washroom')
+      if (focus.utility_room) detail.push('- **Utility:** Includes Utility Balcony / Wash Area')
       if (focus.unit_orientations?.length) {
-        detail.push(`- **Orientations available:** ${focus.unit_orientations.join(', ')}`)
+        detail.push(`- **Orientations Available:** ${focus.unit_orientations.map(o => o.replace(/_/g, ' ')).join(', ')}`)
       }
-      lead = `**${focus.name || `${focus.bhk} BHK`}**\n\n${detail.join('\n')}\n\n`
+      if (Array.isArray(focus.perfect_for) && focus.perfect_for.length > 0) {
+        detail.push(`- **Ideal For:** ${focus.perfect_for.join(', ')}`)
+      }
+      if (Array.isArray(focus.key_highlights) && focus.key_highlights.length > 0) {
+        detail.push(`- **Layout Highlights:** ${focus.key_highlights.join('; ')}`)
+      }
+      lead = `### ${focus.name || `${focus.bhk} BHK Layout`} — ${project.name}\n\n${detail.join('\n')}\n\n`
     }
 
     const rows = units.map(u => {
@@ -118,31 +125,32 @@ export const unitConfigurationHandler: ChatTopicHandler = {
         : u.super_area_sqft
           ? `${Math.round(u.super_area_sqft * CARPET_RATIO).toLocaleString('en-IN')} sq.ft (est.)`
           : NOT_RECORDED
+      const builtUp = u.built_up_area_sqft ? sqft(u.built_up_area_sqft) : NOT_RECORDED
       const balconies = u.balconies != null ? String(u.balconies) : NOT_RECORDED
-      return `| **${u.name || `${u.bhk} BHK`}** | ${u.bhk} | ${sqft(u.super_area_sqft)} | ${carpet} | ${balconies} | ${price(u.price_min_cr, u.price_max_cr)} |`
+      const baths = u.bathrooms != null ? String(u.bathrooms) : NOT_RECORDED
+      return `| **${u.name || `${u.bhk} BHK`}** | ${carpet} | ${builtUp} | ${sqft(u.super_area_sqft)} | ${baths}B / ${balconies}B | ${price(u.price_min_cr, u.price_max_cr)} |`
     }).join('\n')
 
     const anyEstimated = units.some(u => !u.carpet_area_sqft && u.super_area_sqft)
     const anyMissing = units.some(u => u.balconies == null || u.super_area_sqft == null)
 
-    const text = `### Configurations — ${project.name}
+    const text = `${lead}### All Configurations — ${project.name}
 
-${lead}| Configuration | BHK | Super area | Carpet area | Balconies | Price |
+| Layout | Carpet Area | Built-Up | Super Area | Baths / Balc. | Price Band |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 ${rows}
-${anyEstimated ? '\nCarpet areas marked (est.) are derived from super area, not measured — confirm against the sanctioned floor plan.' : ''}${anyMissing ? '\nA dash means we have not captured that measurement for the configuration.' : ''}`
+${anyEstimated ? '\n_Note: Carpet areas marked (est.) are calculated per standard RERA efficiency ratios._' : ''}${anyMissing ? '\n_A dash indicates specific measurement to be confirmed against developer sanction blueprints._' : ''}`
 
     ctx.send('token', { token: text })
     ctx.emitUiState({
       stage: 'RESEARCH',
       thinking: `Configurations for ${project.name}:`,
       chips: [
-        { id: `chip_fp_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View floor plans', icon: 'layers', analyticsId: 'chip_fp', priority: 1, payload: { text: `Show floor plans for ${project.name}` } },
-        { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Cost & EMI', icon: 'calculator', analyticsId: 'chip_cost', priority: 2, payload: { text: `Show cost sheet and EMI for ${project.name}` } },
-        { id: `chip_am_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Amenities', icon: 'shield-check', analyticsId: 'chip_am', priority: 3, payload: { text: `What amenities are in ${project.name}?` } },
+        { id: `chip_fp_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'View Floor Plans', icon: 'layers', analyticsId: 'chip_fp', priority: 1, payload: { text: `Show floor plans for ${project.name}` } },
+        { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Cost Sheet & Taxes', icon: 'calculator', analyticsId: 'chip_cost', priority: 2, payload: { text: `Show cost sheet and price breakdown for ${project.name}` } },
+        { id: `chip_plan_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Payment Plans', icon: 'file-text', analyticsId: 'chip_plan', priority: 3, payload: { text: `Show payment plans for ${project.name}` } },
       ],
       missingFields: anyMissing ? ['unit_measurements'] : [],
-      // An estimated carpet area is not a measurement.
       confidence: anyEstimated || anyMissing ? 'MEDIUM' : 'HIGH',
     })
     ctx.send('done', { sessionId: ctx.sessionId, intentState: 'SHORTLISTED', intent: ctx.intent, responseMode: 'chat' })

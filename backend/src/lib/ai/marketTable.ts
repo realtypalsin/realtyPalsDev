@@ -278,7 +278,7 @@ export function renderPaymentPlanTable(plans: PaymentPlanRow[], limit = 5): stri
     const name = p.plan_name || humanPlanType(p.plan_type)
     const ms = milestonesOf(p)
     const structure = ms.length > 0
-      ? ms.map((m) => (m.pct != null ? `${m.pct}%` : '')).filter(Boolean).join(' : ') || `${ms.length} Stages`
+      ? ms.map((m) => (m.pct != null ? `${String(m.pct).replace(/%+$/, '')}%` : '')).filter(Boolean).join(' : ') || `${ms.length} Stages`
       : p.total_duration_months ? `${p.total_duration_months} Months` : 'RERA Phased'
     const discount = p.discount_offered_pct
       ? `**${p.discount_offered_pct}% BSP Discount**`
@@ -296,7 +296,7 @@ export function renderPaymentPlanTable(plans: PaymentPlanRow[], limit = 5): stri
     const body = milestonesOf(p).map((m) => {
       const stage = m.milestone || (m.stage != null ? `Stage ${m.stage}` : ABSENT)
       const when = m.timeline || m.due || ABSENT
-      const pct = m.pct != null ? `${m.pct}%` : ABSENT
+      const pct = m.pct != null ? `${String(m.pct).replace(/%+$/, '')}%` : ABSENT
       return `| ${cell(stage)} | ${cell(when)} | ${cell(pct)} |`
     })
     return `#### ${name}\n\n${header}\n${body.join('\n')}`

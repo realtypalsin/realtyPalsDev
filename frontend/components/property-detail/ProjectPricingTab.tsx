@@ -728,43 +728,63 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
           </div>
         </div>
 
-        {/* 4 Payment Plan Variant Selectors */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {([
-            { id: 'clp', name: 'Construction Linked', tag: 'Most Popular', icon: Landmark },
-            { id: 'investor', name: 'Investor Plan', tag: 'Better Returns', icon: TrendingUp },
-            { id: 'flexi', name: 'Flexi Plan', tag: 'Lower Initial Outgo', icon: Percent },
-            { id: 'full', name: 'Full Payment', tag: 'Max Discount', icon: Award }
-          ] as Array<{ id: PlanTypeKey; name: string; tag: string; icon: LucideIcon }>).map((plan) => {
-            const isSelected = selectedPlanTab === plan.id
-            const Icon = plan.icon
-            return (
-              <div
-                key={plan.id}
-                onClick={() => setSelectedPlanTab(plan.id)}
-                className={`p-4 rounded-2xl cursor-pointer transition-all space-y-2.5 ${
-                  isSelected
-                    ? 'bg-[#111827] text-white dark:bg-white dark:text-gray-900 shadow-md ring-2 ring-blue-500'
-                    : 'bg-gray-50/70 dark:bg-white/5 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-white/5 hover:border-gray-300'
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isSelected ? 'bg-white/20 text-white dark:bg-black/10 dark:text-gray-900' : 'bg-white dark:bg-white/10 text-gray-500'}`}>
-                  <Icon size={16} />
+        {/* 4 Payment Plan Variant Selectors (Top Tab Deck) */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-bold text-gray-500 uppercase tracking-wider px-1">
+            <span>Select Payment Structure</span>
+            <span className="text-blue-600 dark:text-blue-400 font-extrabold lowercase">Click to preview schedule</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {([
+              { id: 'clp', name: 'Construction Linked', tag: 'Most Popular', icon: Landmark, desc: 'Pay per slab milestone' },
+              { id: 'investor', name: 'Investor Plan', tag: 'Better Returns', icon: TrendingUp, desc: 'Optimized cash flow' },
+              { id: 'flexi', name: 'Flexi Plan', tag: 'Lower Initial Outgo', icon: Percent, desc: '30:70 / 20:80 split' },
+              { id: 'full', name: 'Full Payment', tag: 'Max Discount', icon: Award, desc: 'Upfront cash savings' }
+            ] as Array<{ id: PlanTypeKey; name: string; tag: string; icon: LucideIcon; desc: string }>).map((plan) => {
+              const isSelected = selectedPlanTab === plan.id
+              const Icon = plan.icon
+              return (
+                <div
+                  key={plan.id}
+                  onClick={() => setSelectedPlanTab(plan.id)}
+                  className={`p-3.5 rounded-2xl cursor-pointer transition-all space-y-2 relative overflow-hidden border ${
+                    isSelected
+                      ? 'bg-gradient-to-b from-slate-900 to-slate-950 text-white dark:from-zinc-900 dark:to-black shadow-[0_8px_20px_rgba(0,0,0,0.18)] border-blue-500/80 ring-2 ring-blue-500/30'
+                      : 'bg-white dark:bg-zinc-900/60 text-gray-800 dark:text-gray-200 border-gray-200/80 dark:border-zinc-800 hover:border-blue-300 dark:hover:border-zinc-700 shadow-sm hover:shadow'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isSelected ? 'bg-blue-600 text-white' : 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400'}`}>
+                      <Icon size={16} />
+                    </div>
+                    <span className={`text-[9.5px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                      isSelected
+                        ? 'bg-blue-500/30 text-blue-200 border border-blue-400/40'
+                        : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {plan.tag}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-[13px] font-black leading-tight">{plan.name}</h4>
+                    <p className={`text-[10.5px] font-semibold mt-0.5 line-clamp-1 ${isSelected ? 'text-zinc-300' : 'text-gray-500'}`}>{plan.desc}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-[13.5px] font-black leading-tight">{plan.name}</h4>
-                  <p className={`text-[10.5px] font-bold mt-0.5 ${isSelected ? 'text-blue-300 dark:text-blue-600' : 'text-gray-400'}`}>{plan.tag}</p>
-                </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
 
-        {/* Milestone Schedule List with Exact ₹ Amounts + Why Choose Checklist */}
+        {/* Milestone Schedule List with Step Badges & Exact ₹ Amounts */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch pt-2">
           
-          {/* Milestone Schedule Items with Exact ₹ Amounts in 2-column grid */}
+          {/* Milestone Schedule Items in a structured pathway */}
           <div className="md:col-span-8 space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Scheduled Tranches</span>
+              <span className="text-[11px] font-bold text-gray-500">Linked to BSP & Stage Completion</span>
+            </div>
+
             {(() => {
               const allItems = paymentPlanMilestones[selectedPlanTab] || []
               const visibleItems = showAllMilestones ? allItems : allItems.slice(0, 4)
@@ -772,11 +792,11 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
               return (
                 <>
                   {!isSelectedPlanFromDb && (
-                    <p className="text-[10.5px] text-amber-700 dark:text-amber-400 font-bold flex items-center gap-1 mb-1">
-                      <Info size={12} /> Illustrative schedule — confirm exact milestones with the builder.
+                    <p className="text-[10.5px] text-amber-700 dark:text-amber-400 font-bold flex items-center gap-1 mb-1 bg-amber-50/80 dark:bg-amber-950/20 p-2 rounded-xl border border-amber-200/60 dark:border-amber-900/40">
+                      <Info size={13} className="shrink-0" /> Illustrative schedule — confirm exact milestones with developer booking sheet.
                     </p>
                   )}
-                  <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {visibleItems.map((item: MilestoneItem, idx: number) => {
                       const milestoneTitle = item.milestone || item.name || item.label || item.stage || item.phase || `Stage ${idx + 1}`
                       const milestoneDesc = item.due || item.desc || item.description || (item.done ? 'Completed stage' : 'As per schedule')
@@ -791,20 +811,34 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
                         : (basePrice * (pctVal / 100))
 
                       return (
-                        <div key={idx} className="p-3 sm:p-3.5 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col justify-between space-y-2 min-h-[96px]">
+                        <div
+                          key={idx}
+                          className="p-4 rounded-2xl bg-white dark:bg-zinc-900/80 border-2 border-slate-100 dark:border-zinc-800/80 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:border-blue-500/40 transition-all flex flex-col justify-between space-y-3 relative group"
+                        >
                           <div className="flex items-center justify-between">
-                            <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center text-[11px] font-black flex-shrink-0">
-                              ₹
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center text-[10px] font-black shadow-sm">
+                                {idx + 1}
+                              </span>
+                              <span className="text-[10.5px] font-black uppercase text-slate-500 tracking-wider">
+                                Milestone {idx + 1}
+                              </span>
                             </div>
-                            <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 text-[10.5px] font-black border border-blue-100 dark:border-blue-800/40">
-                              {pctVal > 0 ? `${pctVal}%` : '--'}
+                            <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 text-[11px] font-black border border-blue-200/60 dark:border-blue-800/50">
+                              {pctVal > 0 ? `${pctVal}% Due` : 'Due'}
                             </span>
                           </div>
 
                           <div>
-                            <h5 className="text-[12px] sm:text-[13px] font-extrabold text-gray-900 dark:text-white leading-tight line-clamp-2">{milestoneTitle}</h5>
-                            <p className="text-[13px] sm:text-[14px] font-black text-gray-900 dark:text-white mt-1 leading-none">{fmtRs(milestoneAmt)}</p>
-                            {milestoneDesc && <p className="text-[10px] text-gray-400 font-semibold mt-0.5 truncate">{milestoneDesc}</p>}
+                            <h5 className="text-[13.5px] font-black text-slate-900 dark:text-white leading-tight">{milestoneTitle}</h5>
+                            <div className="flex items-baseline gap-1.5 mt-2">
+                              <p className="text-[16px] font-black text-blue-600 dark:text-blue-400 tracking-tight">{fmtRs(milestoneAmt)}</p>
+                              <span className="text-[10px] font-bold text-slate-400">est.</span>
+                            </div>
+                            {milestoneDesc && <p className="text-[10.5px] text-slate-500 dark:text-zinc-400 font-semibold mt-1 flex items-center gap-1">
+                              <Clock size={11} className="text-slate-400 shrink-0" />
+                              <span className="truncate">{milestoneDesc}</span>
+                            </p>}
                           </div>
                         </div>
                       )
@@ -814,7 +848,7 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
                   {allItems.length > 4 && (
                     <button
                       onClick={() => setShowAllMilestones(!showAllMilestones)}
-                      className="w-full py-2 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 text-gray-800 dark:text-gray-200 text-[11.5px] font-extrabold rounded-xl transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                      className="w-full py-2.5 bg-slate-100 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 text-[12px] font-extrabold rounded-xl transition-colors flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>{showAllMilestones ? 'Show Less' : `View All (${allItems.length}) Milestones`}</span>
                       <ChevronRight size={13} className={showAllMilestones ? '-rotate-90 transition-transform' : 'rotate-90 transition-transform'} />
@@ -826,22 +860,25 @@ export default function ProjectPricingTab({ unitTypes, detail, loading, onGoToCo
           </div>
 
           {/* Why Choose Checklist Box */}
-          <div className="md:col-span-4 self-start p-5 rounded-2xl bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/40 space-y-4 flex flex-col">
+          <div className="md:col-span-4 self-start p-5 rounded-2xl bg-gradient-to-b from-emerald-50/70 to-emerald-50/30 dark:from-emerald-950/30 dark:to-emerald-950/10 border border-emerald-200/70 dark:border-emerald-800/50 space-y-4 flex flex-col shadow-sm">
             <div className="space-y-2">
-              <h4 className="text-[13.5px] font-black text-emerald-950 dark:text-emerald-200">Why choose this plan?</h4>
-              <ul className="space-y-2 text-[11.5px] font-bold text-emerald-900 dark:text-emerald-300">
+              <h4 className="text-[13.5px] font-black text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
+                <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                <span>Why choose this plan?</span>
+              </h4>
+              <ul className="space-y-2.5 text-[11.5px] font-bold text-emerald-950 dark:text-emerald-300">
                 <li className="flex items-center gap-2"><Check size={14} className="text-emerald-600 flex-shrink-0" /> Most preferred by home buyers</li>
-                <li className="flex items-center gap-2"><Check size={14} className="text-emerald-600 flex-shrink-0" /> Pay as construction progresses</li>
-                <li className="flex items-center gap-2"><Check size={14} className="text-emerald-600 flex-shrink-0" /> Lower initial financial burden</li>
-                <li className="flex items-center gap-2"><Check size={14} className="text-emerald-600 flex-shrink-0" /> Aligned with project milestones</li>
+                <li className="flex items-center gap-2"><Check size={14} className="text-emerald-600 flex-shrink-0" /> Pay strictly as construction advances</li>
+                <li className="flex items-center gap-2"><Check size={14} className="text-emerald-600 flex-shrink-0" /> Lower initial liquidity requirement</li>
+                <li className="flex items-center gap-2"><Check size={14} className="text-emerald-600 flex-shrink-0" /> Architect & RERA milestone tied</li>
               </ul>
             </div>
 
             <button
               onClick={downloadScheduleCSV}
-              className="w-full py-2.5 bg-white dark:bg-white/10 text-gray-800 dark:text-gray-200 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-[12px] font-black shadow-sm hover:bg-gray-50 flex items-center justify-center gap-1.5 transition-all mt-2"
+              className="w-full py-2.5 bg-white dark:bg-zinc-900 text-slate-800 dark:text-slate-200 border border-emerald-300/80 dark:border-emerald-700/60 rounded-xl text-[12px] font-black shadow-sm hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-center gap-1.5 transition-all mt-2 cursor-pointer"
             >
-              <Download size={14} /> Download Schedule
+              <Download size={14} /> Download Schedule (CSV)
             </button>
           </div>
 

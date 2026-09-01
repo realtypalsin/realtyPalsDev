@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CaretDown, MapTrifold, Scales } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType } from '@/types/project'
 
@@ -68,9 +68,15 @@ export function MobileCardShelf({
     setShowAll: React.Dispatch<React.SetStateAction<boolean>>
   }) => React.ReactNode)
 }) {
-  // Auto-expand on mobile if there's only 1 project
-  const [open, setOpen] = useState(projects.length === 1)
+  // Auto-expand on mobile if there's only 1 project or compare is active
+  const [open, setOpen] = useState(projects.length === 1 || compareActive)
   const [showAll, setShowAll] = useState(false)
+
+  useEffect(() => {
+    if (compareActive) {
+      setOpen(true)
+    }
+  }, [compareActive])
   if (projects.length === 0) return null
 
   const MAX_MOBILE_CARDS = 6

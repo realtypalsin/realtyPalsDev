@@ -1997,7 +1997,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
-            className="fixed bottom-[125px] sm:bottom-[135px] left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-4 px-6 py-3.5 bg-zinc-900/95 dark:bg-zinc-900/95 text-white border border-blue-500/30 rounded-2xl shadow-[0_16px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl max-w-lg w-[92vw]"
+            className="fixed bottom-[96px] sm:bottom-[120px] left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-3.5 bg-zinc-950/95 text-white border border-blue-500/40 rounded-2xl shadow-[0_16px_45px_rgba(0,0,0,0.55)] backdrop-blur-xl max-w-lg w-[94vw] sm:w-[90vw]"
           >
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center font-bold text-xs">
