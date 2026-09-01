@@ -96,7 +96,7 @@ const OWN_RECORD_RE = /^(?:noida|greater\s+noida|noida\s+extension|realtypals|yo
  * question about a company called Payment Plan.
  */
 const ATTRIBUTE_NOUN_RE =
-  /\b(payment\s+plan|cost\s+sheet|carpet\s+area|super\s+area|price|pricing|rate|emi|stamp\s+duty|gst|amenit|possession|rera|floor\s+plan|layout|maintenance|parking|brochure|loan|down\s+payment|booking\s+amount|circle\s+rate|budget|status)\b/i
+  /\b(payment\s+plan|cost\s+sheet|carpet\s+area|super\s+area|price|pricing|rate|emi|stamp\s+duty|gst|amenit|possession|rera|floor\s+plan|layout|maintenance|parking|brochure|loan|down\s+payment|booking\s+amount|circle\s+rate|budget|status|way|ways|make\s+money|making\s+money|save\s+money|saving\s+money|invest|investing|investment|return|returns|roi|strategy|strategies|steps|step\s+by\s+step|tips|advice|guide|guidance|checklist|process|procedure|method|rules|young|age|career)\b/i
 
 /**
  * Inventory vocabulary. "Tell me about 3BHK properties" is a search phrased as a
@@ -168,6 +168,12 @@ export function detectOpenQuery(
   // 1. "Where do the rich / middle class live" — answerable from sector_intelligence.
   if (DEMOGRAPHIC_RE.test(msg) && (RESIDENCE_RE.test(msg) || AREA_NOUN_RE.test(msg))) {
     return { topic: 'SECTOR_PROFILE', reason: 'Demographic + residence/area question' }
+  }
+
+  // 1b. General investment strategy / career / age guidance in real estate -> GENERAL
+  const isGeneralStrategyQuestion = /\b(make\s+money|making\s+money|save\s+money|saving\s+money|investing\s+strategy|how\s+to\s+invest|way\s+around|where\s+to\s+invest|career|age\s*\d+|young\s+buyer|first\s+time\s+buyer|roi|rental\s+income|commercial\s+vs\s+residential|flipping)\b/i.test(msg)
+  if (isGeneralStrategyQuestion) {
+    return { topic: 'GENERAL', reason: 'Real estate investment strategy / advisory question' }
   }
 
   if (hasProjectNames) return null
