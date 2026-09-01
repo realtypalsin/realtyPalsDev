@@ -23,7 +23,8 @@ export function getLangfuse(): Langfuse | null {
       secretKey,
       publicKey,
       baseUrl,
-      flushInterval: 5000,
+      flushInterval: 1000,
+      flushAt: 1,
     })
     return langfuse
   } catch (err) {

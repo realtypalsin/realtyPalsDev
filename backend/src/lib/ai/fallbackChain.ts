@@ -471,6 +471,7 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
               output: text,
               metadata: { provider: item.provider, envKey: item.envKey },
             })
+            lf.flushAsync().catch(() => {})
           }
         } catch (e) {
           // never block execution on tracing

@@ -3770,6 +3770,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
             output: fullText,
             metadata: { sector: intent?.sector, intentState, projectCount: projects?.length ?? 0 },
           })
+          lf.flushAsync().catch(() => {})
         }
       } catch {}
     }

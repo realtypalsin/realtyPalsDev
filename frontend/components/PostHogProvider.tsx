@@ -27,14 +27,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   // pay the download latency.
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const idle = typeof window.requestIdleCallback === 'function'
-    const handle: number = idle
-      ? window.requestIdleCallback(preloadPostHog, { timeout: 4000 })
-      : window.setTimeout(preloadPostHog, 2000)
-    return () => {
-      if (idle) window.cancelIdleCallback(handle)
-      else window.clearTimeout(handle)
-    }
+    preloadPostHog()
   }, [])
 
   return (
