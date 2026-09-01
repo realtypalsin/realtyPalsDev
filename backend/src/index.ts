@@ -25,6 +25,7 @@ import priceAlertsRouter from './routes/priceAlerts'
 import aqiRouter from './routes/aqi'
 import commuteRouter from './routes/commute'
 import { flushPostHog } from './lib/monitoring/posthog'
+import { flushLangfuse } from './lib/monitoring/langfuse'
 import builderReputationRouter from './routes/builderReputation'
 import transcribeRouter from './routes/transcribe'
 import documentsRouter from './routes/documents'
@@ -351,6 +352,7 @@ async function startup() {
       // posthog-node batches on a 30s flushInterval, so without this every
       // deploy and restart silently dropped up to 30s of backend events.
       await flushPostHog().catch(err => logger.warn({ err }, 'posthog flush failed'))
+      await flushLangfuse().catch(err => logger.warn({ err }, 'langfuse flush failed'))
       await prisma.$disconnect()
       logger.info('clean exit')
       process.exit(0)

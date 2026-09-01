@@ -70,6 +70,7 @@ export interface FallbackChainResult {
 
 import { validateAgainstFactsSync } from './guardrails-v2'
 import { trackEvent } from '../monitoring/posthog'
+import { getLangfuse } from '../monitoring/langfuse'
 import { isCoolingDown, cooldownReason, recordFailure, recordSuccess } from './providerCooldown'
 import { env } from '../env'
 import { adaptiveCapMessages, CONTEXT_TOKEN_CEILING } from './adaptiveMessaging'
@@ -441,9 +442,6 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
       // Track fallback response
       if (userId && sessionId) {
         try {
-          // Signature is trackEvent(userId, event, properties) — these two were
-          // swapped, so the event landed in PostHog with distinctId
-          // "fallback_response_generated" and the user id as the event name.
           trackEvent(userId, 'fallback_response_generated', {
             provider: item.provider,
             model: item.model,
@@ -452,6 +450,30 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
           })
         } catch (e) {
           console.warn('[FALLBACK:TRACKING_ERROR]', e)
+        }
+
+        try {
+          const lf = getLangfuse()
+          if (lf) {
+            const trace = lf.trace({
+              id: `chat-${sessionId}-${Date.now()}`,
+              sessionId,
+              userId: userId || undefined,
+              name: 'chat_turn',
+              input: { userMessage, historyLength: messages.length },
+              output: { text },
+              tags: [item.provider, item.model],
+            })
+            trace.generation({
+              name: item.label,
+              model: item.model,
+              input: userMessage,
+              output: text,
+              metadata: { provider: item.provider, envKey: item.envKey },
+            })
+          }
+        } catch (e) {
+          // never block execution on tracing
         }
       }
 
