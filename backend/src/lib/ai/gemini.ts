@@ -190,10 +190,15 @@ export async function streamWithGemini(
           cycleUsage.cachedTokens = um.cachedContentTokenCount ?? 0
         }
 
-        if (chunk.text) {
-          fullText += chunk.text
+        const textParts = chunk.candidates?.[0]?.content?.parts
+          ?.filter((p: any) => typeof p?.text === 'string')
+          ?.map((p: any) => p.text)
+          ?.join('') || ''
+
+        if (textParts) {
+          fullText += textParts
           tokensSentThisCycle = true
-          send('token', { token: chunk.text })
+          send('token', { token: textParts })
         }
 
         const calls = chunk.functionCalls

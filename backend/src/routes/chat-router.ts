@@ -1002,7 +1002,7 @@ router.post('/', async (req: Request, res: Response) => {
         console.warn('[CHAT:OPEN_LANE:CHIP_ERROR]', e)
       }
 
-      if (openCards.length > 0) {
+      if (openCards.length > 0 && queryClassification.renderTarget !== 'text') {
         send('properties', {
           exactResults: openCards,
           nearbyResults: [],
