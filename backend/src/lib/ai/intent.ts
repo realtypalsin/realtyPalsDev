@@ -50,36 +50,40 @@ export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchem
     spatialScope = 'EXACT'
   }
 
-  // Follow-up context queries (e.g. "show payment plans", "view cost sheet", "calculate EMI")
-  // should preserve the active project context instead of wiping it
-  // `!update.sector` matters: isSectorSwitch only fires when a PREVIOUS sector
-  // existed, so a buyer who had one project in context and then names their first
-  // sector ("what about Sector 150?") was still treated as a follow-up and kept
-  // the old project attached — the assistant then answered about the wrong one.
-  // Naming any sector is a topic change, not a follow-up.
+  // A query is ONLY a follow-up about a previous project if:
+  // 1. A previous project exists, AND
+  // 2. The new query is NOT an open/advisory/market/comparison question, AND
+  // 3. No new sector was specified.
+  const isGeneralOrAdvisory = update.queryKind === 'ADVISORY' || update.queryKind === 'OPEN' || update.queryKind === 'RANKING' || Boolean((update as any).is_comparison_query);
   const isFollowUpQuery = Boolean(
     previous.projectNames &&
     previous.projectNames.length === 1 &&
     !isSectorSwitch &&
     !update.sector &&
+    !isGeneralOrAdvisory &&
     (!update.projectNames || update.projectNames.length === 0)
-  )
+  );
 
   const result = {
     ...previous,
+    // Reset previous sector if the new query is a general advisory/market question with no sector
+    ...(isGeneralOrAdvisory && !update.sector ? { sector: undefined } : {}),
     projectNames: isFollowUpQuery ? previous.projectNames : (update.projectNames && update.projectNames.length > 0 ? update.projectNames : undefined),
+    targetProjectId: isFollowUpQuery ? (previous as any).targetProjectId : undefined,
     is_comparison_query: undefined, // reset comparison flag per turn
     // Only clear sector/lifestyle if this is a TRULY fresh lookup (no prior context)
     ...(freshProjectLookup && !previous.sector ? { lifestyleKeywords: undefined } : {}),
-    ...(isSectorSwitch ? { 
+    ...(isSectorSwitch || isGeneralOrAdvisory ? { 
         projectNames: undefined,
         targetProjectId: undefined,
-        bhk: undefined, 
-        budgetMin: undefined, 
-        budgetMax: undefined, 
-        lifestyleKeywords: undefined,
-        areaMin: undefined,
-        areaMax: undefined
+        ...(isSectorSwitch ? {
+          bhk: undefined, 
+          budgetMin: undefined, 
+          budgetMax: undefined, 
+          lifestyleKeywords: undefined,
+          areaMin: undefined,
+          areaMax: undefined
+        } : {})
     } : {}),
     // Drop nulls as well as undefined. IntentSchema is deliberately `.nullable()`
     // because models emit `"sector": null` for "not specified", but letting that

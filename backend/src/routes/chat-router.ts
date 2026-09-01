@@ -1209,9 +1209,77 @@ For legal statutory schedules (UP Stamp Duty, GST, TDS) or verified property che
      * ours. A Noida marker anywhere in the message overrides it, so "district
      * court near Sector 62" is still answered.
      */
+    // ─── Conversational Greetings & Politeness (ChatGPT / Gemini Grade) ───────
+    const isGreeting = /^(hi|hello|hey|good\s+(morning|afternoon|evening)|namaste|hola|what's\s+up|help|start)\b[\s!.]*$/i.test(message.trim()) ||
+      /^(who\s+are\s+you|what\s+can\s+you\s+do|what\s+is\s+realtypals|how\s+can\s+you\s+help(\s+me)?)\??$/i.test(message.trim());
+
+    if (isGreeting && action.type === 'TEXT_MESSAGE') {
+      const welcomeText = `### Welcome to RealtyPals AI Advisor
+
+Hello! I'm your dedicated real estate intelligence assistant for **Noida, Greater Noida, and Yamuna Expressway**.
+
+I can help you with:
+- **Project Discovery**: Finding verified 2, 3, & 4 BHK properties tailored to your budget and possession timeline.
+- **Deep Due Diligence**: UP-RERA registration, builder delivery history, litigation audits, and construction milestones.
+- **Financial Clarity**: Exact payment schedules, total outflow breakdowns, UP stamp duty, and EMI calculations.
+- **Micro-Market Comparisons**: Evaluating amenities, spatial efficiency, and connectivity tradeoffs between projects.
+
+*How can I assist your property search today?*`;
+
+      const welcomeChips = [
+        { id: `chip_bhk3_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: '3 BHK in Sector 150', icon: 'building', analyticsId: 'chip_w_150', priority: 1, payload: { text: 'Show 3 BHK flats in Sector 150 under ₹2.5 Cr' } },
+        { id: `chip_rtm_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Ready to Move in Noida', icon: 'check-circle', analyticsId: 'chip_w_rtm', priority: 2, payload: { text: 'Show verified ready to move projects in Central Noida' } },
+        { id: `chip_save_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'How to save money buying?', icon: 'calculator', analyticsId: 'chip_w_save', priority: 3, payload: { text: 'What is the best way to save money while buying a property?' } },
+        { id: `chip_compare_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Top Builders in Noida', icon: 'shield-check', analyticsId: 'chip_w_builders', priority: 4, payload: { text: 'Which builders in Noida have the best delivery track record?' } },
+      ];
+
+      send('token', { token: welcomeText });
+      emitUiState({
+        stage: 'RESEARCH',
+        thinking: 'RealtyPals Welcome & Overview:',
+        chips: welcomeChips,
+        missingFields: [],
+        confidence: 'HIGH'
+      });
+      send('done', {
+        sessionId: currentSessionId,
+        intentState: 'GATHERING',
+        intent,
+        responseMode: 'chat',
+      });
+      res.end();
+      return;
+    }
+
+    const isThankYou = /^(thank\s+you|thanks|thanks\s+a\s+lot|thx|great|awesome|helpful|ok\s+thanks)\b[\s!.]*$/i.test(message.trim());
+    if (isThankYou && action.type === 'TEXT_MESSAGE') {
+      const thankYouText = `You're very welcome! If you need any further analysis — such as detailed cost sheets, floor plan comparisons, or RERA verifications — just ask anytime.`;
+      const thankYouChips = [
+        { id: `chip_cost_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Check UP Stamp Duty & Taxes', icon: 'file-text', analyticsId: 'chip_ty_tax', priority: 1, payload: { text: 'How much stamp duty and GST do I pay in UP?' } },
+        { id: `chip_visit_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Schedule a Site Visit', icon: 'calendar', analyticsId: 'chip_ty_visit', priority: 2, payload: { text: 'I want to schedule a site visit' } },
+      ];
+
+      send('token', { token: thankYouText });
+      emitUiState({
+        stage: 'RESEARCH',
+        thinking: 'RealtyPals Assistant:',
+        chips: thankYouChips,
+        missingFields: [],
+        confidence: 'HIGH'
+      });
+      send('done', {
+        sessionId: currentSessionId,
+        intentState: 'SHORTLISTED',
+        intent,
+        responseMode: 'chat',
+      });
+      res.end();
+      return;
+    }
+
     const isForeignPlace =
       /\b(district court|county court|county highway|state highway \d|zip ?code|amsterdam|texas|\bny\b|\bnj\b|\btx\b|\bca\b|\bfl\b|county clerk|dmv)\b/i.test(message) &&
-      !/\b(noida|greater noida|sector\s*\d|ncr|delhi|gurgaon|uttar pradesh|\bup\b)\b/i.test(message)
+      !/\b(noida|greater noida|sector\s*\d|ncr|delhi|gurgaon|uttar pradesh|\bup\b)\b/i.test(message);
 
     const isOutOfScope = isForeignPlace || ((/^(write|generate|explain|solve|tell me|what is)\s+(a\s+)?(python|javascript|typescript|java|c\+\+|sql query|algorithm|bubble sort|code|script|recipe|joke|poem|song|essay|weather)|who won\b|capital of\b|translate\b/i.test(message) || (/python|bubble sort|javascript|algorithm|recipe/i.test(message))) && !/real estate|property|flat|bhk|builder|rera|noida|sector|ncr/i.test(message))
     if (isOutOfScope && action.type === 'TEXT_MESSAGE') {
@@ -1295,7 +1363,10 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     const isSectorCompare = sectorMatches.length >= 2 && /compare|vs|versus|better|difference|which sector|between/i.test(topicText)
     const isSummaryRequest = /summarize|summary|entire session|weightage/i.test(topicText)
     const isCompareRequest = (intent as any)?.is_comparison_query || (intent.projectNames && intent.projectNames.length >= 2) || /\bcompare\b/i.test(topicText) || isSectorCompare
-    const isInventorySearch = /\b(\d\s*bhk|flats?|apartments?|villas?|penthouses?|show\s+me|find\s+me|options\s+in|available\s+in)\b/i.test(topicText) && !isCompareRequest && !isSectorCompare
+    const isAdvisoryPhrasing = /\b(how\s+to|best\s+way|tips\s+(for|on|to)|advice|guide|save\s+money|saving|negotiat|hidden|mistakes?|checklist|process\s+of|rules?|steps?)\b/i.test(topicText)
+    const isInventorySearch = (/\b(show\s+me|find\s+me|list\s+(all|the)?|options\s+in|available\s+in|looking\s+for|search\s+for)\b/i.test(topicText) ||
+      (/\b(\d\s*bhk)\b/i.test(topicText) && /\b(sector|in|under|budget|crore|lakh)\b/i.test(topicText))) &&
+      !isCompareRequest && !isSectorCompare && !isAdvisoryPhrasing
     // Plurals matter: `\bpayment plan\b` does not match "payment plans", which
     // is how buyers and our own chips write it. "Show payment plans for Nirala
     // Diadem" reached no handler at all and was answered as ordinary prose,

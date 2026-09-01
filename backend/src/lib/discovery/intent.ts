@@ -22,7 +22,7 @@ export const IntentSchema = z.object({
   legal_check: z.boolean().nullable().optional(),
 
   // Phase 0: Query classification
-  queryKind: z.enum(['DISCOVERY', 'DRILLDOWN', 'RANKING', 'COMPARISON', 'SUMMARY', 'ADVISORY', 'CLARIFY']).nullable().optional(),
+  queryKind: z.enum(['DISCOVERY', 'DRILLDOWN', 'RANKING', 'COMPARISON', 'SUMMARY', 'ADVISORY', 'CLARIFY', 'OPEN']).nullable().optional(),
 
   // Spatial scope: "in Sector X" (EXACT) vs "near Sector X" (PROXIMITY) vs "Noida" (BROAD)
   spatialScope: z.enum(['EXACT', 'PROXIMITY', 'BROAD']).nullable().optional(),
