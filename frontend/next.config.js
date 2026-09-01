@@ -76,8 +76,16 @@ const nextConfig = {
     const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:3001').replace(/\/$/, '')
     return [
       {
+        source: '/ingest/static/:path*',
+        destination: 'https://us-assets.i.posthog.com/static/:path*',
+      },
+      {
+        source: '/ingest/:path*',
+        destination: 'https://us.i.posthog.com/:path*',
+      },
+      {
         source: '/api/:path*',
-        destination: `${backendUrl}/api/:path*`
+        destination: `${backendUrl}/api/:path*`,
       },
     ]
   },

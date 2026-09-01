@@ -33,13 +33,17 @@ function flush() {
 function load(): Promise<void> | null {
   if (client || loading) return loading
   if (typeof window === 'undefined') return null
-  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
+  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY || 'phc_CxNVfVHUhdM7q8cQjUaRWcGBPHsY9JVfYdsZvUqJsbjV'
   if (!key) return null
 
   loading = import('posthog-js')
     .then(({ default: posthog }) => {
+      const apiHost = typeof window !== 'undefined'
+        ? `${window.location.origin}/ingest`
+        : (process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com')
+
       posthog.init(key, {
-        api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
+        api_host: apiHost,
         ui_host: 'https://us.posthog.com',
         person_profiles: 'always',
         capture_pageview: true,
