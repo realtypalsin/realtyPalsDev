@@ -651,15 +651,22 @@ router.post('/', async (req: Request, res: Response) => {
     try {
       const lowerMsg = message.toLowerCase().trim();
       const cleanQuery = lowerMsg
-        .replace(/^(show\s+me|tell\s+me\s+about|details\s+of|give\s+me|what\s+is|what\s+about|information\s+about|info\s+on)\s+/i, '')
+        .replace(/^(show\s+me|tell\s+me\s+about|details\s+of|give\s+me|what\s+is|what\s+about|information\s+about|info\s+on|concerns\s+on|issues\s+in|problems\s+in|risks\s+in)\s+/i, '')
         .trim();
+
+      const GENERIC_QUERY_TERMS = new Set([
+        'noida', 'greater noida', 'delhi', 'ncr', 'expressway', 'sector', 'city', 'extension', 'india',
+        'property', 'properties', 'flat', 'flats', 'apartment', 'apartments', 'house', 'homes', 'society', 'societies',
+        'price', 'pricing', 'rate', 'rates', 'average', 'cost', 'money', 'save', 'saving', 'best', 'top', 'cheap', 'budget',
+        'buy', 'buying', 'purchase', 'rent', 'rental', 'sale', 'new', 'ready', 'construction', 'all', 'generally', 'general',
+        'lifestyle', 'amenities', 'developer', 'builder', 'concerns', 'risks', 'review', 'reviews'
+      ]);
+
+      const isGenericQuery = GENERIC_QUERY_TERMS.has(cleanQuery) || /^(no\s+)?generally\s+noida$/i.test(lowerMsg) || /^average\s+price\s+(of|in)\s+noida$/i.test(lowerMsg);
 
       let matched: { id: string; name: string; slug: string } | null = null;
 
-
-
-      // Exact & Token match fallback
-      if (!matched) {
+      if (!isGenericQuery && cleanQuery.length >= 4) {
         const dbProjects = await prisma.project.findMany({
           select: { id: true, name: true, slug: true },
         });
@@ -667,33 +674,19 @@ router.post('/', async (req: Request, res: Response) => {
         // 1. Direct exact name match
         matched = dbProjects.find(p => p.name.toLowerCase() === cleanQuery || p.name.toLowerCase() === lowerMsg) || null;
 
-        // 2. Exact substring match (prioritizing exact word matches)
+        // 2. User message contains the project name (e.g. "tell me concerns on purvanchal royal city")
         if (!matched) {
-          const matchingSubstring = dbProjects
+          const matchingInMsg = dbProjects
             .filter(p => {
               const pLower = p.name.toLowerCase();
-              return lowerMsg.includes(pLower) || (cleanQuery.length >= 3 && pLower.includes(cleanQuery));
+              if (pLower.length < 5 || GENERIC_QUERY_TERMS.has(pLower)) return false;
+              // Message must contain full project name as distinct substring
+              return lowerMsg.includes(pLower);
             })
-            .sort((a, b) => b.name.length - a.name.length); // longer name match first (e.g. "Elite Golf Greens" vs "Elite")
+            .sort((a, b) => b.name.length - a.name.length);
 
-          if (matchingSubstring.length > 0) {
-            matched = matchingSubstring[0];
-          }
-        }
-
-        // 3. Token-based overlap match with score calculation
-        if (!matched && cleanQuery.length >= 2) {
-          const queryTokens = cleanQuery.split(/\s+/).filter(t => t.length > 0);
-          const scored = dbProjects.map(p => {
-            const pLower = p.name.toLowerCase();
-            const pTokens = pLower.split(/\s+/);
-            const matchingTokens = queryTokens.filter(qt => pTokens.includes(qt)).length;
-            const score = matchingTokens / Math.max(queryTokens.length, pTokens.length);
-            return { p, score, matchingTokens };
-          }).filter(s => s.matchingTokens > 0).sort((a, b) => b.score - a.score || b.matchingTokens - a.matchingTokens);
-
-          if (scored.length > 0 && scored[0].score >= 0.4) {
-            matched = scored[0].p;
+          if (matchingInMsg.length > 0) {
+            matched = matchingInMsg[0];
           }
         }
       }
@@ -703,16 +696,23 @@ router.post('/', async (req: Request, res: Response) => {
         intent.projectNames = [matched.name];
         (intent as any).targetProjectId = matched.id;
       } else {
-        // Detect if current query is a new sector search, builder query, or general discovery search
+        // Detect if current query is a new sector search, builder query, general advisory, or general discovery search
+        const isCityLevelGeneralQuery = /\b(generally\s*noida|whole\s*noida|entire\s*noida|noida\s*overall|average\s*price\s*(in|of)\s*noida|noida\s*as\s*a\s*whole)\b/i.test(message);
+        if (isCityLevelGeneralQuery) {
+          console.log('[CHAT] City-wide general query detected — resetting sticky sector context.');
+          intent.sector = undefined;
+        }
+
         const isSectorOrLocationSearch = Boolean(intent.sector) || /\b(sector\s*\d+|expressway|greater\s*noida|noida\s*extension|central\s*noida)\b/i.test(message);
         const isDiscoveryQuery = intent.queryKind === 'DISCOVERY' || /\b(show\s*(me)?|find|list|projects\s*in|flats\s*in|apartments\s*in|options\s*in|best\s*projects|top\s*societies)\b/i.test(message);
         const isBuilderDiscovery = Boolean((intent as any).builderName) || /\b(projects\s*by|builder|developer)\b/i.test(message);
+        const isAdvisoryQuery = intent.queryKind === 'ADVISORY' || intent.queryKind === 'OPEN' || /\b(save\s*money|negotiat|hidden\s*cost|average\s*price|market\s*rate|how\s*to)\b/i.test(message);
         const isExplicitFollowUp = /\b(it|its|this\s*project|the\s*project|payment\s*plan|floor\s*plan|cost\s*sheet|construction|rera|who\s*is|developer|amenities|layout|bhk\s*sizes)\b/i.test(message);
 
-        const shouldClearProjectFocus = (isSectorOrLocationSearch || isDiscoveryQuery || isBuilderDiscovery) && !isExplicitFollowUp;
+        const shouldClearProjectFocus = (isSectorOrLocationSearch || isDiscoveryQuery || isBuilderDiscovery || isAdvisoryQuery || isCityLevelGeneralQuery) && !isExplicitFollowUp;
 
         if (shouldClearProjectFocus) {
-          console.log('[CHAT] Fresh discovery / sector query detected — isolating project focus.');
+          console.log('[CHAT] Fresh discovery / advisory / sector query detected — isolating project focus.');
           intent.projectNames = undefined;
           (intent as any).targetProjectId = undefined;
         } else {

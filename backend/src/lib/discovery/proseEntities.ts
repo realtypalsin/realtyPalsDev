@@ -9,13 +9,12 @@ import { buildTopicChips } from './topicChips'
  */
 export async function findProjectsMentioned(
   text: string,
-  city: string,
+  _city?: string,
   limit = 4,
 ): Promise<Array<{ id: string; name: string }>> {
   if (!text || text.length < 10) return []
   try {
     const candidates = await prisma.project.findMany({
-      where: { city },
       select: { id: true, name: true },
     })
     const haystack = text.toLowerCase()
@@ -43,13 +42,12 @@ export async function findProjectsMentioned(
  */
 export async function resolveProjectNames(
   names: string[] | undefined,
-  city: string,
+  _city?: string,
 ): Promise<string[]> {
   if (!names?.length) return []
   try {
     const rows = await prisma.project.findMany({
       where: {
-        city,
         OR: names.map((n) => ({ name: { contains: n, mode: 'insensitive' as const } })),
       },
       select: { name: true },
@@ -61,9 +59,6 @@ export async function resolveProjectNames(
     )
   } catch (e) {
     console.warn('[proseEntities] project name resolution failed', e)
-    // Fail closed: an unverifiable name is treated as unverified, so the query
-    // routes to the open lane (which can ask) rather than the detail pipeline
-    // (which pushes inventory).
     return []
   }
 }

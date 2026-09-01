@@ -148,6 +148,18 @@ export function classifyQueryDeterministic(
     }
   }
 
+  // GENERAL REAL ESTATE ADVISORY / BUYING STRATEGY & MARKET GUIDES:
+  // "how to save money", "best way to negotiate", "hidden charges", "tax benefits", "checklist", "average price in noida"
+  const generalAdvisoryPattern = /\b(how\s+to|best\s+way\s+to|tips\s+(for|on|to)|advice\s+(on|for)|guide\s+(to|for)|save\s+money|saving\s+money|negotiat|hidden\s+cost|hidden\s+charge|due\s+diligence|checklist|mistakes?\s+to\s+avoid|things?\s+to\s+(check|know|verify)|step\s+by\s+step|process\s+of\s+buying|tax\s+benefit|tax\s+saving|stamp\s+duty|circle\s+rate|average\s+price|market\s+rate|price\s+per\s+sqft|price\s+trends?)\b/i
+  if (generalAdvisoryPattern.test(msg)) {
+    return {
+      queryKind: 'ADVISORY',
+      renderTarget: 'text',
+      confidence: 'HIGH',
+      reason: 'Buyer advisory / strategy / market metric question -> ADVISORY (text)',
+    }
+  }
+
   // BUILDER / GENERAL ADVISORY: User asks about builders or general market
   const builderGeneralPattern = /\b(which builders|famous builders|top builders|reputed builders|builder list|builder track record|builder reputation|about builder)\b/i
   if (builderGeneralPattern.test(msg)) {
