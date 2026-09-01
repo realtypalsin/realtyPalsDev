@@ -827,7 +827,13 @@ router.post('/', async (req: Request, res: Response) => {
       // Proximity, before the sector lane: it answers from coordinates we hold
       // rather than treating the anchor sector as the subject of the question.
       if (!coverage) {
-        coverage = await nearbyCoverage(message, (intent as { focus_project_id?: string | null })?.focus_project_id ?? null)
+        const hasSpecificSearchFilters = Boolean(
+          (intent.bhk?.length || intent.possession || intent.budgetMax || intent.budgetMin) &&
+          intent.sector
+        )
+        if (!hasSpecificSearchFilters) {
+          coverage = await nearbyCoverage(message, (intent as { focus_project_id?: string | null })?.focus_project_id ?? null)
+        }
       }
       if (!coverage) coverage = await builderCoverage(message)
       // A proximity question names a sector as an ANCHOR, not as its subject.

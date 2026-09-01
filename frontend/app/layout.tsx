@@ -3,6 +3,7 @@ import "./globals.css";
 
 import { Outfit, Playfair_Display, Afacad, Inter } from "next/font/google";
 
+// RealtyPals App Root Layout — PostHog & Telemetry Enabled
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { Toaster } from "sonner";
 import { PingBackend } from "@/components/PingBackend";
