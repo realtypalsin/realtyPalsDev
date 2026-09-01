@@ -826,12 +826,12 @@ router.post('/', async (req: Request, res: Response) => {
       }
       // Proximity, before the sector lane: it answers from coordinates we hold
       // rather than treating the anchor sector as the subject of the question.
-      if (!coverage) {
+      // Guarded so DISCOVERY searches (e.g. "3 BHK with park") are not intercepted.
+      if (!coverage && queryClassification.queryKind !== 'DISCOVERY') {
         const hasSpecificSearchFilters = Boolean(
-          (intent.bhk?.length || intent.possession || intent.budgetMax || intent.budgetMin) &&
-          intent.sector
+          (intent.bhk?.length || intent.possession || intent.budgetMax || intent.budgetMin)
         )
-        if (!hasSpecificSearchFilters) {
+        if (!hasSpecificSearchFilters && isProximityQuestion(message)) {
           coverage = await nearbyCoverage(message, (intent as { focus_project_id?: string | null })?.focus_project_id ?? null)
         }
       }

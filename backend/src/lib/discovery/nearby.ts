@@ -67,11 +67,11 @@ export interface NearbyResult {
  */
 const UNHELD_LANDMARKS: Array<[RegExp, string]> = [
   [/\bmetro\s*station\b|\bmetro\b|\bblue\s*line\b|\baqua\s*line\b/i, 'a metro station'],
-  [/\bschool\b|\bschools\b|\bdps\b|\bcollege\b|\buniversity\b/i, 'a school'],
-  [/\bhospital\b|\bclinic\b|\bmedical\b/i, 'a hospital'],
-  [/\bmall\b|\bmarket\b|\bshopping\b/i, 'a mall'],
-  [/\bairport\b|\bjewar\b/i, 'the airport'],
-  [/\boffice\b|\bit\s*park\b|\btech\s*park\b|\bworkplace\b/i, 'an office park'],
+  [/\b(schools?|dps|colleges?|universit(?:y|ies))\b/i, 'a school'],
+  [/\b(hospitals?|clinics?|medical\s+centres?)\b/i, 'a hospital'],
+  [/\b(malls?|shopping\s+malls?)\b/i, 'a mall'],
+  [/\b(airports?|jewar)\b/i, 'the airport'],
+  [/\b(?:it|tech|cyber|software|business|corporate)\s+parks?\b|\bworkplaces?\b/i, 'an office park'],
 ]
 
 /** True when the message asks to be near something we hold no coordinates for. */
