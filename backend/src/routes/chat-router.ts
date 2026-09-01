@@ -80,6 +80,7 @@ import { sanitizeUserMessage } from '../lib/ai/sanitize'
 import { filterNewChips, markChipShown, hydrateFromDb, persistToDb, suppressTopicChips } from '../lib/discovery/chipDedup'
 import { isOverDailyBudget } from '../lib/ai/cost'
 import { trackEvent, ANALYTICS_EVENTS, trackUserProperties } from '../lib/monitoring/posthog'
+import { getLangfuse } from '../lib/monitoring/langfuse'
 import { captureException, addBreadcrumb, setSentryUser } from '../sentry.server.config'
 import { inputGuardrail } from '../lib/ai/guardrails'
 import { profileFor, classifyShape } from '../lib/ai/inferenceProfile'
@@ -3738,6 +3739,39 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         select: { id: true },
       })
       if (latestMessage) messageId = latestMessage.id
+    }
+
+    // Observability: Langfuse & PostHog
+    if (currentSessionId) {
+      try {
+        trackEvent(userId || guestToken || 'anonymous', 'message_sent', {
+          session_id: currentSessionId,
+          intentState,
+          sector: intent?.sector,
+          queryKind: queryClassification?.queryKind,
+        })
+      } catch {}
+
+      try {
+        const lf = getLangfuse()
+        if (lf) {
+          const trace = lf.trace({
+            id: `chat-${currentSessionId}-${Date.now()}`,
+            sessionId: currentSessionId,
+            userId: userId || guestToken || undefined,
+            name: 'chat_turn',
+            input: { message, intent },
+            output: { response: fullText },
+            tags: [queryClassification?.queryKind || 'chat', intentState || 'active'],
+          })
+          trace.generation({
+            name: 'assistant_reply',
+            input: message,
+            output: fullText,
+            metadata: { sector: intent?.sector, intentState, projectCount: projects?.length ?? 0 },
+          })
+        }
+      } catch {}
     }
 
     console.log('[CHAT] BEFORE send(done)', Date.now())
