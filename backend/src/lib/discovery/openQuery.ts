@@ -170,10 +170,10 @@ export function detectOpenQuery(
     return { topic: 'SECTOR_PROFILE', reason: 'Demographic + residence/area question' }
   }
 
-  // 1b. General investment strategy / career / age guidance in real estate -> GENERAL
-  const isGeneralStrategyQuestion = /\b(make\s+money|making\s+money|save\s+money|saving\s+money|investing\s+strategy|how\s+to\s+invest|way\s+around|where\s+to\s+invest|career|age\s*\d+|young\s+buyer|first\s+time\s+buyer|roi|rental\s+income|commercial\s+vs\s+residential|flipping)\b/i.test(msg)
+  // 1b. General investment strategy, legal, financial, tax, or advisory questions in real estate -> GENERAL
+  const isGeneralStrategyQuestion = /\b(make\s+money|making\s+money|save\s+money|saving\s+money|investing\s+strategy|how\s+to\s+invest|way\s+around|where\s+to\s+invest|career|age\s*\d+|young\s+buyer|first\s+time\s+buyer|roi|rental\s+income|commercial\s+vs\s+residential|flipping|payment\s+plan\s+safe|marketing\s+trap|10:90|20:80|30:70|downpayment|down\s+payment|leasehold|freehold|delay|possession\s+delay|penalty|compensation|r\.?e\.?r\.?a\s+date|hidden\s+costs?|bsp|section\s+54|ancestral|nri|nre|tax\s+exemption|tax\s+deduction|80c|24b|title\s+deed|encumbrance|token\s+money|circle\s+rate|market\s+rate|occupancy\s+certificate|double\s+gst|discount\s+negotiat|stamp\s+duty\s+saving)\b/i.test(msg)
   if (isGeneralStrategyQuestion) {
-    return { topic: 'GENERAL', reason: 'Real estate investment strategy / advisory question' }
+    return { topic: 'GENERAL', reason: 'Real estate advisory / financial / legal / strategy question' }
   }
 
   if (hasProjectNames) return null
