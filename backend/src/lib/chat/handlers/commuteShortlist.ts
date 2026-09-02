@@ -140,6 +140,21 @@ export const commuteShortlistHandler: ChatTopicHandler = {
       })
     }
 
+    /**
+     * The list the buyer just read becomes the list "the first one" points at.
+     *
+     * Without this, `last_projects` still held whatever the discovery lane had
+     * cached, so on the measured run "tell me about the first one" resolved to
+     * ATS Nobility in Sector 4, Greater Noida West — a project from a different
+     * result set, in a sector the buyer had not been shown and nowhere near
+     * their Sector 63 office. An ordinal has to index the answer that was
+     * actually displayed.
+     */
+    await prisma.chatSession.update({
+      where: { id: ctx.sessionId },
+      data: { last_projects: shortlist.map(p => ({ id: p.id, name: p.name })) },
+    }).catch((e: unknown) => console.warn('[CHAT:COMMUTE_SHORTLIST:PERSIST]', (e as Error).message))
+
     ctx.send('token', { token: lines.join('\n') })
     ctx.emitUiState({
       stage: 'SHORTLISTED',

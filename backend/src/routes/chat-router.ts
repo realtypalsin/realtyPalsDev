@@ -1134,7 +1134,15 @@ router.post('/', async (req: Request, res: Response) => {
       let openCards: unknown[] = []
       try {
         const mentionedProjects = await findProjectsMentioned(rawOpenText, DEFAULT_CITY)
+        // Never offer the workplace as a place to buy.
+        //
+        // These chips are built from the sectors the answer mentioned, and a
+        // good answer mentions the workplace constantly — "10 minutes from your
+        // Sector 63 office". So the buyer was handed a "Projects in Sector 63"
+        // chip, which is a search of a commercial district and the exact
+        // confusion the commute anchor exists to remove.
         const mentionedSectors = findSectorsMentioned(rawOpenText)
+          .filter(s => s !== intent.workplace)
         // `send` sanitises what the buyer reads, but this lane writes its own
         // transcript row further down. Sanitise here so the stored copy, the
         // cache and the stream all say the same thing — the open lane is where
