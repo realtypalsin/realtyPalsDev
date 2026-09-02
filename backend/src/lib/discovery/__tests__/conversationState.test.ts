@@ -34,6 +34,33 @@ describe('commute anchor', () => {
     })
   }
 
+  // An anchor is anywhere the buyer travels to regularly, not only an office.
+  //
+  // The first version listed office words only, and the school case failed
+  // exactly as the office case had: "my kids school is in sector 62" set
+  // `sector: "Sector 62, Noida"`, that sector holds one project, and the buyer
+  // got "One project is not enough for me to tell you what the sector is like
+  // to live in... The sectors we cover in most depth are Sector 75, Sector 150,
+  // Sector 79" — three sectors unrelated to the school, repeated verbatim on
+  // the next turn.
+  for (const [q, expected] of [
+    ['i need a 3bhk under 2cr, my kids school is in sector 62', 'Sector 62'],
+    ["my daughter's school is in sector 44", 'Sector 44'],
+    ['my parents live in sector 50', 'Sector 50'],
+    ['my hospital is in sector 128', 'Sector 128'],
+    ['sector 125 for work', 'Sector 125'],
+  ] as Array<[string, string]>) {
+    it(`treats a non-office anchor as an anchor: "${q}"`, () => {
+      assert.equal(detectCommuteAnchor(q)?.place, expected)
+    })
+  }
+
+  it('reads a commute verb through an adverb', () => {
+    // "i commute daily to X" put an adverb between the verb and the
+    // preposition, and matched nothing.
+    assert.ok(detectCommuteAnchor('i commute daily to the noida expressway'))
+  })
+
   // The important half. Every one of these names a sector the buyer wants to
   // LIVE in; treating it as a workplace would delete the filter they just gave.
   for (const q of [
@@ -42,8 +69,13 @@ describe('commute anchor', () => {
     'is sector 137 good for families',
     'what is the price in sector 78',
     'projects in sector 62',
+    // A school as an AMENITY the buyer wants nearby is not an anchor to
+    // measure from — it is a filter on the project, and reading it as an
+    // anchor would delete the location they actually gave.
+    'i need a 3bhk in noida with good schools nearby under 2cr',
+    'projects with a school inside the society',
   ]) {
-    it(`does not invent a workplace from "${q}"`, () => {
+    it(`does not invent an anchor from "${q}"`, () => {
       assert.equal(detectCommuteAnchor(q), null)
     })
   }

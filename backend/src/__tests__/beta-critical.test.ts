@@ -74,6 +74,12 @@ describe('beta: nothing is put on screen that the buyer did not ask for', () => 
       'Show me affordable 2 and 3 BHK apartments in Sector 10, Greater Noida West',
       'What should I check before buying a property in Noida?',
       'Does Godrej Majesty have a gym?',
+      // A request for the shortlist itself. `shortlist|options` was an arm of
+      // the predicate, so this returned a micro-market price table instead of
+      // the projects — the funnel inverted at the rung that converts.
+      'yes show me the shortlist',
+      'build me that shortlist',
+      'show me the options',
     ]) {
       assert.equal(wantsMarketTable(q, false), false, `unwanted table: ${q}`)
     }

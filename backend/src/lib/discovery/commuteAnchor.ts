@@ -22,14 +22,49 @@ import { normalizeSectorName } from '../ai/intent'
  * want to live. Both orders occur: "office in Sector 63" and "Sector 63 for
  * office".
  */
+/**
+ * An anchor is anywhere the buyer travels to regularly — not only an office.
+ *
+ * The first version listed office words alone, and the school case failed in
+ * exactly the way the office case had: "i need a 3bhk under 2cr, my kids school
+ * is in sector 62" set `sector: "Sector 62, Noida"`, Sector 62 holds one
+ * project, and the buyer got "One project is not enough for me to tell you what
+ * the sector is like to live in... The sectors we cover in most depth are
+ * Sector 75, Sector 150, Sector 79" — offered three sectors with no relation to
+ * the school, verbatim again on the next turn.
+ *
+ * A school run is a commute. So is the trip to a parent's house or a hospital
+ * you visit weekly. Every one of them is a place to measure FROM.
+ */
+// `work` last, so the longer alternatives win first ("workplace" must not be
+// matched as "work" and leave "place" behind). It has to be here at all because
+// "sector 125 for work" is the commonest way to say it.
+const ANCHOR_NOUN =
+  '(?:office|workplace|work\\s?place|company|firm|campus|job|schools?|college|university|kids?\\s+school|children\'?s?\\s+school|daughter\'?s?\\s+school|son\'?s?\\s+school|hospital|clinic|parents|in\\s?-?laws|gym|work)'
+
 // "is" alone has to count as a connector: "my workplace is Sector 16A" carries
 // no in/at/near, and it is a perfectly ordinary way to say it.
-const WORKPLACE_BEFORE =
-  /\b(?:my\s+)?(?:office|workplace|work\s?place|company|firm|campus|job)\s+(?:(?:is\s+)?(?:in|at|near)|is)\s+([^.,?!]{2,40})/i
+const WORKPLACE_BEFORE = new RegExp(
+  `\\b(?:my\\s+)?${ANCHOR_NOUN}\\s+(?:(?:is\\s+)?(?:in|at|near)|is)\\s+([^.,?!]{2,40})`,
+  'i',
+)
+// The adverb is optional but common: "i commute daily to the expressway" put
+// "daily" between the verb and the preposition and matched nothing.
 const WORKPLACE_VERB =
-  /\b(?:i\s+)?(?:work|working|commute|commuting|travel|travelling|traveling)\s+(?:in|at|to|from|towards?)\s+([^.,?!]{2,40})/i
-const WORKPLACE_AFTER =
-  /([^.,?!]{2,40}?)\s+(?:in\s+particular\s+)?(?:for|is)\s+(?:my\s+)?(?:office|work|workplace|job)\b/i
+  /\b(?:i\s+)?(?:work|working|commute|commuting|travel|travelling|traveling|drive|driving)(?:\s+(?:daily|everyday|every\s+day|regularly|often|each\s+day))?\s+(?:in|at|to|from|towards?)\s+([^.,?!]{2,40})/i
+
+/**
+ * People the buyer visits, rather than a place they go to work.
+ *
+ * "my parents live in sector 50" is an anchor for the same reason an office is:
+ * it is a trip they make regularly and it decides where they want to be.
+ */
+const ANCHOR_RESIDENTS =
+  /\b(?:my\s+)?(?:parents|in\s?-?laws|family|mother|father|mom|dad)\s+(?:live|lives|living|stay|stays|staying|are|is)\s+(?:in|at|near)\s+([^.,?!]{2,40})/i
+const WORKPLACE_AFTER = new RegExp(
+  `([^.,?!]{2,40}?)\\s+(?:in\\s+particular\\s+)?(?:for|is)\\s+(?:my\\s+)?${ANCHOR_NOUN}\\b`,
+  'i',
+)
 
 /**
  * Noida's employment sectors and the residential belts people commute from.
@@ -87,7 +122,8 @@ export function detectCommuteAnchor(message: string): CommuteAnchor | null {
   if (!text) return null
 
   for (const [re, reason] of [
-    [WORKPLACE_BEFORE, 'office/workplace named before the place'],
+    [WORKPLACE_BEFORE, 'anchor noun named before the place'],
+    [ANCHOR_RESIDENTS, 'family named as living at the place'],
     [WORKPLACE_VERB, 'work/commute verb before the place'],
     [WORKPLACE_AFTER, 'place named before "for office"'],
   ] as Array<[RegExp, string]>) {

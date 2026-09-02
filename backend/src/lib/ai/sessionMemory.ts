@@ -57,6 +57,26 @@ export async function hydrateIntentFromMemory(
     // the search from one belt to another does not move where they work.
     workplace: currentIntent.workplace ?? stored.workplace,
     workplace_belt: currentIntent.workplace_belt ?? stored.workplace_belt,
+
+    /**
+     * Lifestyle preferences last as long as the workplace does.
+     *
+     * Measured: "i want a peaceful low density area, 3bhk under 2cr" extracted
+     * `lifestyleKeywords` on turn 1, and by turn 2 — "yes show me the
+     * shortlist" — it was `undefined`. So did "a happening area with nightlife
+     * and cafes" and "with a mall nearby". All three then produced the
+     * identical answer: the same micro-market price table. Three different
+     * buyers, three different needs, one output.
+     *
+     * The cause is this function being an explicit allowlist rather than a
+     * spread — the same reason the workplace was being lost. A buyer states a
+     * preference once and expects it to hold.
+     */
+    lifestyleKeywords: currentIntent.lifestyleKeywords ?? stored.lifestyleKeywords,
+    areaMin: currentIntent.areaMin ?? stored.areaMin,
+    areaMax: currentIntent.areaMax ?? stored.areaMax,
+    riskProfile: currentIntent.riskProfile ?? stored.riskProfile,
+    journeyStage: currentIntent.journeyStage ?? stored.journeyStage,
   }
 }
 

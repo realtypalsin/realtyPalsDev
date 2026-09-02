@@ -445,14 +445,25 @@ export function wantsMarketTable(message: string, hasProjectFocus: boolean): boo
   const m = (message || '').toLowerCase()
   if (!m) return false
 
-  // Comparing places, choosing between areas, or asking what things cost.
+  // A market table compares PLACES or answers what things cost. It is not an
+  // answer to "show me the shortlist".
+  //
+  // `shortlist|options` was an arm of this, and it inverted the funnel at the
+  // exact rung that matters. Measured across three sessions: "yes show me the
+  // shortlist" returned a micro-market price table — one cell of which listed
+  // twenty sectors — instead of the projects. Three buyers asking for a
+  // peaceful area, a happening area and a mall nearby all received the same
+  // table, because the table is about micro-markets and knows nothing about
+  // what they asked for.
+  //
+  // A buyer asking for a shortlist wants rows they can tap. The table is still
+  // right for "what are rates in Sector 150" and "which sector is better".
   return (
     /\bvs\b|\bversus\b|\bcompare\b|\bbetter\b/.test(m) ||
     /\bwhich (sector|area|micro|part|region)/.test(m) ||
     /\bbest (sector|area|micro|place|locality)/.test(m) ||
     /\bwhere (should|can|do)\b/.test(m) ||
-    /\b(rate|rates|price|prices|per sq|psf|cost)\b/.test(m) ||
-    /\bshortlist\b|\boptions\b/.test(m)
+    /\b(rate|rates|price|prices|per sq|psf|cost)\b/.test(m)
   )
 }
 
