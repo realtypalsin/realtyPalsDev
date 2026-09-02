@@ -245,3 +245,29 @@ describe('superlative references', () => {
     assert.equal(needsShownContext('what is the rate on the cheapest one'), true)
   })
 })
+
+describe('a stated constraint is not a referent', () => {
+  // Shipped for one deploy: "budget" was in the superlative list with an
+  // optional noun, so "3bhk, my office is in sector 63, budget 2cr" was read as
+  // pointing at the cheapest of a list that did not exist, and the turn was
+  // answered with a request for clarification. It broke the happy path.
+  for (const q of [
+    '3bhk, my office is in sector 63, budget 2cr',
+    'my budget is 1.5 cr',
+    'show me budget homes in noida',
+    'premium 4bhk in sector 150',
+    'what is the price of ATS Pristine',
+  ]) {
+    it(`does not read a referent out of "${q}"`, () => {
+      assert.equal(needsShownContext(q), false, q)
+      assert.equal(resolveSuperlativeReference(q, [{ id: 'a', name: 'A', priceMinCr: 1 }]), null, q)
+    })
+  }
+
+  it('still reads the explicit forms', () => {
+    const shown = [{ id: 'a', name: 'Cheap One', priceMinCr: 0.7 }, { id: 'b', name: 'Dear One', priceMinCr: 4 }]
+    assert.equal(resolveSuperlativeReference('rate on the cheapest one', shown)?.project.name, 'Cheap One')
+    assert.equal(resolveSuperlativeReference('which is the cheapest', shown)?.project.name, 'Cheap One')
+    assert.equal(resolveSuperlativeReference('the most expensive option', shown)?.project.name, 'Dear One')
+  })
+})

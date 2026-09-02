@@ -65,9 +65,28 @@ export interface ShownProject {
  * Ordinals were handled and superlatives were not, which is an odd place to
  * draw the line: both are ways of pointing at a row the buyer can see.
  */
+/**
+ * The noun is mandatory, and "budget" and "premium" are not superlatives.
+ *
+ * The first version made the noun optional and included both words, so
+ * "3bhk, my office is in sector 63, budget 2cr" matched — a buyer stating their
+ * budget was read as pointing at the cheapest of a list that did not exist, and
+ * the turn was answered with a request for clarification. It broke the demo
+ * happy path on the first run after deploy.
+ *
+ * "budget" is how buyers state a constraint and "premium" describes a segment;
+ * neither points at a row. A superlative needs its noun, or the explicit
+ * "which is cheapest" form below.
+ */
+const SUPERLATIVE_NOUN = '(?:one|option|project|society|choice|pick|listing|flat|unit)s?'
+const SUPERLATIVE_MIN = '(?:cheapest|lowest[- ]priced|least expensive|most affordable)'
+const SUPERLATIVE_MAX = '(?:most expensive|costliest|priciest|dearest|highest[- ]priced)'
 const SUPERLATIVES: Array<[RegExp, 'min' | 'max']> = [
-  [/\b(?:the\s+)?(?:cheapest|lowest[- ]priced|least expensive|most affordable|budget)\s+(?:one|option|project|society|choice|pick)?/i, 'min'],
-  [/\b(?:the\s+)?(?:most expensive|costliest|priciest|dearest|highest[- ]priced|premium)\s+(?:one|option|project|society|choice|pick)?/i, 'max'],
+  [new RegExp(`\\b(?:the\\s+)?${SUPERLATIVE_MIN}\\s+${SUPERLATIVE_NOUN}\\b`, 'i'), 'min'],
+  [new RegExp(`\\b(?:the\\s+)?${SUPERLATIVE_MAX}\\s+${SUPERLATIVE_NOUN}\\b`, 'i'), 'max'],
+  // "which is the cheapest?" — no noun, but unambiguous.
+  [new RegExp(`\\bwhich\\s+(?:one\\s+)?is\\s+(?:the\\s+)?${SUPERLATIVE_MIN}\\b`, 'i'), 'min'],
+  [new RegExp(`\\bwhich\\s+(?:one\\s+)?is\\s+(?:the\\s+)?${SUPERLATIVE_MAX}\\b`, 'i'), 'max'],
 ]
 
 /** The cheapest or dearest of the shown set, when prices are known. */
