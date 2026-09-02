@@ -70,7 +70,7 @@ import { loadMentionedProjectCards } from '../lib/chat/mentionedProjectCards'
 import { buildUnknownProjectReply } from '../lib/chat/unknownProject'
 import { runTopicHandlers } from '../lib/chat/handlerContext'
 import { projectCatalog } from '../lib/projectCatalog'
-import { applyCommuteAnchor } from '../lib/discovery/commuteAnchor'
+import { applyCommuteAnchor, beltFor } from '../lib/discovery/commuteAnchor'
 import { resolveOrdinalReference, needsShownContext } from '../lib/discovery/reference'
 import { buildStateBrief } from '../lib/ai/stateBrief'
 import { isProximityQuestion, nearbyCoverage } from '../lib/discovery/nearby'
@@ -768,6 +768,22 @@ router.post('/', async (req: Request, res: Response) => {
         })
       }
 
+      /**
+       * The workplace stays out of the filters on EVERY later turn, not just
+       * the one it was said on.
+       *
+       * Measured: turn 7 correctly moved Sector 63 to `workplace`, and on turn
+       * 8 — "yes build me that shortlist" — extraction read the conversation
+       * history and put `sector: Sector 63` straight back. The buyer was
+       * searching a commercial district again, one turn after we had fixed it.
+       */
+      if (intent.workplace && intent.sector && intent.sector === intent.workplace) {
+        console.log('[CHAT:COMMUTE_ANCHOR] re-stripping workplace from sector filter', intent.workplace)
+        intent.sector = undefined
+        intent.spatialScope = undefined
+        if (!intent.workplace_belt?.length) intent.workplace_belt = beltFor(intent.workplace)
+      }
+
       const ref = resolveOrdinalReference(message, shownProjects)
       if (ref) {
         intent.projectNames = [ref.project.name]
@@ -797,6 +813,32 @@ router.post('/', async (req: Request, res: Response) => {
       summaryFinancial: sessionData?.summary_financial ?? null,
       summaryTimeline: sessionData?.summary_timeline ?? null,
     })
+
+    /**
+     * Save intent NOW, not only at the end of the turn.
+     *
+     * `persistIntentToMemory` is called once, near the bottom of this handler —
+     * past the topic-handler lane, the coverage lane, the open lane and every
+     * other early `return`. So a turn answered by any of the fourteen handlers
+     * never wrote its intent to memory at all, and the next turn hydrated from
+     * whatever the last full-pipeline turn had left.
+     *
+     * That is what lost the workplace: turn 7 was answered by
+     * `commuteShortlist`, returned early, and saved nothing — so turn 8 came
+     * back with no `workplace` and extraction put Sector 63 back in `sector`.
+     *
+     * It also saved `hydratedIntent` rather than the finished `intent`, so the
+     * commute anchor and the resolved ordinal were never in the saved copy even
+     * on a turn that did reach the bottom.
+     *
+     * Fire-and-forget, and idempotent: the late call still runs on a full turn
+     * and overwrites with any refinement the discovery lane made.
+     */
+    if (currentSessionId) {
+      persistIntentToMemory(currentSessionId, userId, intent).catch(err =>
+        console.warn('[CHAT:INTENT_PERSIST_EARLY]', (err as Error).message),
+      )
+    }
 
     // Detect explicit lead submission (phone number with contact intent or name in user message)
     const phoneMatch = message.match(/\b[6-9]\d{9}\b/) || message.match(/phone\s*number[:\s]*([0-9+]+)/i)
@@ -4037,7 +4079,11 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
   } finally {
     // Phase 0: Persist intent to session memory (async, fire-and-forget) - guarded against IDOR
     if (sessionId && hydratedIntent && !ownershipFailed) {
-      persistIntentToMemory(sessionId, userId, hydratedIntent).catch((err) => {
+      // `intent`, not `hydratedIntent`: the latter is the pre-post-processing
+      // copy, so the commute anchor and any resolved ordinal were missing from
+      // everything this ever saved. See the early persist above for why there
+      // are two calls.
+      persistIntentToMemory(sessionId, userId, intent).catch((err) => {
         console.error('[PHASE0:PERSIST] Error persisting intent:', err.message)
       })
     }
