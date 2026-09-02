@@ -98,14 +98,12 @@ export async function hydrateIntentFromMemory(
      * that sees the stored value and the new one together. Capped: a revision
      * log is context, not an archive.
      */
-    budgetHistory: appendRevision(
-      stored.budgetHistory,
-      currentIntent.budgetMax ?? stored.budgetMax,
-    ),
-    sectorHistory: appendRevision(
-      stored.sectorHistory,
-      currentIntent.sector ?? stored.sector,
-    ),
+    // Carried through only. The append happens in the router, where intent is
+    // final: this function runs in parallel with extraction and therefore sees
+    // the PREVIOUS turn's values, so appending here lagged the log by one turn
+    // and "what was my first budget" read back the second one.
+    budgetHistory: currentIntent.budgetHistory ?? stored.budgetHistory,
+    sectorHistory: currentIntent.sectorHistory ?? stored.sectorHistory,
     lifestyleKeywords: currentIntent.lifestyleKeywords ?? stored.lifestyleKeywords,
     areaMin: currentIntent.areaMin ?? stored.areaMin,
     areaMax: currentIntent.areaMax ?? stored.areaMax,

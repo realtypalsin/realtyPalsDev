@@ -993,6 +993,27 @@ router.post('/', async (req: Request, res: Response) => {
     })
 
     /**
+     * Append this turn's stated constraints to the revision log.
+     *
+     * Here, not in `hydrateIntentFromMemory`, because that function runs in
+     * parallel with intent extraction and therefore sees the PREVIOUS turn's
+     * values — the log lagged by one turn, and "what was my first budget?" read
+     * back the second one. This is the first point where intent is final.
+     */
+    if (intent.budgetMax != null) {
+      const prev = intent.budgetHistory ?? []
+      if (prev[prev.length - 1] !== intent.budgetMax) {
+        intent.budgetHistory = [...prev, intent.budgetMax].slice(-6)
+      }
+    }
+    if (intent.sector) {
+      const prev = intent.sectorHistory ?? []
+      if (prev[prev.length - 1] !== intent.sector) {
+        intent.sectorHistory = [...prev, intent.sector].slice(-6)
+      }
+    }
+
+    /**
      * "What was my first budget?" — answered from the revision log, exactly.
      *
      * Measured after the log was added and it still failed: the reply was "We
@@ -3953,6 +3974,29 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       })
       fullText = fallbackResult.text
       usedProvider = { provider: fallbackResult.provider, envKey: fallbackResult.envKey }
+
+      /**
+       * An answer that ends on a colon promised a list it never delivered.
+       *
+       * The model writes "Ready-to-move 3 BHK options under 1.8 Cr across Noida
+       * sectors:" and then a table; `suppressTables` strips the table, and
+       * because stripping is streaming the lead-in has already been sent and
+       * cannot be recalled. Measured replies of 62 and 138 characters, each a
+       * single sentence ending in a colon with nothing after it.
+       *
+       * Three prompt rules have now told the model not to introduce a table it
+       * cannot draw, and it still does on some turns. So this closes the
+       * sentence deterministically instead: one line naming where the content
+       * actually is. The cards carry it, so the answer becomes true rather than
+       * merely complete.
+       */
+      const trimmed = fullText.trimEnd()
+      if (/[:：]$/.test(trimmed) && cardsAreRendering) {
+        const closer = `\n\nThey're on the cards above — tell me which one to open up, or what matters most and I'll narrow it.`
+        send('token', { token: closer })
+        fullText = `${trimmed}${closer}`
+        console.log('[CHAT:DANGLING_LEADIN_CLOSED]', { chars: trimmed.length })
+      }
     } // end: !needsClarification && disambiguationText === null
 
     // Fix 1: Guard against null fallbackResult if early exit path taken
