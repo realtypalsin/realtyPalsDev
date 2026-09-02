@@ -1,0 +1,136 @@
+// The two concepts that were missing when a 15-turn production run broke.
+//
+// Both failures are quoted in the modules under test. These tests pin the
+// behaviour that replaced them, and — more importantly — pin the cases that
+// must NOT trigger, because a false positive on either one is worse than the
+// original bug: a wrongly-detected workplace drops a real search filter, and a
+// wrongly-resolved ordinal answers about the wrong building.
+
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { detectCommuteAnchor, applyCommuteAnchor, beltFor } from '../commuteAnchor'
+import { resolveOrdinalReference, resolveOrdinalPair, needsShownContext } from '../reference'
+
+describe('commute anchor', () => {
+  it('reads the phrasing that broke the funnel', () => {
+    // Verbatim from the run. This set `sector: Sector 63`, the sector lane found
+    // no residential inventory in a commercial district, and the buyer was told
+    // to contact the advisory team.
+    const a = detectCommuteAnchor('central noida, sector 63 noida in particular for office')
+    assert.equal(a?.place, 'Sector 63')
+    assert.ok(a!.belt.length >= 3, 'a workplace with no belt cannot be acted on')
+    assert.ok(a!.belt.includes('Sector 76'))
+  })
+
+  for (const [q, expected] of [
+    ['my office is in sector 63', 'Sector 63'],
+    ['i work in sector 62', 'Sector 62'],
+    ['i commute to sector 132 daily', 'Sector 132'],
+    ['my workplace is Sector 16A', 'Sector 16A'],
+    ['sector 125 for work', 'Sector 125'],
+  ] as Array<[string, string]>) {
+    it(`detects "${q}"`, () => {
+      assert.equal(detectCommuteAnchor(q)?.place, expected)
+    })
+  }
+
+  // The important half. Every one of these names a sector the buyer wants to
+  // LIVE in; treating it as a workplace would delete the filter they just gave.
+  for (const q of [
+    'show me flats in sector 63',
+    '3bhk in sector 150 under 2cr',
+    'is sector 137 good for families',
+    'what is the price in sector 78',
+    'projects in sector 62',
+  ]) {
+    it(`does not invent a workplace from "${q}"`, () => {
+      assert.equal(detectCommuteAnchor(q), null)
+    })
+  }
+
+  it('removes the workplace from the search filters', () => {
+    const { intent } = applyCommuteAnchor(
+      'central noida, sector 63 noida in particular for office',
+      { sector: 'Sector 63', bhk: [3], budgetMax: 2 },
+    )
+    assert.equal((intent as { sector?: string }).sector, undefined, 'the workplace must not stay a filter')
+    assert.equal((intent as { workplace?: string }).workplace, 'Sector 63')
+    assert.deepEqual((intent as { bhk?: number[] }).bhk, [3], 'the real filters survive')
+  })
+
+  it('keeps a search sector that is not the workplace', () => {
+    // "flats in 78, I work in 63" — Sector 78 is a real filter and must stay.
+    const { intent } = applyCommuteAnchor('flats in sector 78, i work in sector 63', {
+      sector: 'Sector 78',
+      bhk: [3],
+    })
+    assert.equal((intent as { sector?: string }).sector, 'Sector 78')
+    assert.equal((intent as { workplace?: string }).workplace, 'Sector 63')
+  })
+
+  it('gives the employment sectors a curated belt, not a numeric guess', () => {
+    // Sector 63 appears in SECTOR_ADJACENCY only as a value, so the generic
+    // path fell through to ±1/±2/±5 and offered Sectors 64, 65 and 68 — all
+    // industrial.
+    const belt = beltFor('Sector 63')
+    assert.ok(belt.includes('Sector 76') && belt.includes('Sector 78'))
+    assert.ok(!belt.includes('Sector 64'), 'an industrial sector is not a residential belt')
+  })
+})
+
+describe('ordinal references', () => {
+  const shown = [
+    { id: 'a', name: 'Prateek Wisteria' },
+    { id: 'b', name: 'Antriksh Golf View I' },
+    { id: 'c', name: 'Divine Meadows' },
+    { id: 'd', name: 'ATS Nobility' },
+  ]
+
+  for (const [q, expected] of [
+    ['tell me about the first one', 'Prateek Wisteria'],
+    ['what about the second option', 'Antriksh Golf View I'],
+    ['the third project please', 'Divine Meadows'],
+    ['tell me about the last one', 'ATS Nobility'],
+    ['tell me about the first', 'Prateek Wisteria'],
+  ] as Array<[string, string]>) {
+    it(`resolves "${q}"`, () => {
+      assert.equal(resolveOrdinalReference(q, shown)?.project.name, expected)
+    })
+  }
+
+  it('answers nothing rather than guessing past the end of the list', () => {
+    assert.equal(resolveOrdinalReference('tell me about the fifth option', shown), null)
+  })
+
+  it('does not read an ordinal out of a quantity', () => {
+    // "3" was in this alternation, and "show me 3 options" only escaped
+    // resolving to the third project because `option` is plural there.
+    for (const q of ['show me 3 options', 'give me 2 projects', 'top 3 options in sector 150']) {
+      assert.equal(resolveOrdinalReference(q, shown), null, q)
+    }
+  })
+
+  it('does not resolve a message that names a project outright', () => {
+    assert.equal(resolveOrdinalReference('tell me about ATS Nobility', shown), null)
+  })
+
+  it('resolves "it" against the focused project for a comparison', () => {
+    // T14 on the run: "compare it with the second option" was answered "we
+    // currently only have ATS Nobility in our verified records".
+    const pair = resolveOrdinalPair('compare it with the second option', shown, 'd')
+    assert.deepEqual(pair.map(p => p.name), ['ATS Nobility', 'Antriksh Golf View I'])
+  })
+
+  it('knows which messages cannot be answered without the list', () => {
+    for (const q of ['tell me about the first one', 'which of these is closest to sector 63', 'compare the first two']) {
+      assert.equal(needsShownContext(q), true, q)
+    }
+    for (const q of ['what is stamp duty in UP', 'show me 3bhk in sector 150']) {
+      assert.equal(needsShownContext(q), false, q)
+    }
+  })
+
+  it('resolves nothing when no list has been shown', () => {
+    assert.equal(resolveOrdinalReference('tell me about the first one', []), null)
+  })
+})

@@ -4,87 +4,26 @@ import { prisma } from '../db'
 import type { ScoredProject } from './types'
 
 const EARTH_RADIUS_KM = 6371
-
-// Sector centroid cache: { "Sector 75": { lat, lng }, ... }
-// These are pre-computed from historical project data for fast lookup
-const SECTOR_CENTROID_CACHE: Record<string, { lat: number; lng: number }> = {
-  'Sector 75': { lat: 28.5355, lng: 77.3697 },
-  'Sector 76': { lat: 28.5415, lng: 77.3755 },
-  'Sector 77': { lat: 28.5475, lng: 77.3813 },
-  'Sector 78': { lat: 28.5535, lng: 77.3871 },
-  'Sector 79': { lat: 28.5595, lng: 77.3929 },
-  'Sector 80': { lat: 28.5655, lng: 77.3987 },
-  'Sector 81': { lat: 28.5715, lng: 77.4045 },
-  'Sector 82': { lat: 28.5775, lng: 77.4103 },
-  'Sector 83': { lat: 28.5835, lng: 77.4161 },
-  'Sector 84': { lat: 28.5895, lng: 77.4219 },
-  'Sector 85': { lat: 28.5955, lng: 77.4277 },
-  'Sector 86': { lat: 28.6015, lng: 77.4335 },
-  'Sector 87': { lat: 28.6075, lng: 77.4393 },
-  'Sector 88': { lat: 28.6135, lng: 77.4451 },
-  'Sector 89': { lat: 28.6195, lng: 77.4509 },
-  'Sector 90': { lat: 28.6255, lng: 77.4567 },
-  'Sector 91': { lat: 28.6315, lng: 77.4625 },
-  'Sector 92': { lat: 28.6375, lng: 77.4683 },
-  'Sector 93': { lat: 28.6435, lng: 77.4741 },
-  'Sector 94': { lat: 28.6495, lng: 77.4799 },
-  'Sector 95': { lat: 28.6555, lng: 77.4857 },
-  'Sector 96': { lat: 28.6615, lng: 77.4915 },
-  'Sector 97': { lat: 28.6675, lng: 77.4973 },
-  'Sector 98': { lat: 28.6735, lng: 77.5031 },
-  'Sector 99': { lat: 28.6795, lng: 77.5089 },
-  'Sector 100': { lat: 28.6855, lng: 77.5147 },
-  'Sector 101': { lat: 28.5595, lng: 77.4047 },
-  'Sector 102': { lat: 28.5655, lng: 77.4105 },
-  'Sector 103': { lat: 28.5715, lng: 77.4163 },
-  'Sector 104': { lat: 28.5775, lng: 77.4221 },
-  'Sector 105': { lat: 28.5835, lng: 77.4279 },
-  'Sector 106': { lat: 28.5895, lng: 77.4337 },
-  'Sector 107': { lat: 28.5955, lng: 77.4395 },
-  'Sector 108': { lat: 28.6015, lng: 77.4453 },
-  'Sector 109': { lat: 28.6075, lng: 77.4511 },
-  'Sector 110': { lat: 28.6135, lng: 77.4569 },
-  'Sector 111': { lat: 28.6195, lng: 77.4627 },
-  'Sector 112': { lat: 28.6255, lng: 77.4685 },
-  'Sector 113': { lat: 28.6315, lng: 77.4743 },
-  'Sector 114': { lat: 28.6375, lng: 77.4801 },
-  'Sector 115': { lat: 28.6435, lng: 77.4859 },
-  'Sector 116': { lat: 28.6495, lng: 77.4917 },
-  'Sector 117': { lat: 28.6555, lng: 77.4975 },
-  'Sector 118': { lat: 28.6615, lng: 77.5033 },
-  'Sector 119': { lat: 28.6675, lng: 77.5091 },
-  'Sector 120': { lat: 28.6735, lng: 77.5149 },
-  'Sector 121': { lat: 28.6795, lng: 77.5207 },
-  'Sector 122': { lat: 28.6855, lng: 77.5265 },
-  'Sector 123': { lat: 28.6915, lng: 77.5323 },
-  'Sector 124': { lat: 28.6975, lng: 77.5381 },
-  'Sector 125': { lat: 28.7035, lng: 77.5439 },
-  'Sector 126': { lat: 28.7095, lng: 77.5497 },
-  'Sector 127': { lat: 28.7155, lng: 77.5555 },
-  'Sector 128': { lat: 28.7215, lng: 77.5613 },
-  'Sector 129': { lat: 28.7275, lng: 77.5671 },
-  'Sector 130': { lat: 28.7335, lng: 77.5729 },
-  'Sector 137': { lat: 28.5795, lng: 77.3747 },
-  'Sector 138': { lat: 28.5855, lng: 77.3805 },
-  'Sector 139': { lat: 28.5915, lng: 77.3863 },
-  'Sector 140': { lat: 28.5975, lng: 77.3921 },
-  'Sector 141': { lat: 28.6035, lng: 77.3979 },
-  'Sector 142': { lat: 28.6095, lng: 77.4037 },
-  'Sector 143': { lat: 28.6155, lng: 77.4095 },
-  'Sector 144': { lat: 28.6215, lng: 77.4153 },
-  'Sector 145': { lat: 28.6275, lng: 77.4211 },
-  'Sector 146': { lat: 28.6335, lng: 77.4269 },
-  'Sector 147': { lat: 28.6395, lng: 77.4327 },
-  'Sector 148': { lat: 28.6455, lng: 77.4385 },
-  'Sector 149': { lat: 28.6515, lng: 77.4443 },
-  'Sector 150': { lat: 28.6575, lng: 77.4501 },
-  'Sector 151': { lat: 28.6635, lng: 77.4559 },
-  'Greater Noida West Sector 1': { lat: 28.4715, lng: 77.5315 },
-  'Greater Noida West Sector 10': { lat: 28.4575, lng: 77.5575 },
-  'Greater Noida West Techzone 4': { lat: 28.4835, lng: 77.5155 },
-  'Yamuna Expressway': { lat: 28.4, lng: 77.7 },
-}
-
+/**
+ * There is no static centroid table any more, deliberately.
+ *
+ * `SECTOR_CENTROID_CACHE` held 82 entries described as "pre-computed from
+ * historical project data". They were not: every entry was the previous one
+ * plus exactly 0.0060 latitude and 0.0058 longitude, a linear ramp generated
+ * arithmetically from Sector 75 outward. Sector 100 came out at 28.6855,
+ * 77.5147 — about 17km east of where Sector 100 actually is, out past Dadri.
+ *
+ * That mattered because `getSectorCentroid` fell back to it whenever a sector
+ * held no project with coordinates, and both `nearby.ts` and the spatial branch
+ * of `projects.ts` then ran a Haversine radius search from the invented point.
+ * A buyer asking what is near a sector we hold nothing in got a confident list
+ * of projects computed from made-up geography.
+ *
+ * A sector we have no coordinates for now returns null, which every caller
+ * already handles by falling back to non-spatial retrieval. Curated adjacency
+ * lives in `SECTOR_ADJACENCY` (constants.ts) and is real; use that for
+ * "which sectors are near this one".
+ */
 /**
  * Calculate Haversine distance between two lat/lng points in kilometers
  */
@@ -131,11 +70,9 @@ export async function getSectorCentroid(
     console.error(`Failed to compute sector centroid for ${sector} from DB:`, err)
   }
 
-  // 2. Fallback to pre-computed static cache
-  if (SECTOR_CENTROID_CACHE[sector]) {
-    return SECTOR_CENTROID_CACHE[sector]
-  }
-
+  // No static fallback — see the note at the top of this file. A sector we hold
+  // no coordinates for has no centroid, and saying so lets the caller fall back
+  // to non-spatial retrieval instead of measuring from an invented point.
   return null
 }
 

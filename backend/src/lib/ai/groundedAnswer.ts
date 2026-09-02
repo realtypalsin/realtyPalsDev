@@ -235,6 +235,12 @@ export interface GroundedAnswerInput {
    * NOT send the text again.
    */
   stream?: (event: string, data: Record<string, unknown>) => void
+  /**
+   * What the session already knows, from `buildStateBrief`.
+   *
+   * Without it this lane answers every turn as though it were the first one.
+   */
+  stateBrief?: string
 }
 
 /**
@@ -246,7 +252,18 @@ export async function runGroundedAnswer(
 ): Promise<GroundedAnswer | null> {
   const { message, detection, city, userId, sessionId } = input
 
-  const cached = await getCachedResponse(message, OPEN_CACHE_SCOPE)
+  // An answer shaped by this buyer's state is not shareable.
+  //
+  // The scope key is the message alone, which was correct while this lane was
+  // stateless. Now that a brief carrying budget, sector, workplace and the
+  // focused project goes into the prompt, "what are the negatives" answered for
+  // a buyer looking at ATS Nobility must never surface for the next buyer — the
+  // same rule `semanticCache` already enforces by project focus.
+  //
+  // So a stateful turn neither reads nor writes the shared cache. Cold general
+  // questions, which are the ones worth caching, still do.
+  const shareable = !input.stateBrief
+  const cached = shareable ? await getCachedResponse(message, OPEN_CACHE_SCOPE) : null
   if (cached?.token) {
     return { text: cached.token, fromDatabase: false, fromWeb: false, cached: true }
   }
@@ -312,6 +329,7 @@ export async function runGroundedAnswer(
     webContext: promptContext,
     city: city || DEFAULT_CITY,
     hasVerifiedData: Boolean(dbContext),
+    stateBrief: input.stateBrief,
   })
 
   // 4. Stream / Generate Answer via Fallback Chain
@@ -423,7 +441,9 @@ export async function runGroundedAnswer(
 
   if (!text || text.length < 10) return null
 
-  setCachedResponse(message, { token: text, responseMode: 'grounded' }, OPEN_CACHE_TTL_MS, OPEN_CACHE_SCOPE)
+  if (shareable) {
+    setCachedResponse(message, { token: text, responseMode: 'grounded' }, OPEN_CACHE_TTL_MS, OPEN_CACHE_SCOPE)
+  }
 
   return {
     text,

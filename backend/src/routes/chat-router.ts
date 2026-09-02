@@ -70,6 +70,9 @@ import { loadMentionedProjectCards } from '../lib/chat/mentionedProjectCards'
 import { buildUnknownProjectReply } from '../lib/chat/unknownProject'
 import { runTopicHandlers } from '../lib/chat/handlerContext'
 import { projectCatalog } from '../lib/projectCatalog'
+import { applyCommuteAnchor } from '../lib/discovery/commuteAnchor'
+import { resolveOrdinalReference, needsShownContext } from '../lib/discovery/reference'
+import { buildStateBrief } from '../lib/ai/stateBrief'
 import { isProximityQuestion, nearbyCoverage } from '../lib/discovery/nearby'
 import {
   isReraProcessQuestion as matchesReraProcessQuestion,
@@ -734,6 +737,67 @@ router.post('/', async (req: Request, res: Response) => {
       console.warn('[CHAT] Project name detection fallback error:', e);
     }
 
+    // ─── CONVERSATION STATE: workplace, and what "the first one" refers to ─────
+    //
+    // Both of these were missing entirely, and both broke the funnel on a
+    // 15-turn production run.
+    //
+    // A workplace is not a place to buy. "central noida, sector 63 noida in
+    // particular for office" set `sector: Sector 63`, the sector lane found no
+    // residential inventory in a commercial district, and the buyer was told to
+    // contact the advisory team — then Sector 63 stayed sticky for two more
+    // turns. `applyCommuteAnchor` moves it to `workplace` and hands back the
+    // residential belt to search instead.
+    //
+    // An ordinal needs the list it points into. "tell me about the first one"
+    // reached the entity lookup as that literal string, missed, and the general
+    // lane answered about Jewar Airport. The ordered set is already on the
+    // session in `last_projects`.
+    const shownProjects = (cachedProjectsFromSession ?? [])
+      .map(p => ({ id: String(p.id), name: String(p.name) }))
+      .filter(p => p.id && p.name)
+
+    {
+      const anchored = applyCommuteAnchor(message, intent as Record<string, unknown>)
+      if (anchored.anchor) {
+        intent = anchored.intent as Intent
+        console.log('[CHAT:COMMUTE_ANCHOR]', {
+          workplace: anchored.anchor.place,
+          belt: anchored.anchor.belt.slice(0, 4),
+          reason: anchored.anchor.reason,
+        })
+      }
+
+      const ref = resolveOrdinalReference(message, shownProjects)
+      if (ref) {
+        intent.projectNames = [ref.project.name]
+        ;(intent as { targetProjectId?: string }).targetProjectId = ref.project.id
+        console.log('[CHAT:ORDINAL_REF]', { position: ref.index + 1, resolved: ref.project.name })
+      }
+    }
+
+    /**
+     * The buyer's state, for any prompt that needs it.
+     *
+     * The general lane had none of this and answered every turn as though it
+     * were the first — re-asking a sector six turns after it was given, and
+     * treating "the first one" as a name to look up.
+     */
+    const stateBrief = buildStateBrief({
+      budgetMinCr: intent.budgetMin ?? null,
+      budgetMaxCr: intent.budgetMax ?? null,
+      bhk: intent.bhk ?? null,
+      sector: intent.sector ?? null,
+      workplace: (intent as { workplace?: string }).workplace ?? null,
+      possession: intent.possession ?? null,
+      purpose: intent.purpose ?? null,
+      focusProjectName: intent.projectNames?.[0] ?? null,
+      shown: shownProjects.length ? shownProjects.map(p => ({ name: p.name })) : null,
+      summaryLocation: sessionData?.summary_location ?? null,
+      summaryFinancial: sessionData?.summary_financial ?? null,
+      summaryTimeline: sessionData?.summary_timeline ?? null,
+    })
+
     // Detect explicit lead submission (phone number with contact intent or name in user message)
     const phoneMatch = message.match(/\b[6-9]\d{9}\b/) || message.match(/phone\s*number[:\s]*([0-9+]+)/i)
     const isContactIntent = /call|contact|reach|callback|phone|mobile|number|talk to|speak to|connect me/i.test(message)
@@ -1002,6 +1066,10 @@ router.post('/', async (req: Request, res: Response) => {
         // most of this lane. Time-to-first-token was the whole generation
         // before this, because the lane buffered every reply.
         stream: send,
+        // Budget, sector, workplace, focused project and the ordered list just
+        // shown. Without it this lane answered "tell me about the first one"
+        // with an essay about Jewar Airport.
+        stateBrief,
       })
 
       const rawOpenText = grounded?.text ?? buildNoGroundingReply(openDetection)
@@ -1102,7 +1170,34 @@ router.post('/', async (req: Request, res: Response) => {
       res.end()
     }
 
-    if (queryClassification.queryKind === 'OPEN' && !(asksForInventory && intent.sector) && !asksAffordability && !asksLegalSafety && !asksOurOwnNumbers) {
+    /**
+     * An ordinal that resolved to a project we hold is a DRILLDOWN, not an open
+     * question.
+     *
+     * "tell me about the first one" matches the open lane's `tell me about X`
+     * entity pattern, so it was classified OPEN and answered from general
+     * knowledge — about Jewar Airport, on the measured run. Now that the
+     * ordinal has been resolved into `projectNames` and `targetProjectId`
+     * above, the project pipeline can read that project's own rows, which is
+     * the only place the answer exists.
+     */
+    const resolvedFromShownList =
+      needsShownContext(message) && Boolean((intent as { targetProjectId?: string }).targetProjectId)
+    if (resolvedFromShownList) {
+      console.log('[CHAT:OPEN_LANE_DECLINED]', {
+        reason: 'ordinal resolved to a held project — routing to project detail',
+        project: intent.projectNames?.[0],
+      })
+    }
+
+    if (
+      queryClassification.queryKind === 'OPEN' &&
+      !(asksForInventory && intent.sector) &&
+      !asksAffordability &&
+      !asksLegalSafety &&
+      !asksOurOwnNumbers &&
+      !resolvedFromShownList
+    ) {
       await answerAsGeneralQuestion('OPEN')
       return
     }

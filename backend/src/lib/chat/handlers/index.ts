@@ -1,5 +1,6 @@
 import type { ChatTopicHandler } from '../handlerContext'
 import { citywideQueryHandler } from './citywideQuery'
+import { commuteShortlistHandler } from './commuteShortlist'
 import { builderReputationHandler } from './builderReputation'
 import { newcomerOrientationHandler } from './newcomerOrientation'
 import { amenityLifestyleHandler } from './amenityLifestyle'
@@ -43,6 +44,11 @@ import { unitConfigurationHandler } from './unitConfiguration'
  * project detail, open-query lane.
  */
 export const CHAT_TOPIC_HANDLERS: readonly ChatTopicHandler[] = [
+  // First, deliberately. A stated workplace is the strongest signal a turn can
+  // carry — it converts an open search into a commute-ranked one — and it only
+  // matches while no sector has been chosen yet, so it cannot shadow the
+  // ordinary sector and project paths once the buyer has picked a belt.
+  commuteShortlistHandler,
   citywideQueryHandler,
   builderReputationHandler,
   newcomerOrientationHandler,
@@ -59,6 +65,7 @@ export const CHAT_TOPIC_HANDLERS: readonly ChatTopicHandler[] = [
 ]
 
 export {
+  commuteShortlistHandler,
   citywideQueryHandler,
   reraVerificationHandler,
   statutoryTaxHandler,

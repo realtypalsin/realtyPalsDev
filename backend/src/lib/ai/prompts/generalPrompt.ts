@@ -11,10 +11,19 @@ export interface GeneralPromptOptions {
   webContext?: string
   city?: string
   hasVerifiedData?: boolean
+  /**
+   * What this session already knows about the buyer, from `buildStateBrief`.
+   *
+   * This lane was stateless, which produced the two worst answers in a 15-turn
+   * run: "tell me about the first one" became an essay about Jewar Airport, and
+   * "what are the negatives" closed by asking whether the buyer was leaning
+   * toward Sector 150 — six turns after they had named Sector 63.
+   */
+  stateBrief?: string
 }
 
 export function buildGeneralConversationalPrompt(opts: GeneralPromptOptions): string {
-  const { webContext, city = 'Noida & Delhi NCR' } = opts
+  const { webContext, city = 'Noida & Delhi NCR', stateBrief } = opts
 
   return `You are RealtyPals AI — an elite real estate advisor and universally intelligent conversational assistant.
 Your mastery is real estate (buying, investing, legal due diligence, market economics, and wealth creation), but you are knowledgeable, articulate, and helpful on any topic the user asks.
@@ -49,6 +58,7 @@ Your mastery is real estate (buying, investing, legal due diligence, market econ
    - Never ask for something they already told you, and never ask a question whose answer would not change what you show them next.
    - A buyer asking pure general knowledge with no property intent gets the answer and nothing more — do not funnel someone who is not buying.
 
+${stateBrief ? `${stateBrief}\n` : ''}
 ${webContext ? `## LIVE WEB & FACTUAL CONTEXT:\n${webContext}\nUse the factual points above to give an accurate, up-to-date answer.\n` : ''}
 `
 }

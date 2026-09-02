@@ -27,6 +27,12 @@ export const IntentSchema = z.object({
   // Spatial scope: "in Sector X" (EXACT) vs "near Sector X" (PROXIMITY) vs "Noida" (BROAD)
   spatialScope: z.enum(['EXACT', 'PROXIMITY', 'BROAD']).nullable().optional(),
   radiusKm: z.number().nullable().optional(),
+
+  // Where the buyer works — the point to measure commute FROM, never a filter.
+  // `.passthrough()` below already let these survive the client echo; declared
+  // because they are first-class Intent fields, not incidental extras.
+  workplace: z.string().nullable().optional(),
+  workplace_belt: z.string().array().nullable().optional(),
 }).partial().passthrough()
 
 export function isCityLevel(sector: string): boolean {

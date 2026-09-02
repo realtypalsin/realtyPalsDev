@@ -44,6 +44,19 @@ export async function hydrateIntentFromMemory(
     budgetMax: isSectorChanged ? currentIntent.budgetMax : (currentIntent.budgetMax ?? stored.budgetMax),
     purpose: currentIntent.purpose ?? stored.purpose,
     possession: currentIntent.possession ?? stored.possession,
+    // The workplace is stated once and matters for the rest of the
+    // conversation, so it has to survive every later turn.
+    //
+    // `extracted_intent` is written whole, so these were already being
+    // persisted — this function just never read them back, and the list above
+    // is an explicit allowlist rather than a spread. A buyer who said "my
+    // office is in Sector 63" on turn 7 had lost it by turn 8, which is the
+    // turn that asks for the shortlist.
+    //
+    // Unlike budget, a workplace is NOT reset when the sector changes: moving
+    // the search from one belt to another does not move where they work.
+    workplace: currentIntent.workplace ?? stored.workplace,
+    workplace_belt: currentIntent.workplace_belt ?? stored.workplace_belt,
   }
 }
 

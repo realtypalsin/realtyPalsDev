@@ -26,6 +26,19 @@ export interface Intent {
   // Spatial scope: disambiguate "in Sector 75" (EXACT) vs "near Sector 75" (PROXIMITY)
   spatialScope?: 'EXACT' | 'PROXIMITY' | 'BROAD'
   radiusKm?: number
+
+  /**
+   * Where the buyer WORKS. Never a search filter.
+   *
+   * `sector` is where they want to live; this is the place they travel to, and
+   * conflating the two broke the funnel on a measured run: "sector 63 ... for
+   * office" became `sector: Sector 63`, the sector lane found no residential
+   * inventory in a commercial district, and the buyer was handed off to the
+   * advisory team. See `discovery/commuteAnchor.ts`.
+   */
+  workplace?: string
+  /** Residential sectors to search instead, commute-closest first. */
+  workplace_belt?: string[]
 }
 
 export type IntentState = 'COLD' | 'GATHERING' | 'READY_TO_SEARCH' | 'SHORTLISTED'

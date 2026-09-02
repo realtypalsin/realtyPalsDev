@@ -65,6 +65,8 @@ describe('the topic lane emits a card for the project it answered about', () => 
   const MAY_SUPERSEDE_ROUTER_CARDS: Record<string, string> = {
     'amenityLifestyle.ts':
       'a citywide amenity search answers with a shortlist of societies, which is a wider and more relevant set than the single focused project',
+    'commuteShortlist.ts':
+      'the buyer named their workplace, so the answer is a commute-ranked shortlist across a residential belt — the whole point of the turn is that set of cards, and no single project is in focus yet',
   }
 
   it('only declared handlers emit their own cards', () => {
