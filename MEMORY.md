@@ -946,3 +946,74 @@ round-trips hitting a 10s timeout, not logic failures.
   the same per-query hardcoding pattern, not yet unwound.
 * No live-LLM verification of the general lane. Everything above is typecheck
   plus unit tests plus offline routing probes.
+
+---
+
+## Session 2026-09-02 (later) — general-lane latency
+
+"hi" took 12 seconds. Every number below is measured, not estimated.
+
+### Where it went
+
+| Cause | Cost | Fix |
+|---|---|---|
+| Intent extraction on a message with nothing to extract | 3,115ms for "hi", 1,442ms for a tax question, 1,345ms for a maintenance question | `nothingToExtract()` — now 0–2ms |
+| Web search on a greeting | 1,906ms searching `"hi Noida"`, returning 2,009 chars of noise injected into the prompt | search only when the turn names a party or something time-sensitive |
+| Four unbounded `findMany` per turn over two tables | project table scanned 3x, builder table 2x, only one cached | `projectCatalog.ts` + `builderNames.ts`, one 300s cache each |
+| Answer buffered, not streamed | time-to-first-token WAS the whole generation | streams when there is no `dbContext` |
+| Advisory profile on general questions | `gemini-3.6-flash` + 512 thinking: 19,899ms vs 3,626ms for lite + 0 on the same question | lane pinned to `GEMINI_LITE`, thinking 0 |
+| No length rule at all | one answer came back at 5,352 chars | prompt defaults to 120–160 words |
+
+### Result, measured on production, uncached
+
+Time-to-first-byte went from "wait for the entire answer" to **1.6–1.9s, flat
+across every query shape**. Totals: 9 of 10 uncached queries between 5.6s and
+9.9s, mean ~6.7s excluding one outlier.
+
+### Why `heuristicIsSufficient` was the wrong question
+
+It asks "did the regexes GAIN a constraint?", which can only be true when the
+message HAS one. A message with no constraint fell through to a full model
+round-trip that returned nothing — and extraction sits in FRONT of the answer
+call, so the buyer paid for it before waiting for the real reply.
+`nothingToExtract` asks the other question: is there anything here to find?
+
+This is safe for project names specifically because **the router matches those
+itself** against the catalogue after extraction and overwrites `projectNames`.
+Extraction is not what finds them. 24 phrasings are pinned in
+`intentHeuristic.test.ts`, and half of them MUST still reach the model — a
+budget, a correction ("make that 2 crore"), a comparative ("something bigger"),
+a name we may hold.
+
+### Streaming is scoped to answers with no database figures
+
+The reason the lane buffered was real but narrow: `stripUngroundedSentences`
+must see finished text to drop a figure that drifted off the block we supplied,
+and a sent token cannot be recalled. That check only runs when `dbContext` is
+non-empty, so general-knowledge answers have nothing to wait for. Streaming raw
+is safe because the router's `send` runs `sanitizeOutput` per token — emoji,
+competitor names and off-platform URLs are stripped in flight.
+
+What a streamed answer gives up is `linkProjectNames`, which needs the whole
+text. Cards and chips are still built from the collected answer. The stored
+transcript drops the links too, so the record matches what was on screen.
+
+### The remaining tail is upstream, not ours
+
+One query in ten comes back slow — 37.6s on "is Greater Noida good for
+families" in the final run. Checked: that query gets no `dbContext` (topic
+GENERAL, no price words), so it did stream and did use the lite model. It is
+provider throughput variance, which this file already records as eighteen-fold
+on the same provider within one run. `streamTimeout` cuts on 60s of *silence*,
+which a slow-but-progressing stream never trips. A total-duration deadline would
+catch it but cannot roll to another leg once tokens have been sent — that is why
+`StreamStallError` carries `tokensSent`. Not attempted.
+
+### Not optimised
+
+The **discovery and project lanes are untouched** and still slow: "3bhk under
+1.5cr in sector 137" measured 24.3s. That path runs `discoverProjects`, the
+scoring engine and the 58KB `prompts/base.ts`, none of which this work went
+near. Intent extraction already fast-paths there (0ms), so the time is
+retrieval, scoring and the main prompt. That is the next latency job and it is
+a bigger one than this was.
