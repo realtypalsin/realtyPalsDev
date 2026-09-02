@@ -69,6 +69,7 @@ import { buildComponentResponse } from '../lib/discovery/componentSpec'
 import { loadMentionedProjectCards } from '../lib/chat/mentionedProjectCards'
 import { buildUnknownProjectReply } from '../lib/chat/unknownProject'
 import { runTopicHandlers } from '../lib/chat/handlerContext'
+import { projectCatalog } from '../lib/projectCatalog'
 import { isProximityQuestion, nearbyCoverage } from '../lib/discovery/nearby'
 import {
   isReraProcessQuestion as matchesReraProcessQuestion,
@@ -667,9 +668,11 @@ router.post('/', async (req: Request, res: Response) => {
       let matched: { id: string; name: string; slug: string } | null = null;
 
       if (!isGenericQuery && cleanQuery.length >= 4) {
-        const dbProjects = await prisma.project.findMany({
-          select: { id: true, name: true, slug: true },
-        });
+        // Every text turn ran an unbounded `findMany` over the whole project
+        // table here — a full round-trip to Supabase before the turn had
+        // decided anything — while the identical id/name/slug data is cached
+        // 300s further down as `chat:projectCatalog`. One cache, read twice.
+        const dbProjects = await projectCatalog();
 
         // 1. Direct exact name match
         matched = dbProjects.find(p => p.name.toLowerCase() === cleanQuery || p.name.toLowerCase() === lowerMsg) || null;
@@ -995,6 +998,10 @@ router.post('/', async (req: Request, res: Response) => {
         city: DEFAULT_CITY,
         userId,
         sessionId: currentSessionId,
+        // Streams when the answer carries none of our own figures, which is
+        // most of this lane. Time-to-first-token was the whole generation
+        // before this, because the lane buffered every reply.
+        stream: send,
       })
 
       const rawOpenText = grounded?.text ?? buildNoGroundingReply(openDetection)
@@ -1010,7 +1017,13 @@ router.post('/', async (req: Request, res: Response) => {
         // transcript row further down. Sanitise here so the stored copy, the
         // cache and the stream all say the same thing — the open lane is where
         // the citation leaks came from, so it is the one that must agree.
-        openText = sanitizeOutput(linkProjectNames(rawOpenText, mentionedProjects)).text
+        // A streamed answer is already on screen unlinked, and a token that has
+        // been sent cannot be revised. Storing the linked version would leave
+        // the transcript saying something the buyer never saw — so when it
+        // streamed, the stored copy is the sanitised text without the links.
+        openText = grounded?.streamed
+          ? sanitizeOutput(rawOpenText).text
+          : sanitizeOutput(linkProjectNames(rawOpenText, mentionedProjects)).text
         openChips = buildOpenAnswerChips(mentionedProjects, mentionedSectors, {
           userMessage: message,
           city: DEFAULT_CITY,
@@ -1040,7 +1053,9 @@ router.post('/', async (req: Request, res: Response) => {
         cached: grounded?.cached ?? false,
       })
 
-      send('token', { token: openText })
+      // Already on screen when the answer streamed — sending it again would
+      // print the whole reply twice.
+      if (!grounded?.streamed) send('token', { token: openText })
 
       // This lane returns before the main pipeline's persistence, so it writes its
       // own turn. Without this the next message has no record the exchange happened
@@ -1161,28 +1176,7 @@ router.post('/', async (req: Request, res: Response) => {
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
 
     // ─── GROUND TRUTH DATABASE PIPELINE (Lightweight Catalog Cache) ─────────────
-    type DbCatalogEntry = {
-      id: string; name: string; slug: string; sector: string
-      status: string; price_min_cr: number | null; price_range_label: string | null
-    }
-    let allDbProjects = await getCached<DbCatalogEntry[]>('chat:projectCatalog')
-    if (!allDbProjects) {
-      const rawDbProjects = await prisma.project.findMany({
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          sector: true,
-          status: true,
-          price_min_cr: true,
-          price_range_label: true,
-        }
-      })
-      // Filter out duplicate IITL Nimbus project permanently
-      allDbProjects = rawDbProjects.filter(p => !p.name.toLowerCase().includes('iitl nimbus')) as DbCatalogEntry[]
-      // 5 min: short enough that a newly published project appears quickly.
-      await setCached('chat:projectCatalog', allDbProjects, 300)
-    }
+    const allDbProjects = await projectCatalog()
 
     // 0. ADVERSARIAL & JAILBREAK SHIELD
     const isJailbreak = /ignore\s+(all\s+)?(previous\s+)?instructions|system\s+prompt|dan\s+mode|unrestricted\s+assistant|bypass\s+(paying\s+)?(taxes|laws)|jailbreak/i.test(message)

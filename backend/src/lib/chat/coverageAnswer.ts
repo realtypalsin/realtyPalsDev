@@ -1,6 +1,7 @@
 // backend/src/lib/chat/coverageAnswer.ts
 
 import { prisma } from '../db'
+import { builderNames } from '../builderNames'
 import { logSectorGap } from './coverageGap'
 
 export interface CoverageAnswer {
@@ -140,7 +141,9 @@ export async function builderCoverage(message: string): Promise<CoverageAnswer |
   if (wanted.length < 4) return null
 
   try {
-    const builders = await prisma.builder.findMany({ select: { name: true } })
+    // Cached: this was an unbounded findMany on the hot path, and
+    // groundedAnswer was running the identical query on the same turn.
+    const builders = (await builderNames()).map((name) => ({ name }))
     // Word-boundary match, not substring. "best 3 bhk projects" captured "bhk",
     // which is a substring of "Shubhkamna" — so a routine sector question was
     // answered as a question about a builder nobody had named.

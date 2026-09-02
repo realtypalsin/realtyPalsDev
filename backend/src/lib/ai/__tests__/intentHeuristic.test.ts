@@ -2,7 +2,7 @@
 // "describe is not defined" on load and had never executed.
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { extractIntentHeuristic } from '../intent'
+import { extractIntentHeuristic, nothingToExtract } from '../intent'
 import type { Intent } from '../../discovery'
 
 describe('Intent Heuristic Extraction', () => {
@@ -71,5 +71,68 @@ describe('Intent Heuristic Extraction', () => {
     const result1 = extractIntentHeuristic('3 bhk', baseIntent)
     const result2 = extractIntentHeuristic('3 BHK', baseIntent)
     assert.deepEqual(result1.bhk, result2.bhk)
+  })
+})
+
+describe('nothingToExtract — the no-signal skip', () => {
+  // Measured before this existed: "hi" cost 3,115ms of intent extraction,
+  // "explain capital gains tax on property sale" 1,442ms and "what maintenance
+  // should I expect in Noida?" 1,345ms. Each was a full model round-trip that
+  // returned nothing, paid IN FRONT of the answer call.
+  for (const q of [
+    'hi',
+    'hello',
+    'thanks',
+    'ok',
+    'explain capital gains tax on property sale',
+    'what maintenance should I expect in Noida?',
+    'is it a good time to buy',
+    'what is the capital of france',
+    'how does registration work',
+    'who are you',
+  ]) {
+    it(`skips extraction for "${q}"`, () => {
+      assert.equal(nothingToExtract(q), true, `"${q}" carries no intent to extract`)
+    })
+  }
+
+  // The other side, and the one that matters: a message carrying a constraint,
+  // a correction, or a name we may hold must still reach the model. A skip here
+  // silently drops the buyer's budget or their refinement.
+  for (const q of [
+    '3bhk in sector 150 under 1.5cr',
+    'make that 2 crore',
+    'show me something bigger',
+    'actually 3 BHK instead',
+    'tell me about Godrej Woods',
+    'what about Mahagun Mirabella',
+    'ready to move flats',
+    'my budget is 1.8 cr',
+    'projects near the metro',
+    'I earn 2 lakh a month',
+    'anything cheaper',
+    'possession within a year',
+    'I want to invest',
+    'we are a family of four looking to move closer to my office in the next eighteen months',
+  ]) {
+    it(`still extracts for "${q}"`, () => {
+      assert.equal(nothingToExtract(q), false, `"${q}" carries something the extractor must see`)
+    })
+  }
+
+  it('treats the default city and the acronyms as noise, not as a name', () => {
+    // "Noida" is capitalised in almost every message and means nothing — if it
+    // counted as naming something, no general question would ever skip.
+    assert.equal(nothingToExtract('tell me about RERA'), true)
+    assert.equal(nothingToExtract('how is Noida'), true)
+  })
+
+  it('skips a market question that states no constraint', () => {
+    // "what are prices like in Noida" names no budget, sector or configuration,
+    // so extraction can only come back empty. The question is answered from
+    // sector data downstream, not from intent, so skipping saves the round trip.
+    assert.equal(nothingToExtract('what are prices like in Noida'), true)
+    // But attach a number and it is a constraint the extractor must see.
+    assert.equal(nothingToExtract('flats around 1.5 cr in Noida'), false)
   })
 })

@@ -1,4 +1,5 @@
 import { prisma } from '../db'
+import { projectCatalog } from '../projectCatalog'
 import { ChipAction, chip } from './conversationEngine'
 import { buildTopicChips } from './topicChips'
 
@@ -14,9 +15,11 @@ export async function findProjectsMentioned(
 ): Promise<Array<{ id: string; name: string }>> {
   if (!text || text.length < 10) return []
   try {
-    const candidates = await prisma.project.findMany({
-      select: { id: true, name: true },
-    })
+    // Cached. This ran an unbounded findMany after every open-lane answer, on a
+    // turn that had already scanned the same table twice — and it sits between
+    // the model finishing and the buyer seeing any text, so it was pure
+    // time-to-first-token.
+    const candidates = await projectCatalog()
     const haystack = text.toLowerCase()
     const hits: Array<{ id: string; name: string }> = []
     for (const p of candidates) {

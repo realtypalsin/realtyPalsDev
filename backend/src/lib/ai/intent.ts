@@ -290,6 +290,66 @@ function heuristicIsSufficient(message: string, extracted: Intent, previous: Int
   return gained
 }
 
+/**
+ * Words that are capitalised in a buyer's message but carry no intent.
+ *
+ * A capitalised token is the only cheap signal that a project or builder may be
+ * named, since the heuristic above extracts no names. These are the ones that
+ * appear constantly and mean nothing — the default city, the statute, the
+ * acronyms — so they must not keep a no-signal message on the slow path.
+ */
+const CAPITALISED_NOISE = new Set([
+  'i', 'noida', 'greater', 'delhi', 'ncr', 'india', 'up', 'rera', 'gst', 'emi',
+  'bhk', 'sqft', 'rtm', 'nri', 'oc', 'cc', 'realtypals', 'ai', 'okay', 'ok',
+  'hi', 'hello', 'hey', 'thanks', 'thank', 'you', 'yes', 'no', 'what', 'why',
+  'how', 'when', 'where', 'which', 'who', 'is', 'are', 'do', 'does', 'can',
+  'should', 'the', 'a', 'an', 'my', 'me', 'we', 'it', 'and', 'or', 'but',
+])
+
+/**
+ * Vocabulary that means the message carries something worth extracting.
+ *
+ * Money, size, place, timeline, purpose — plus the comparative and corrective
+ * language that only makes sense against previous intent ("make that 2 crore",
+ * "something bigger", "actually 3 BHK instead").
+ */
+const INTENT_SIGNAL_RE =
+  /\d|₹|\b(crore|cr|lakh|lac|budget|price|priced|cost|afford|emi|loan|under|below|within|upto|up\s*to|over|above|between|bhk|bedroom|sqft|sq\.?\s*ft|square\s*feet|carpet|super\s*area|sector|expressway|extension|metro|near|nearby|around|possession|ready\s*to\s*move|rtm|immediate|asap|handover|invest|investment|rental|resale|bigger|smaller|larger|cheaper|costlier|pricier|closer|instead|actually|rather|more|less|other|another|different|else|change|make\s*that|update)\b/i
+
+/**
+ * Is there anything in this message for the extractor to find?
+ *
+ * `heuristicIsSufficient` asks "did the regexes GAIN a constraint", which is the
+ * wrong question for a message that has no constraint in it. Measured: "hi" cost
+ * 3,115ms of intent extraction, "explain capital gains tax on property sale"
+ * 1,442ms and "what maintenance should I expect in Noida?" 1,345ms — every one
+ * of them a full model round-trip that returned nothing, paid IN FRONT of the
+ * answer call, so the buyer waited for it twice over.
+ *
+ * A message with no signal vocabulary, no digits and no meaningful capitalised
+ * token cannot yield an intent, so the empty heuristic result is already the
+ * right answer. This is safe for project names specifically because the router
+ * matches those itself against the project catalogue after extraction and
+ * overwrites `projectNames` — extraction is not what finds them.
+ *
+ * Long messages stay on the slow path: past ~12 words a buyer is describing a
+ * situation, and the cost of missing a constraint there outweighs the latency.
+ */
+export function nothingToExtract(message: string): boolean {
+  const text = (message ?? '').trim()
+  if (!text) return true
+  if (text.split(/\s+/).length > 12) return false
+  if (INTENT_SIGNAL_RE.test(text)) return false
+
+  // A capitalised token past the first word may be a project or builder we hold.
+  const tokens = text.split(/\s+/).slice(1)
+  const namesSomething = tokens.some((t) => {
+    const bare = t.replace(/[^\p{L}\p{N}]/gu, '')
+    return bare.length > 1 && /^\p{Lu}/u.test(bare) && !CAPITALISED_NOISE.has(bare.toLowerCase())
+  })
+  return !namesSomething
+}
+
 export async function extractIntent(message: string, previousIntent: Intent): Promise<IntentResult> {
   // Fast path: skip the round trip when the regexes already have the whole
   // message. See heuristicIsSufficient for why the bar is set where it is.
@@ -297,6 +357,10 @@ export async function extractIntent(message: string, previousIntent: Intent): Pr
     const heuristic = extractIntentHeuristic(message, previousIntent)
     if (heuristicIsSufficient(message, heuristic, previousIntent)) {
       console.log(`[INTENT:FAST_PATH] regex-only extraction for "${message.slice(0, 60)}"`)
+      return { intent: heuristic, degraded: false }
+    }
+    if (nothingToExtract(message)) {
+      console.log(`[INTENT:NO_SIGNAL] skipped extraction for "${message.slice(0, 60)}"`)
       return { intent: heuristic, degraded: false }
     }
   }

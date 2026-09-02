@@ -15,6 +15,7 @@ import { DEFAULT_CITY, SUPPORTED_CITIES } from '../config/cities'
 import { webSearch } from '../web'
 import { executeWithFallbackChain } from './fallbackChain'
 import { profileFor } from './inferenceProfile'
+import { builderMentionedIn } from '../builderNames'
 import { getCachedResponse, setCachedResponse } from './semanticCache'
 import type { OpenQueryDetection } from '../discovery/openQuery'
 import { buildGeneralConversationalPrompt } from './prompts/generalPrompt'
@@ -33,6 +34,13 @@ export interface GroundedAnswer {
   /** True when live web results were part of the grounding. */
   fromWeb: boolean
   cached: boolean
+  /**
+   * True when `text` was already sent to the buyer token by token.
+   *
+   * The caller must not send it again — it is returned only so the transcript,
+   * the cache and the card/chip pass have the finished answer to work from.
+   */
+  streamed?: boolean
 }
 
 // ── Database grounding helpers ───────────────────────────────────────────────
@@ -155,18 +163,9 @@ async function buildEntityContext(entity: string): Promise<string> {
 }
 
 /** Any builder we hold whose name appears in the message. Longest name wins. */
-async function findBuilderMentioned(message: string): Promise<string | null> {
-  try {
-    const builders = await prisma.builder.findMany({ select: { name: true } })
-    const haystack = message.toLowerCase()
-    const hit = builders
-      .filter((b) => b.name.length >= 4 && haystack.includes(b.name.toLowerCase()))
-      .sort((a, b) => b.name.length - a.name.length)[0]
-    return hit?.name ?? null
-  } catch {
-    return null
-  }
-}
+// Was its own unbounded `prisma.builder.findMany` on every GENERAL turn,
+// including "hi". `builderMentionedIn` is the same match against a 300s cache.
+const findBuilderMentioned = builderMentionedIn
 
 /** Digits that carry no factual weight on their own. */
 const TRIVIAL_NUMBERS = new Set(['1', '2', '3', '0'])
@@ -226,6 +225,15 @@ export interface GroundedAnswerInput {
   city: string
   userId?: string | null
   sessionId?: string | null
+  /**
+   * The caller's SSE `send`, to stream the answer as it is generated.
+   *
+   * Optional, and honoured only when the answer is built from general knowledge
+   * with no database block behind it — see the `streamable` decision below.
+   * When it streams, the result carries `streamed: true` and the caller must
+   * NOT send the text again.
+   */
+  stream?: (event: string, data: Record<string, unknown>) => void
 }
 
 /**
@@ -265,13 +273,26 @@ export async function runGroundedAnswer(
     console.warn('[GROUNDED:DB_ERROR]', err)
   }
 
-  // 2. Web search ONLY when database doesn't answer and external live data is needed
+  // 2. Web search, only when the question has a subject the web can answer.
+  //
+  // This was a blocklist — "if the message is not advice, search the web" —
+  // which is the wrong shape for the same reason `toolBlindGuard` learned to
+  // ask what a name IS rather than what it is not. Measured: "hi" fell through
+  // it, cost 1,906ms searching for "hi Noida", and returned 2,009 characters of
+  // noise that were then injected into the prompt as LIVE WEB & FACTUAL
+  // CONTEXT — a greeting paying two seconds and an input-token bill to be told
+  // about unrelated listings.
+  //
+  // The web earns its round trip when the turn names something outside our rows
+  // and time-sensitive: a specific party, or market/news/policy movement. A
+  // greeting, a pleasantry and a general-knowledge question name none of those.
   let webContext = ''
-  const isGeneralKnowledgeOrAdvice =
-    /\b(how to|tips|advice|strategy|tax|section|process|rules?|checklist|calculate|difference|meaning|what is|why|when|is it safe|days in|weeks?|months?)\b/i.test(message)
+  const isEntity = detection.topic === 'ENTITY' && Boolean(detection.entity)
+  const needsLiveFacts =
+    /\b(latest|current|recent|now|today|this year|20\d\d|news|announced|launch(?:ed|ing)?|upcoming|trend|trending|appreciat|forecast|projection|circle rate|policy|notification|approved|metro|expressway|airport|jewar|infrastructure)\b/i
+      .test(message)
 
-  if (!dbContext && !isGeneralKnowledgeOrAdvice) {
-    const isEntity = detection.topic === 'ENTITY' && Boolean(detection.entity)
+  if (!dbContext && (isEntity || needsLiveFacts)) {
     const query = isEntity ? `${detection.entity} ${city} real estate` : `${message} ${city}`
     try {
       webContext = await webSearch(query, 3)
@@ -279,6 +300,8 @@ export async function runGroundedAnswer(
     } catch (err) {
       console.warn('[GROUNDED:WEB_ERROR]', err)
     }
+  } else if (!dbContext) {
+    console.log('[GROUNDED:WEB_SKIPPED]', { reason: 'no searchable subject', q: message.slice(0, 60) })
   }
 
   // 3. Assemble Prompt
@@ -293,9 +316,36 @@ export async function runGroundedAnswer(
   // 4. Stream / Generate Answer via Fallback Chain
   const profile = profileFor(message)
   const collected: string[] = []
+
+  /**
+   * Stream only when nothing we hold is at stake in the numbers.
+   *
+   * This lane buffered every answer, so time-to-first-token was the whole
+   * generation — the buyer stared at a spinner for the full reply even though
+   * the transport is SSE and the frontend renders tokens as they land.
+   *
+   * The reason to buffer is real but narrow: `stripUngroundedSentences` below
+   * has to see the finished text to drop a figure that drifted off the block we
+   * supplied, and a sentence already sent cannot be recalled. That check only
+   * runs when `dbContext` is non-empty, so a general-knowledge answer — the
+   * greeting, the tax question, the process explainer — has nothing to wait
+   * for. Those stream; anything carrying our own figures still buffers.
+   *
+   * Safe to send raw here: the caller's `send` runs `sanitizeOutput` on every
+   * token, so emoji, competitor names and off-platform URLs are stripped in
+   * flight. What a streamed answer gives up is `linkProjectNames`, which needs
+   * the whole text — the trade is inline entity links on answers built from no
+   * project data, where our project names rarely appear, and the cards and
+   * chips below are still built from the collected text either way.
+   */
+  const streamable = Boolean(input.stream) && !dbContext
   const collect = (event: string, data: Record<string, unknown>) => {
-    if (event === 'token' && typeof data.token === 'string') collected.push(data.token)
+    if (event === 'token' && typeof data.token === 'string') {
+      collected.push(data.token)
+      if (streamable) input.stream?.('token', { token: data.token })
+    }
   }
+  if (streamable) console.log('[GROUNDED:STREAMING]', { q: message.slice(0, 60) })
 
   let raw = ''
   try {
@@ -359,6 +409,7 @@ export async function runGroundedAnswer(
     fromDatabase,
     fromWeb,
     cached: false,
+    streamed: streamable,
   }
 }
 
