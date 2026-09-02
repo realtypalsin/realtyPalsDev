@@ -27,14 +27,37 @@ export const commuteShortlistHandler: ChatTopicHandler = {
   id: 'commute-shortlist',
   description: 'Buyer named their workplace — rank residential sectors by commute and shortlist inventory',
 
-  // Only when the anchor was detected on THIS turn and no specific sector has
-  // been chosen yet. Once the buyer picks a sector, the ordinary sector and
-  // discovery paths own the turn — this handler exists to get them to that
-  // choice, not to keep answering after it.
+  /**
+   * Fires on the turn the workplace is STATED, or when the belt is asked for.
+   *
+   * The first version matched on `workplace && belt && !sector`, and since the
+   * workplace is sticky for the rest of the session that was true on every
+   * later turn. Measured: it then answered "what is the payment plan for it",
+   * "tell me about the first one" and "compare it with the second option" with
+   * the identical belt shortlist, three turns running.
+   *
+   * That is the same failure as `ctx.intent.purpose === 'investment'` in
+   * citywideQuery — a sticky intent field letting a handler claim turns about
+   * something else entirely. A handler must match on what was ASKED.
+   */
   matches: ctx => {
     const workplace = (ctx.intent as { workplace?: string }).workplace
     const belt = (ctx.intent as { workplace_belt?: string[] }).workplace_belt
-    return Boolean(workplace) && Array.isArray(belt) && belt.length > 0 && !ctx.intent.sector
+    if (!workplace || !Array.isArray(belt) || belt.length === 0) return false
+    if (ctx.intent.sector) return false
+
+    // A turn about one project is never this handler's, however the buyer got
+    // there — by name, by ordinal, or by the session's focus.
+    if ((ctx.intent.projectNames?.length ?? 0) > 0) return false
+
+    // Newly stated this turn: the router sets this when `applyCommuteAnchor`
+    // fired on this message.
+    if (ctx.flags.commuteAnchorJustStated) return true
+
+    // Or asked for outright: "build me that shortlist", "where should I live",
+    // "which areas", "yes" straight after the anchor turn.
+    return /\b(shortlist|short list|which (?:areas?|sectors?|belts?)|where should i (?:live|buy|look)|options? near|near my (?:office|work)|commute|build (?:me )?that|go ahead|yes\b)/i
+      .test(ctx.message)
   },
 
   handle: async ctx => {

@@ -2,6 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import type { Response } from 'express'
 import {
+  commuteShortlistHandler,
   CHAT_TOPIC_HANDLERS,
   reraVerificationHandler,
   statutoryTaxHandler,
@@ -219,5 +220,62 @@ describe('connectivity handler', () => {
     assert.equal(result, false, 'should fall through to the generic path')
     assert.equal(out.ended, false, 'must not end the response when declining')
     assert.equal(out.events.length, 0)
+  })
+})
+
+describe('commute shortlist handler', () => {
+  const withWorkplace = (message: string, over: Record<string, unknown> = {}) =>
+    makeContext({
+      message,
+      intent: {
+        workplace: 'Sector 63',
+        workplace_belt: ['Sector 76', 'Sector 75', 'Sector 77'],
+        bhk: [3],
+        budgetMax: 2,
+        ...over,
+      } as unknown as Intent,
+      flags: { commuteAnchorJustStated: false },
+    })
+
+  it('fires on the turn the workplace is stated', () => {
+    const { ctx } = makeContext({
+      message: 'central noida, sector 63 noida in particular for office',
+      intent: { workplace: 'Sector 63', workplace_belt: ['Sector 76'], bhk: [3] } as unknown as Intent,
+      flags: { commuteAnchorJustStated: true },
+    })
+    assert.equal(commuteShortlistHandler.matches(ctx), true)
+  })
+
+  it('fires when the belt is asked for outright', () => {
+    for (const q of ['yes build me that shortlist', 'which areas should i look at', 'where should i live']) {
+      assert.equal(commuteShortlistHandler.matches(withWorkplace(q).ctx), true, q)
+    }
+  })
+
+  // The regression that matters. The first version matched on the workplace
+  // merely being present, and because it is sticky for the rest of the session
+  // it answered three consecutive turns — a payment plan, an ordinal and a
+  // comparison — with the identical belt shortlist. Same failure as
+  // `purpose === 'investment'` in citywideQuery.
+  for (const q of [
+    'what is the payment plan for it',
+    'how much would the EMI be',
+    'what are the negatives i should know',
+    'tell me about the first one',
+    'compare it with the second option',
+  ]) {
+    it(`does not claim "${q}" off a sticky workplace`, () => {
+      assert.equal(commuteShortlistHandler.matches(withWorkplace(q).ctx), false)
+    })
+  }
+
+  it('stands down once the buyer has chosen a sector', () => {
+    const { ctx } = withWorkplace('yes build me that shortlist', { sector: 'Sector 78' })
+    assert.equal(commuteShortlistHandler.matches(ctx), false, 'the sector paths own the turn from here')
+  })
+
+  it('stands down when a project is in scope', () => {
+    const { ctx } = withWorkplace('yes show me', { projectNames: ['ATS Nobility'] })
+    assert.equal(commuteShortlistHandler.matches(ctx), false)
   })
 })

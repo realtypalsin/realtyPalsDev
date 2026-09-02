@@ -757,10 +757,22 @@ router.post('/', async (req: Request, res: Response) => {
       .map(p => ({ id: String(p.id), name: String(p.name) }))
       .filter(p => p.id && p.name)
 
+    /**
+     * Did the buyer state their workplace on THIS turn?
+     *
+     * Drives `commuteShortlist`'s matcher. The handler first matched on the
+     * workplace merely being present, and because the workplace is sticky for
+     * the rest of the session it then answered three consecutive turns about
+     * other things — a payment plan, an ordinal, a comparison — with the same
+     * belt shortlist.
+     */
+    let commuteAnchorJustStated = false
+
     {
       const anchored = applyCommuteAnchor(message, intent as Record<string, unknown>)
       if (anchored.anchor) {
         intent = anchored.intent as Intent
+        commuteAnchorJustStated = true
         console.log('[CHAT:COMMUTE_ANCHOR]', {
           workplace: anchored.anchor.place,
           belt: anchored.anchor.belt.slice(0, 4),
@@ -1721,6 +1733,9 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
             isCostSheetRequest,
             // False when the buyer asked about more than one topic in one
             singleTopic,
+            // True only on the turn the workplace was named, so the commute
+            // handler cannot claim every later turn off a sticky field.
+            commuteAnchorJustStated,
           },
         })) return
 
