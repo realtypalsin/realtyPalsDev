@@ -1221,3 +1221,126 @@ answers in a second or two, this is the remaining visible difference.
   floor" is answered by the model from prose, not filtered in retrieval.
 * Budget *relaxation* ("if we increase a bit") works through the model widening
   its own reading, not through an explicit intent move.
+
+---
+
+## Session 2026-09-03 (overnight) — the six open items, closed
+
+Six commits. Every fix traces to a quoted failure from the 29-turn adversarial
+run, and each was re-measured on the live deployment afterwards.
+
+### Chips: silence is now reachable
+
+`emitUiState` was subtractive at every step but one — when the filters correctly
+emptied the set it **injected a generic floor**. That single additive line is why
+a buyer eleven turns into a shortlist was offered "Help me set a budget", and why
+someone alleging their booking token had been taken was offered "Top Rated
+Builders". Chips scored 4.4/10 and this was the largest cause.
+
+`chipPolicy.chipsAreWelcome` decides whether the turn is one where a shortcut
+means anything — grievance, refund demand, identity documents, a probe, or any
+reply that declined something gets none. `chipIsRelevant` drops a chip naming a
+project or sector absent from both question and answer, judged against
+`lastAnswerText` accumulated in the send wrapper.
+
+Two bugs in my own module, caught by its tests: `\brefund\b` misses "refunded",
+and a greedy multi-word capture turned "Check RERA status" into the single token
+"Check RERA" that no stop-word list can recognise. Words are now matched
+individually and hyphens split rather than join.
+
+### Referents
+
+Superlatives resolve like ordinals now ("the cheapest one" against the shown
+list, using `priceMinCr` carried through `shownProjects`). An **unresolvable**
+reference gets a deterministic "I'd rather ask than guess" — the model, asked to
+resolve a pointer it could not, had invented *Godrej Tropical Isle in Sector 146*,
+a project neither side had mentioned.
+
+**Regression shipped and caught on the very next run:** `budget` was in the
+superlative list with an OPTIONAL noun, so "3bhk, my office is in sector 63,
+budget 2cr" matched, resolved against an empty list, and returned the
+clarification message — breaking the happy path. The noun is now mandatory, and
+`budget`/`premium` are gone: one is how buyers state a constraint, the other
+describes a segment. Five phrasings pinned including the one that broke.
+
+### The revision log, and where it must live
+
+"What was my first budget again?" read back the *second* budget. Two separate
+causes, fixed in order:
+
+1. Intent held one current value per field — no history at all.
+2. Once added, `hydrateIntentFromMemory` was the wrong place to append: it runs
+   in a `Promise.all` alongside intent extraction, so it sees the PREVIOUS
+   turn's values. The log lagged by one turn and the first budget was never
+   recorded. The append now happens in the router at the first point where
+   intent is final.
+
+Also: the state brief only reaches the **general lane**, so a history question
+classified as a property question was answered by a lane that never sees it. It
+is now answered deterministically and early — there is nothing to reason about,
+and a model handed the history still hedged about it.
+
+### Off-topic subjects
+
+The biryani question got **worse** across builds: the first invented three named
+venues; once the proximity lane became reachable it answered "Everything we hold
+within 3.5 km of Sector 137" — five apartment projects, for a question about
+restaurants. Same cause both times: an off-topic subject with a Noida place name
+looks like a property query to every gate downstream.
+
+Four subjects now decline in one sentence: eating out and nightlife, live
+traffic, school admissions, and valuing a property the buyer already owns.
+Narrow by design and tested both ways — a bare `food` would catch "does it have
+a food court" and `bar` a breakfast bar. 5 deflect, 7 adjacent property
+questions pass through.
+
+### The dangling lead-in, solved deterministically
+
+Replies of 62 and 138 characters, each a sentence ending in a colon with nothing
+after it. The model writes a lead-in then a table; `suppressTables` strips the
+table, and because stripping is **streaming** the lead-in has already gone out.
+
+Three prompt rules had told it not to introduce a table it cannot draw and it
+still did. So the code stops asking: when the finished text ends on a colon and
+cards were rendered, one line is appended naming where the content is. Prompt
+rules that have failed three times are not worth a fourth.
+
+### Answer-cache prefix bumped to v6
+
+"What is the resale value of my 20 year old house in Delhi?" returned the
+890-character pre-fix answer in 1.5s while the deployed build declined it in one
+sentence. The cache read happens before every gate and the scope is global, so a
+bad answer cached before a fix stays reachable by any user for the full 12h TTL.
+**After any behaviour fix, bump the prefix** — this is the second time it has
+mattered.
+
+### Discovery thinking budget capped at 256
+
+`profileFor` allots 512 for advisory and 1,024 for reasoning; thinking delays the
+first token as well as the last. Capped rather than removed — a four-sector
+comparison does benefit from reasoning — so the model choice stays as the profile
+decided. This is the one change in the pass whose quality effect is a judgement
+rather than a measurement.
+
+### Verified on the live deployment
+
+| Turn | Before | After |
+|---|---|---|
+| Grievance | 3 chips incl. "Top Rated Builders", "I will personally flag this" | 0 chips, "our system routes such cases to our priority escalation queue" |
+| "What was my first budget?" | "₹1.4 Cr" (the second one) | "Your first budget this session was ₹1.8 Cr, and you moved it to ₹1.4 Cr" |
+| Biryani near Sector 137 | invented venues, then a table of 5 apartments | one-sentence decline, 0 cards, 0 chips |
+| PAN + Aadhaar | "I have noted your PAN and Aadhaar details" | declines, states nothing was saved |
+| Delhi resale valuation | 890ch fluent valuation | 340ch decline |
+| "the cheapest one" | micro-market table, neither question answered | resolves to the project |
+| Unresolvable "the first one" | invented Godrej Tropical Isle | asks which one |
+| Search lead-in | "…across Noida sectors:" then nothing | complete sentence |
+
+### Still open
+
+* **Discovery latency 20–35s.** The cap helped the tail; retrieval, scoring and
+  the 62 KB prompt are untouched. This is the largest remaining gap.
+* **`prompts/base.ts` is 62 KB in one file** with rules stated in more than one
+  place. Two contradictory follow-up rules shipped from this; the fix is
+  structural (tagged sections, one concern each) and was not attempted here.
+* **`chipIsRelevant` is a keyword overlap**, not a ranker. It catches the bad
+  cases measured; it will not catch a chip that is on-topic but useless.
