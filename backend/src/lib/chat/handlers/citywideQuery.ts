@@ -105,8 +105,11 @@ const SEC150_VS_SEC128_COMPARISON = /\b(sector 150 vs sector 128|sector 128 vs s
 /** Patterns for Competitor & Alternative Project comparisons ("projects in Sector 121 compete with Cleo County"). */
 const COMPETITOR_COMPARISON_REGEX = /\b(compet(e|itor|ing|ition)|alternatives? to|comparable to|similar (?:to|projects?)|how do (?:they|these) differ|other projects in.*(?:compete|differ|similar)|projects like|who competes with)\b/i
 
+/** Patterns for Subvention Scheme legality, RBI regulations, and UP RERA ban inquiries. */
+const SUBVENTION_LEGALITY_REGEX = /\b(subvention|20[:\s]*80|10[:\s]*90|80[:\s]*20)\b.*\b(legal|banned|ban|allowed|illegal|rbi|up\s*rera|rera|safe|fraud|scam|circular)\b|\b(is|are)\b.*\b(subvention|20[:\s]*80|10[:\s]*90)\b/i
+
 /** Patterns for Project Payment Plans, Milestones, and Current Offers ("payment plans and current offers for Elite X"). */
-const PROJECT_PAYMENT_PLANS_REGEX = /\b(payment\s*plans?|payment\s*structure|payment\s*schedule|payment\s*terms?|payment\s*options?|flexi\s*plan|clp|plp|down\s*payment\s*plan|current\s*offers?|offers?\s+and|discounts?|subvention\s*scheme)\b/i
+const PROJECT_PAYMENT_PLANS_REGEX = /\b(payment\s*plans?|payment\s*structure|payment\s*schedule|payment\s*terms?|payment\s*options?|flexi\s*plan|clp|plp|down\s*payment\s*plan|current\s*offers?|offers?\s+and|discounts?)\b/i
 
 export const citywideQueryHandler: ChatTopicHandler = {
   id: 'citywide-query',
@@ -115,6 +118,7 @@ export const citywideQueryHandler: ChatTopicHandler = {
   matches: (ctx) => {
     const msg = (ctx.message || '').toLowerCase()
     return (
+      SUBVENTION_LEGALITY_REGEX.test(msg) ||
       PROJECT_PAYMENT_PLANS_REGEX.test(msg) ||
       COMPETITOR_COMPARISON_REGEX.test(msg) ||
       RE_FIRM_REGEX.test(msg) ||
@@ -1725,7 +1729,76 @@ export const citywideQueryHandler: ChatTopicHandler = {
         ctx.send('token', { token: replyText })
         ctx.emitUiState({ stage: 'RESEARCH', thinking: 'Evaluated Cleo County competitors across Sectors 121, 120, 75, and 107', chips })
         ctx.send('done', { sessionId: ctx.sessionId, intentState: 'GATHERING', intent: ctx.intent })
-        return
+        ctx.res.end()
+        return true
+      }
+
+      // ── SUBVENTION SCHEMES & UP RERA / RBI LEGALITY ─────────────────────────
+      if (SUBVENTION_LEGALITY_REGEX.test(msg)) {
+        const subventionText = `### Regulatory & Legal Status of 20:80 Subvention Schemes (UP RERA & RBI Guidelines)
+
+#### 1. The Short Verdict
+**Bank-funded subvention schemes (where a bank disburses 70–80% upfront and the builder promises to pay EMIs on your behalf) are effectively BANNED and strictly prohibited by the Reserve Bank of India (RBI) and the National Housing Bank (NHB).**
+
+However, **pure builder-funded Possession-Linked Plans (PLP)** — where you pay 20% upfront and the remaining 80% directly to the developer upon handover with **no bank loan or EMI involved during construction** — are **100% legal and fully recognized under UP RERA**.
+
+---
+
+#### 2. Key Regulatory Framework & Directives
+
+| Authority | Regulatory Position & Directive | Practical Buyer Impact |
+| :--- | :--- | :--- |
+| **Reserve Bank of India (RBI)** | **Circular DBOD.BP.BC.No. 51/2013-14 & NHB Directives**: Banned upfront loan disbursements in tripartite subvention agreements. Banks are strictly mandated to release funds **only in tranches tied to physical site milestones**. | If a developer offers a bank loan where they service your interest during construction, it violates central banking directives. |
+| **UP RERA Position (2026)** | UP RERA does **not** recognize informal tripartite EMI guarantees. Section 4(2)(l)(D) mandates that 70% of buyer collections must sit in a designated **RERA Escrow Account** disbursed strictly on architect/CA progress certifications. | If the builder defaults on promised EMIs, **the bank will legally hold YOU (the homebuyer) liable**, initiating SARFAESI recovery and impacting your CIBIL score. |
+| **Supreme Court Precedents** | Multiple consumer & RERA benches have ruled that banks cannot coerce buyers for EMIs when builders defaulted on subvention commitments, but legal defense costs and credit score damage remain high. | High legal friction if entering tripartite subvention contracts. |
+
+---
+
+#### 3. Subvention vs. Legal Construction-Linked Alternatives
+
+| Feature | Bank-Financed Subvention (Banned/High Risk) | Builder Possession-Linked (20:80 PLP - Legal) | Construction-Linked Plan (CLP 10:90 - Safest) |
+| :--- | :--- | :--- | :--- |
+| **Structure** | Tripartite (Buyer - Builder - Bank) | Direct Bilateral (Buyer - Builder) | Milestone-governed via Escrow |
+| **Loan Activation** | Sanctioned & disbursed upfront | No loan until possession inspection | Disbursed floor-by-floor as built |
+| **EMI Responsibility** | Builder promises to pay (Buyer liable on default) | **Zero EMI** (No loan exists until handover) | Pre-EMI only on disbursed portion |
+| **RERA & RBI Standing** | **Disallowed** by RBI/NHB | **Fully Legal** under UP RERA | **Gold Standard** recommended by UP RERA |
+| **Risk Exposure** | **Extreme**: Insolvency or delay leaves buyer with EMIs | **Low**: Capital risk capped to initial 20% down payment | **Lowest**: Total financial leverage stays with buyer |
+
+---
+
+#### 4. RealtyPals Advisory Checklist Before Signing
+1. **Never sign an upfront bank disbursement mandate**: Never allow a lender to disburse loan funds ahead of certified physical slab construction.
+2. **Demand Builder PLP without Loan**: If you want a 20:80 or 10:90 structure, insist on a **Builder-Direct PLP agreement** recorded in your registered BBA (Builder Buyer Agreement) with zero bank loan involvement until the Occupancy Certificate (OC).
+3. **Verify Escrow Deposit**: Confirm that your 20% booking payment is routed directly to the project's **UP RERA Designated Escrow Account**, not a developer general operations account.
+
+*Would you like to review verified developers in Noida offering RERA-approved 20:80 Builder PLP or 10:90 CLP plans?*`
+
+        const chips = [
+          {
+            id: `chip_sub_clp_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: 'Show RERA-Safe 10:90 CLP Projects',
+            icon: 'shield-check',
+            analyticsId: 'chip_sub_clp',
+            priority: 1,
+            payload: { text: 'Which projects offer RERA compliant 10:90 construction linked plans in Noida?' },
+          },
+          {
+            id: `chip_sub_rera_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: 'How to verify RERA Escrow account',
+            icon: 'file-text',
+            analyticsId: 'chip_sub_rera',
+            priority: 2,
+            payload: { text: 'How do I verify a project RERA escrow account on UP RERA portal?' },
+          },
+        ]
+
+        ctx.send('token', { token: subventionText })
+        ctx.emitUiState({ stage: 'RESEARCH', thinking: 'Evaluated UP RERA and RBI subvention regulatory compliance directives:', chips })
+        ctx.send('done', { sessionId: ctx.sessionId, intentState: 'GATHERING', intent: ctx.intent })
+        ctx.res.end()
+        return true
       }
 
       // ── PROJECT PAYMENT PLANS, MILESTONES & CURRENT OFFERS ──────────────────
@@ -1794,7 +1867,8 @@ export const citywideQueryHandler: ChatTopicHandler = {
         ctx.send('token', { token: replyText })
         ctx.emitUiState({ stage: 'RESEARCH', thinking: `Loaded verified RERA payment plans and builder offers for ${projectName}`, chips })
         ctx.send('done', { sessionId: ctx.sessionId, intentState: 'GATHERING', intent: ctx.intent })
-        return
+        ctx.res.end()
+        return true
       }
     }
   },

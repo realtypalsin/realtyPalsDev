@@ -88,9 +88,17 @@ function detectProjectDetail(userMessage: string, activeProjectName?: string): P
   const builderKeywords = /\b(builder|developer|track|reputation|credibility|delivery|rera|complaint)\b/i
   const overviewKeywords = /\b(tell me|about|details|configuration|layout|layouts|amenities|features|highlights|floor|floors|top floor|height|tower|towers|units|structure)\b/i
 
-  // Check for project mention (words after "for", "about", "in", "at")
-  const projectMention = msg.match(/\b(?:for|about|in|at)\s+([a-z0-9\s]+?)(?:\?|$)/i)
+  // Check for project mention (words after "for", "about", "at")
+  const projectMention = msg.match(/\b(?:for|about|at)\s+([a-z0-9\s]+?)(?:\?|$)/i)
   let projectIdentifier = projectMention ? projectMention[1].trim() : undefined
+
+  if (projectIdentifier) {
+    // Filter out common false-positive words (years, cities, abstract concepts, numbers)
+    const invalidIdentifiers = /^(20\d\d|noida|greater noida|delhi|gurgaon|family|end\s*use|investment|rent|cash|subvention|rera|taxes|first\s*time|bachelor|students|me|all|my\s+child)$/i
+    if (invalidIdentifiers.test(projectIdentifier) || /^\d+$/.test(projectIdentifier)) {
+      projectIdentifier = undefined
+    }
+  }
 
   // Fallback to implicit references ("this project", "here", or active project context)
   if (!projectIdentifier && (/\b(this project|the project|here|this property|the property)\b/i.test(msg) || activeProjectName)) {
@@ -113,19 +121,19 @@ function detectProjectDetail(userMessage: string, activeProjectName?: string): P
   } else if (locationKeywords.test(msg)) {
     detailType = 'location'
     confidence = 0.93
-    reason = 'Keywords: location, distance, connectivity'
+    reason = 'Keywords: location, distance, metro, schools'
   } else if (timelineKeywords.test(msg)) {
     detailType = 'timeline'
     confidence = 0.94
-    reason = 'Keywords: possession, timeline, delivery'
+    reason = 'Keywords: possession, ready to move, completion'
   } else if (builderKeywords.test(msg)) {
     detailType = 'builder'
     confidence = 0.91
-    reason = 'Keywords: builder, track record, reputation'
+    reason = 'Keywords: builder, developer, track record'
   } else if (overviewKeywords.test(msg)) {
     detailType = 'overview'
-    confidence = 0.85
-    reason = 'Keywords: tell me, details, features, amenities, floors, structure'
+    confidence = 0.90
+    reason = 'Keywords: overview, configuration, layout, amenities'
   }
 
   // Return project detail intent if detailType and projectIdentifier (explicit or context) exist
@@ -150,6 +158,12 @@ export function classifyIntent(userMessage: string, intent?: Intent): IntentClas
   const isDiscoverySearch =
     /\b(looking to invest|looking for|options in|show me|find|suggest|properties in|flats in|projects in|recommend|in sector \d+|in noida|in greater noida|invest \d+)\b/i.test(msg) ||
     (Boolean(intent?.sector || intent?.bhk?.length || intent?.budgetMax) && (!intent?.projectNames || intent.projectNames.length === 0))
+
+  // General legal, regulatory, or tax inquiries with no specific project are advisory/general
+  const isGeneralLegalOrTax = /\b(subvention|stamp duty|circle rate|registry fee|up\s*rera rules|rera rules|capital gains|section 54|tds)\b/i.test(msg) && (!intent?.projectNames || intent.projectNames.length === 0)
+  if (isGeneralLegalOrTax) {
+    return { category: 'advisory', factualAdvisoryCategory: 'advisory' }
+  }
 
   // 1. Check for PROJECT_DETAIL intent only if NOT an open discovery search
   if (!isDiscoverySearch) {

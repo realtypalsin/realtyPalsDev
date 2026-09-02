@@ -835,18 +835,14 @@ router.post('/', async (req: Request, res: Response) => {
           coverage = await nearbyCoverage(message, (intent as { focus_project_id?: string | null })?.focus_project_id ?? null)
         }
       }
-      if (!coverage) coverage = await builderCoverage(message)
-      // A proximity question names a sector as an ANCHOR, not as its subject.
-      // "I want a property near Sector 62" was being answered by the sector
-      // lane with "we hold one project in Sector 62" — true, and not what was
-      // asked. The nearby handler answers it from coordinates instead.
-      // A question about a PROJECT is never a question about its sector.
-      //
-      // postProcessIntent resolves a named project to its sector and writes it
-      // onto the intent, so "Tell me about Godrej Woods" arrives here carrying
-      // `sector: 'Sector 43'`. The sector lane then answered it with "we hold
-      // one project in Sector 43" — true, about the wrong subject, and about a
-      // project we do hold and could have described in full.
+      if (!coverage) {
+        const bCov = await builderCoverage(message)
+        // Only use builderCoverage if we actually hold projects for them to render
+        if (bCov && 'projects' in bCov && bCov.projects && bCov.projects.length > 0) {
+          coverage = bCov
+        }
+      }
+
       const askedAboutAProject =
         (intent.projectNames?.length ?? 0) > 0 ||
         Boolean((intent as { focus_project_id?: string | null })?.focus_project_id)
@@ -858,7 +854,11 @@ router.post('/', async (req: Request, res: Response) => {
         !isProximityQuestion(message) &&
         !askedAboutAProject
       ) {
-        coverage = await sectorCoverage(intent.sector)
+        const sCov = await sectorCoverage(intent.sector)
+        // Only use sectorCoverage if it is not an absent refusal
+        if (sCov && sCov.kind !== 'sector_absent') {
+          coverage = sCov
+        }
       }
 
       if (coverage) {
@@ -866,9 +866,7 @@ router.post('/', async (req: Request, res: Response) => {
         // A builder we DO hold gets their projects rendered, not just described.
         const covProjects = 'projects' in coverage ? coverage.projects : undefined
         const covTable = covProjects?.length ? renderProjectTable(covProjects as any) : ''
-        if (covTable) send('token', { token: `${covTable}
-
-` })
+        if (covTable) send('token', { token: `${covTable}\n\n` })
         send('token', { token: coverage.text })
         emitUiState({
           stage: 'RESEARCH',
@@ -1002,7 +1000,7 @@ router.post('/', async (req: Request, res: Response) => {
         console.warn('[CHAT:OPEN_LANE:CHIP_ERROR]', e)
       }
 
-      if (openCards.length > 0 && queryClassification.renderTarget !== 'text') {
+      if (openCards.length > 0) {
         send('properties', {
           exactResults: openCards,
           nearbyResults: [],
@@ -1392,11 +1390,13 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
       /\bwhat\s+else\s+(?:do|will|would)\s+i\s+(?:pay|be\s+paying|spend)\b/i.test(topicText)
     const isStatutoryTaxQuery = /(stamp duty|registration (charges?|fees?)|gst on (flat|property|real estate)|tds on (property|sale)|circle rate|index 2|agreement value charges)/i.test(topicText)
     const isReraCheckQuery = matchesReraProcessQuestion(topicText) && (intent.projectNames?.length ?? 0) === 0
-    // `!isReraCheckQuery` is the fix, not a tidy-up. "rera complian" belongs to
-    // both readings — "is this builder RERA compliant" is a track-record
-    // question, "how do I verify a project is RERA compliant" is a process one —
-    // and this handler runs first, so without the guard it swallowed both.
-    const isBuilderReputationQuery = /(builder|developer|developer track|on.?time delivery|delay|safe (to buy|project)|rera complian|which (company|builder)|best developer|reputable builder)/i.test(topicText) && !isSectorCompare && !isReraCheckQuery && (intent.projectNames?.length ?? 0) < 2
+    const isSubventionQuery = /\b(subvention|20[:\s]*80|10[:\s]*90|80[:\s]*20|builder\s+subvention)\b/i.test(topicText)
+    const isBuilderReputationQuery =
+      !isSubventionQuery &&
+      /\b(builder|developer)\s*(track\s*record|reputation|credibility|delivery\s*score|ranking|reliability|history|score)\b|\b(which|best|top|reputable|reliable)\s*(builder|developer|company)\b|\b(developer\s*track|on.?time\s*delivery|delivery\s*track\s*record|safe\s*to\s*buy\s*from)\b/i.test(topicText) &&
+      !isSectorCompare &&
+      !isReraCheckQuery &&
+      (intent.projectNames?.length ?? 0) < 2
     const isNewcomerOrientation = /(new to noida|new to (the )?city|don'?t know (this area|this city|the area)|which sector|best sector|where (should|to) (buy|look)|area guide|sector guide|best area for family|best area near)/i.test(topicText) && (sectorMatches.length === 0 || /which sector/i.test(topicText))
     const isReadyToMoveQuery = !isInventorySearch && /\b(ready to move|rtm|occupancy certificates?|which.*ready|ready propert(y|ies)|ready flats?)\b/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest
     const isAmenityQuery = !isInventorySearch && /(amenit|sports|clubhouse|club|gym|fitness|pool|swimming|snooker|billiards|table tennis|squash|tennis|badminton|cricket|playground|play area|kid'?s? play|creche|daycare|park|green cover|open space|ev charg|theatre|library|banquet|spa|sauna|jacuzzi|which society has the best|best amenit|lifestyle|court|jogging|skating|golf)/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest
@@ -2254,17 +2254,20 @@ USING THE FACTS:
           confidence: v?.confidence ?? 0,
         }))
       const factsJson = JSON.stringify(factsList, null, 2)
-      const projectDataMsg = `User question: "${message}"\n\nVerified facts available:\n${factsJson}\n\nProvide a clear, helpful breakdown based on these facts. Highlight specific amenities, payment plans, or connectivity details if present. Never invent numbers or claim facts are missing if they are listed above.`
+      const projectDataMsg = `User question: "${message}"\n\nVerified facts available:\n${factsJson}\n\nProvide an authoritative, clear breakdown based on these verified facts. Answer the user's specific question completely, highlighting exact figures (carpet area, super built-up area, carpet efficiency %, maintenance ₹/sqft, RERA IDs, extra charges, builder track record) wherever present.`
 
       let componentSummary = ''
       try {
-        const systemMsg = `You are RealtyPal — an expert real estate advisor analyzing verified project data.
+        const systemMsg = `You are RealtyPal — an expert real estate advisor analyzing verified project data for Noida and Greater Noida.
 EXECUTIVE RESPONSE INSTRUCTIONS:
-1. Directly and concisely answer the user's exact question using ONLY the provided verified facts.
-2. Stay strictly focused on the requested topic (e.g. if asked about amenities, present the amenities clearly; if asked about metro/location, answer the metro/location query).
-3. Do NOT add meta-disclaimers or negative statements about unrequested topics (e.g. NEVER write "Please note that the provided information does not include details on payment plans or connectivity"). Simply answer what was asked and stop.
-4. Do NOT use emojis like 📌 or pushpins. Do NOT output raw HTML tags.
-5. Present tables and bullet points cleanly using GitHub Flavored Markdown.`
+1. Directly and comprehensively answer the user's exact question using the provided verified facts.
+2. If asked about floor plans, configurations, or carpet area efficiency: extract or calculate the ratio of carpet area to super built-up area (e.g. Carpet Area / Super Area * 100) and present carpet area, super area, and carpet efficiency percentage clearly.
+3. If asked about maintenance, extra charges, or cost sheet: state the monthly maintenance charges (e.g. ₹/sqft/month), parking, IFMS, club fees, power backup rates, GST, and stamp duty.
+4. If asked about RERA or possession date: provide the exact RERA registration number and possession timeline from the verified facts.
+5. If asked about builder credentials or delivery score: explain the key factors behind the score (on-time track record, average delay, delivered communities, and active pipeline).
+6. Do NOT add meta-disclaimers or negative statements about unrequested topics (e.g. NEVER write "Please note that the provided information does not include details on payment plans or connectivity").
+7. Do NOT use emojis like 📌 or pushpins. Do NOT output raw HTML tags.
+8. ALWAYS end your response with an intelligent, context-aware follow-up question offering the logical next step (e.g. asking if they want to view payment plans, check another configuration, or explore site visit options).`
         const fallbackResult = await executeWithFallbackChain({
           systemPrompt: systemMsg,
           messages: [{ role: 'user', content: projectDataMsg }],
@@ -3718,7 +3721,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
           const proseChips = projects.length === 0 ? buildProseChips(mentioned) : []
 
           // Cards for the projects the answer itself named.
-          if (projects.length === 0 && nearbyProjects.length === 0 && mentioned.length > 0 && renderTarget !== 'text') {
+          if (projects.length === 0 && nearbyProjects.length === 0 && mentioned.length > 0) {
             try {
               const namedCards = await prisma.project.findMany({
                 where: { id: { in: mentioned.map((m) => m.id) } },
@@ -3729,13 +3732,14 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
                   amenities: { take: 10 },
                   connectivity: { take: 5, orderBy: { distance_km: 'asc' } },
                 },
+                take: 4,
               })
               if (namedCards.length > 0) {
                 send('properties', {
                   exactResults: namedCards,
                   nearbyResults: [],
                   expansion: null,
-                  renderTarget: 'cards',
+                  renderTarget: 'both',
                 })
                 console.log('[CHAT:PROSE_CARDS]', { count: namedCards.length, names: namedCards.map((p) => p.name) })
               }

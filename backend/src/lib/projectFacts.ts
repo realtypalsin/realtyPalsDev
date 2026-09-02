@@ -35,6 +35,7 @@ async function resolveProject(nameOrId: string) {
     },
     select: {
       id: true, name: true, sector: true, city: true, state: true, status: true, price_range_label: true, floors: true, total_towers: true, address: true, rera_number: true,
+      possession_date: true, possession_label: true, builder_id: true,
       water_source: true, dg_power_rate_per_unit: true, maintenance_per_sqft_monthly: true, has_png_gas_pipeline: true, mobile_network_rating: true, ceiling_height_ft: true, lifts_per_tower: true, has_service_lift: true, shared_walls_type: true, authority_dues_cleared: true, land_tenure: true, pet_friendly: true, bachelor_tenants_allowed: true, open_space_pct: true
     },
     // Prefer an exact-ish match: shorter names rank first for a `contains` hit.
@@ -57,6 +58,7 @@ async function resolveProject(nameOrId: string) {
       },
       select: {
         id: true, name: true, sector: true, city: true, state: true, status: true, price_range_label: true, floors: true, total_towers: true, address: true, rera_number: true,
+        possession_date: true, possession_label: true, builder_id: true,
         water_source: true, dg_power_rate_per_unit: true, maintenance_per_sqft_monthly: true, has_png_gas_pipeline: true, mobile_network_rating: true, ceiling_height_ft: true, lifts_per_tower: true, has_service_lift: true, shared_walls_type: true, authority_dues_cleared: true, land_tenure: true, pet_friendly: true, bachelor_tenants_allowed: true, open_space_pct: true
       },
     })
@@ -383,6 +385,8 @@ export async function getFullCostSheet(nameOrId: string): Promise<Record<string,
     parking_cost_lakh: sheet.parking_cost ?? null,
     ifms_lakh: sheet.ifms ?? null,
     club_membership_lakh: sheet.club_membership ?? null,
+    maintenance_psf_monthly: (sheet as any).maintenance_psf_monthly ?? (project as any).maintenance_per_sqft_monthly ?? null,
+    power_backup_rate_per_unit: (project as any).dg_power_rate_per_unit ?? null,
     other_charges: sheet.other_charges,
     gst_rate_pct: sheet.gst_rate_pct,
     stamp_duty_pct: sheet.stamp_duty_pct,

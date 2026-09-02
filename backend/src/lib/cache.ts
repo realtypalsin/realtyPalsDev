@@ -36,7 +36,7 @@ function memRateLimit(key: string, limit: number, windowSecs: number): { allowed
 }
 
 export async function checkRateLimit(key: string, limit = 20, windowSecs = 60): Promise<{ allowed: boolean; remaining: number }> {
-  if (process.env.NODE_ENV === 'test') {
+  if (process.env.NODE_ENV === 'test' || process.env.DISABLE_RATE_LIMIT === 'true') {
     return { allowed: true, remaining: limit }
   }
   const redis = getRedis()

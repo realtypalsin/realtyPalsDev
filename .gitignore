@@ -46,7 +46,10 @@ dev.log
 # Temporary / Scratch / Internal Scripts
 git_diff.txt
 image.png
+scratch/
 backend/scratch/
+responses.md
+duplicate-builders.txt
 backend/test-gemini.mjs
 launch-your-agent/
 
