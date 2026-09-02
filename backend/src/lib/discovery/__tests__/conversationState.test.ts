@@ -10,6 +10,8 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { detectCommuteAnchor, applyCommuteAnchor, beltFor } from '../commuteAnchor'
 import { resolveOrdinalReference, resolveOrdinalPair, needsShownContext } from '../reference'
+import { cardBudgetFor, capCards, MAX_CARDS } from '../cardBudget'
+import type { Intent } from '../types'
 
 describe('commute anchor', () => {
   it('reads the phrasing that broke the funnel', () => {
@@ -164,5 +166,47 @@ describe('ordinal references', () => {
 
   it('resolves nothing when no list has been shown', () => {
     assert.equal(resolveOrdinalReference('tell me about the first one', []), null)
+  })
+})
+
+describe('card budget', () => {
+  // Measured across four 15-turn production runs: 17-20 cards on nearly every
+  // discovery turn, whatever the buyer had said. Nineteen came back for "my
+  // budget would be 2cr max", and nineteen again for "how much would the EMI
+  // be" and "i want to visit this weekend". Nineteen cards is a directory.
+  it('shows nothing before the buyer has narrowed anything', () => {
+    assert.equal(cardBudgetFor({} as Intent).limit, 0)
+  })
+
+  it('opens up as constraints arrive', () => {
+    assert.equal(cardBudgetFor({ bhk: [3] } as Intent).limit, 4)
+    assert.equal(cardBudgetFor({ bhk: [3], budgetMax: 2 } as Intent).limit, MAX_CARDS)
+    assert.equal(cardBudgetFor({ sector: 'Sector 150', bhk: [3], budgetMax: 2 } as Intent).limit, MAX_CARDS)
+  })
+
+  it('counts a workplace as a location, because it also implies a ranking', () => {
+    assert.equal(cardBudgetFor({ workplace: 'Sector 63' } as unknown as Intent).limit, 4)
+    assert.equal(cardBudgetFor({ workplace: 'Sector 63', bhk: [3] } as unknown as Intent).limit, MAX_CARDS)
+  })
+
+  it('narrows to the subject once a project is in focus', () => {
+    // A drilldown answered with six cards buries the project it is about.
+    const budget = cardBudgetFor({ projectNames: ['ATS Nobility'], bhk: [3], budgetMax: 2 } as Intent)
+    assert.equal(budget.limit, 3)
+  })
+
+  it('never exceeds the cap however much is stated', () => {
+    const everything = {
+      sector: 'Sector 150', bhk: [3], budgetMax: 2, budgetMin: 1,
+      possession: 'immediate', purpose: 'endUse', lifestyleKeywords: ['pool', 'gym'],
+    } as unknown as Intent
+    assert.equal(cardBudgetFor(everything).limit, MAX_CARDS)
+  })
+
+  it('caps a payload and keeps the order the ranker chose', () => {
+    const rows = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    assert.deepEqual(capCards(rows, 3), [1, 2, 3])
+    assert.deepEqual(capCards(rows, 0), [])
+    assert.deepEqual(capCards(undefined, 5), [])
   })
 })

@@ -71,7 +71,8 @@ import { buildUnknownProjectReply } from '../lib/chat/unknownProject'
 import { runTopicHandlers } from '../lib/chat/handlerContext'
 import { projectCatalog } from '../lib/projectCatalog'
 import { applyCommuteAnchor, beltFor } from '../lib/discovery/commuteAnchor'
-import { resolveOrdinalReference, needsShownContext } from '../lib/discovery/reference'
+import { resolveOrdinalReference, resolveOrdinalPair, needsShownContext } from '../lib/discovery/reference'
+import { cardBudgetFor, capCards, MAX_CARDS } from '../lib/discovery/cardBudget'
 import { buildStateBrief } from '../lib/ai/stateBrief'
 import { isProximityQuestion, nearbyCoverage } from '../lib/discovery/nearby'
 import {
@@ -322,11 +323,37 @@ router.post('/', async (req: Request, res: Response) => {
     if (event === 'properties') {
       const shape = (list: unknown) =>
         Array.isArray(list) ? list.map((p) => (p && typeof p === 'object' ? stripInternalFields(p as object) : p)) : list
-      return sseWrite(res, event, {
-        ...data,
-        exactResults: shape(data.exactResults),
-        nearbyResults: shape(data.nearbyResults),
-      })
+
+      /**
+       * The card budget, applied here because there are seven emit sites.
+       *
+       * Measured across four 15-turn runs: 17-20 cards on nearly every
+       * discovery turn, whatever the buyer had said. Nineteen came back for "my
+       * budget would be 2cr max", and nineteen again for "how much would the
+       * EMI be" and "i want to visit this weekend" — neither of which asks for
+       * inventory. Nineteen cards is a directory, not a shortlist.
+       *
+       * One guard at the choke point rather than seven, for the same reason
+       * `runTopicHandlers` ends the response in one place: a rule that has to
+       * be remembered at every call site is a rule that will be missed at one.
+       */
+      // `intent` is a `let` declared below this closure, so reading it before
+      // that line executes throws a ReferenceError rather than yielding
+      // undefined. Every card emission happens long after, but an uncapped
+      // try/catch is cheaper than depending on that ordering staying true.
+      let budget = { limit: MAX_CARDS, reason: 'intent not resolved yet' }
+      try {
+        budget = cardBudgetFor(intent ?? ({} as Intent))
+      } catch {
+        /* intent still in its temporal dead zone — fall back to the cap */
+      }
+      const exact = capCards(shape(data.exactResults) as unknown[], budget.limit)
+      const nearby = capCards(shape(data.nearbyResults) as unknown[], Math.max(0, budget.limit - exact.length))
+      const offered = (Array.isArray(data.exactResults) ? data.exactResults.length : 0)
+      if (offered > exact.length) {
+        console.log('[CHAT:CARD_BUDGET]', { offered, shown: exact.length, limit: budget.limit, reason: budget.reason })
+      }
+      return sseWrite(res, event, { ...data, exactResults: exact, nearbyResults: nearby })
     }
     if (event === 'token' && typeof data.token === 'string') {
       const clean = sanitizeOutput(data.token)
@@ -1821,6 +1848,35 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
                 matchedProjects.push(p)
               }
             })
+          }
+
+          /**
+           * "compare it with the second option" names neither project.
+           *
+           * The two passes above look for names — in `projectNames`, then in
+           * the message text — and a comparison phrased by position has
+           * neither. Measured: that exact message answered "we currently do not
+           * have a second project in our records to compare with", two turns
+           * after the assistant had listed the projects itself.
+           *
+           * `resolveOrdinalPair` reads the positions against the list actually
+           * shown, and resolves a bare "it" to the project in focus. Used to
+           * fill the gap rather than to replace the name matching, because a
+           * buyer who names both projects means those two.
+           */
+          if (matchedProjects.length < 2 && shownProjects.length > 0) {
+            const byPosition = resolveOrdinalPair(
+              message,
+              shownProjects,
+              (intent as { targetProjectId?: string }).targetProjectId ?? null,
+            )
+            for (const p of byPosition) {
+              const row = allDbProjects.find(c => c.id === p.id)
+              if (row && !matchedProjects.some(mp => mp.id === row.id)) matchedProjects.push(row)
+            }
+            if (byPosition.length > 0) {
+              console.log('[CHAT:ORDINAL_PAIR]', { resolved: byPosition.map(p => p.name) })
+            }
           }
 
           targetProjects = matchedProjects.slice(0, 4)
