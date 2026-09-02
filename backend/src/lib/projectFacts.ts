@@ -106,9 +106,12 @@ export async function getFloorPlans(nameOrId: string): Promise<Record<string, un
     found: true,
     project_name: project.name,
     sector: project.sector,
-    total_floors: (project as any).floors || 'G+32 Floors',
-    top_floor: ((project as any).floors || 'G+32').replace(/[^0-9]/g, '') ? `${((project as any).floors || 'G+32').replace(/[^0-9]/g, '')}nd Floor` : '32nd Floor',
-    total_towers: (project as any).total_towers || 7,
+    // Absent means absent. These three used to default to 'G+32 Floors',
+    // '32nd Floor' and 7 towers, so every project missing the column was
+    // described with the same invented building — and `top_floor` also
+    // rendered "31nd Floor" for anything not ending in 2.
+    total_floors: project.floors ?? null,
+    total_towers: project.total_towers ?? null,
     configuration_count: units.length,
     configurations: units.map(u => {
       // Carpet efficiency is the number buyers actually care about and is cheap
@@ -403,6 +406,43 @@ export async function getFullCostSheet(nameOrId: string): Promise<Record<string,
 
 // ── Amenities and connectivity, in full ──────────────────────────────────────
 
+/**
+ * The living-specification columns, with absent ones left out.
+ *
+ * Every one of these is nullable, and each key here previously carried a
+ * fallback literal, so an un-enriched project was described with a complete set
+ * of specifications it had never been checked for. A key is present only when
+ * the row holds a value; `false` and `0` are kept, because "not pet friendly"
+ * and "0% open space" are answers rather than gaps.
+ */
+function buildLivingSpecifications(project: Record<string, unknown>): Record<string, unknown> {
+  const spec: Record<string, unknown> = {}
+  const put = (key: string, value: unknown, format?: (v: never) => string) => {
+    if (value === null || value === undefined || value === '') return
+    spec[key] = format ? format(value as never) : value
+  }
+
+  put('water_source', project.water_source)
+  put('dg_power_rate_per_unit', project.dg_power_rate_per_unit, (v: number) => `₹${v}/kWh`)
+  put('monthly_maintenance', project.maintenance_per_sqft_monthly, (v: number) => `₹${v}/sq.ft/month`)
+  put('piped_gas_png', project.has_png_gas_pipeline)
+  put('mobile_network_rating', project.mobile_network_rating, (v: number) => `${v}/5`)
+  put('ceiling_height', project.ceiling_height_ft, (v: number) => `${v} ft`)
+  put('privacy_layout', project.shared_walls_type)
+  put('land_tenure', project.land_tenure)
+  put('authority_dues_cleared', project.authority_dues_cleared)
+  put('pet_friendly', project.pet_friendly)
+  put('bachelor_tenants_allowed', project.bachelor_tenants_allowed)
+  put('open_space_percentage', project.open_space_pct, (v: number) => `${v}%`)
+
+  const elevators: Record<string, unknown> = {}
+  if (project.lifts_per_tower != null) elevators.lifts_per_tower = project.lifts_per_tower
+  if (project.has_service_lift != null) elevators.has_dedicated_service_lift = project.has_service_lift
+  if (Object.keys(elevators).length > 0) spec.elevators = elevators
+
+  return spec
+}
+
 /** Complete lists. The prompt block only carries the first 10 / 5. */
 export async function getAmenitiesAndConnectivity(nameOrId: string): Promise<Record<string, unknown>> {
   const project = await resolveProject(nameOrId)
@@ -443,24 +483,15 @@ export async function getAmenitiesAndConnectivity(nameOrId: string): Promise<Rec
     amenity_count: amenities.length,
     amenities: amenities.map(a => a.name),
     amenities_by_category: byCategory,
-    living_specifications: {
-      water_source: (project as any).water_source || 'Ganga Jal Pipeline + Centralized WTP',
-      dg_power_rate_per_unit: (project as any).dg_power_rate_per_unit ? `₹${(project as any).dg_power_rate_per_unit}/kWh` : '₹21.00/kWh',
-      monthly_maintenance: (project as any).maintenance_per_sqft_monthly ? `₹${(project as any).maintenance_per_sqft_monthly}/sq.ft/month` : '₹2.75/sq.ft/month',
-      piped_gas_png: (project as any).has_png_gas_pipeline ?? true,
-      mobile_network_rating: (project as any).mobile_network_rating ? `${(project as any).mobile_network_rating}/5` : '4/5',
-      ceiling_height: (project as any).ceiling_height_ft ? `${(project as any).ceiling_height_ft} ft` : '10.2 ft',
-      elevators: {
-        lifts_per_tower: (project as any).lifts_per_tower ?? 3,
-        has_dedicated_service_lift: (project as any).has_service_lift ?? true,
-      },
-      privacy_layout: (project as any).shared_walls_type || 'Zero Shared Walls / 3-Side Open Layout',
-      land_tenure: (project as any).land_tenure || '99-Year Authority Leasehold',
-      authority_dues_cleared: (project as any).authority_dues_cleared ?? true,
-      pet_friendly: (project as any).pet_friendly ?? true,
-      bachelor_tenants_allowed: (project as any).bachelor_tenants_allowed ?? true,
-      open_space_percentage: (project as any).open_space_pct ? `${(project as any).open_space_pct}%` : '75%',
-    },
+    // Every key here used to carry a fallback literal, so a project with none
+    // of these columns populated was still described as having Ganga Jal water,
+    // ₹2.75/sq.ft maintenance, ₹21/kWh DG power, 10.2 ft ceilings, 3 lifts per
+    // tower, 75% open space, piped gas, pets allowed and cleared authority
+    // dues — the same imaginary building for every row. All 14 columns are
+    // nullable, so the defaults fired on any project not yet enriched, and the
+    // buyer discovers it on the site visit. Absent means absent: an omitted key
+    // is how the prompt learns we do not hold the fact.
+    living_specifications: buildLivingSpecifications(project),
     connectivity_count: connectivity.length,
     connectivity: connectivity.map(c => ({
       type: String(c.type),

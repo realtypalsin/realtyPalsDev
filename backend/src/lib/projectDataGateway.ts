@@ -36,6 +36,8 @@ interface FloorPlanConfig {
   price_min_cr?: number
   price_max_cr?: number
   carpet_area_sqft?: number
+  super_area_sqft?: number
+  carpet_to_super_ratio_pct?: number | null
   [key: string]: unknown
 }
 
@@ -938,17 +940,53 @@ async function getBuilderWithValidation(
         builderFact('average_handover_delay', 'Average Handover Delay', b.average_delay_months === 0 ? '0 months (Consistent on-time completion)' : `${b.average_delay_months} months`)
       }
 
-      const score = b.delivery_score ?? 90
-      const delayText = b.average_delay_months === 0 ? '0 months historical delay' : `${b.average_delay_months ?? 0} mo average delay`
-      const qualText = b.construction_quality_score ? `${b.construction_quality_score}/100 construction rating` : 'A-grade construction standards'
-      const litText = b.litigation_count === 0 ? '0 active litigation cases' : `${b.litigation_count} active cases`
-      const insolvText = b.insolvency_history ? 'insolvency history on record' : 'clean NCLT/insolvency standing'
+      // The justification is only emitted when there is a real score to
+      // justify, and each clause only when its own column is populated.
+      //
+      // This block reintroduced the exact defaults the comment above records
+      // as removed: `delivery_score ?? 90` invented a 90/100 score for any
+      // builder we hold nothing about, 'A-grade construction standards' was
+      // asserted with no quality score, a null `litigation_count` rendered as
+      // "null active cases", a null `insolvency_history` was reported as
+      // "clean NCLT/insolvency standing" — a clean record for a builder never
+      // checked — and an empty `delivered_projects` produced "landmark
+      // communities including ." A score with nothing behind it is the fake
+      // confidence score CLAUDE.md forbids, and it is worse here than an
+      // absent one because it arrives dressed as an explanation.
+      if (b.delivery_score != null) {
+        const clauses: string[] = []
+        if (b.average_delay_months != null) {
+          clauses.push(
+            b.average_delay_months === 0
+              ? 'Execution: 0 months historical delay'
+              : `Execution: ${b.average_delay_months} mo average delay`,
+          )
+        }
+        if (b.construction_quality_score != null) {
+          clauses.push(`Quality & Engineering: ${b.construction_quality_score}/100 construction rating`)
+        }
+        const legal: string[] = []
+        if (b.litigation_count != null) {
+          legal.push(b.litigation_count === 0 ? '0 active litigation cases' : `${b.litigation_count} active cases`)
+        }
+        if (b.insolvency_history != null) {
+          legal.push(b.insolvency_history ? 'insolvency history on record' : 'clean NCLT/insolvency standing')
+        }
+        if (legal.length > 0) clauses.push(`Legal & Compliance: ${legal.join(' and ')}`)
+        if (Array.isArray(b.delivered_projects) && b.delivered_projects.length > 0) {
+          clauses.push(`Proven Portfolio: delivered ${b.delivered_projects.slice(0, 3).join(', ')}`)
+        }
 
-      builderFact(
-        'score_breakdown_justification',
-        'Delivery Score Justification',
-        `The ${score}/100 delivery score is driven by: (1) Execution: ${delayText}; (2) Quality & Engineering: ${qualText}; (3) Legal & Compliance: ${litText} and ${insolvText}; (4) Proven Portfolio: Delivered landmark communities including ${(b.delivered_projects || []).slice(0, 3).join(', ')}.`
-      )
+        if (clauses.length > 0) {
+          builderFact(
+            'score_breakdown_justification',
+            'Delivery Score Justification',
+            `The ${b.delivery_score}/100 delivery score is driven by: ${clauses
+              .map((c, i) => `(${i + 1}) ${c}`)
+              .join('; ')}.`,
+          )
+        }
+      }
     } else {
       facts['builder_name'] = { fact: 'Builder Name', value: null, source: 'database', confidence: 0, validated: false }
       facts['rera_registration'] = { fact: 'RERA Status', value: null, source: 'database', confidence: 0, validated: false }

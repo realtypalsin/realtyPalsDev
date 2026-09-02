@@ -3,6 +3,8 @@
 import { prisma } from '../../db'
 import { webSearch } from '../../web'
 import type { ChatTopicHandler } from '../handlerContext'
+import { statedMonthlyIncome, computeAffordability, renderAffordabilityTable } from '../../ai/affordability'
+import { formatInr } from '../../calculators'
 
 // ── REGEX PATTERNS ─────────────────────────────────────────────────────────
 
@@ -108,8 +110,6 @@ const COMPETITOR_COMPARISON_REGEX = /\b(compet(e|itor|ing|ition)|alternatives? t
 /** Patterns for Subvention Scheme legality, RBI regulations, and UP RERA ban inquiries. */
 const SUBVENTION_LEGALITY_REGEX = /\b(subvention|20[:\s]*80|10[:\s]*90|80[:\s]*20)\b.*\b(legal|banned|ban|allowed|illegal|rbi|up\s*rera|rera|safe|fraud|scam|circular)\b|\b(is|are)\b.*\b(subvention|20[:\s]*80|10[:\s]*90)\b/i
 
-/** Patterns for Project Payment Plans, Milestones, and Current Offers ("payment plans and current offers for Elite X"). */
-const PROJECT_PAYMENT_PLANS_REGEX = /\b(payment\s*plans?|payment\s*structure|payment\s*schedule|payment\s*terms?|payment\s*options?|flexi\s*plan|clp|plp|down\s*payment\s*plan|current\s*offers?|offers?\s+and|discounts?)\b/i
 
 export const citywideQueryHandler: ChatTopicHandler = {
   id: 'citywide-query',
@@ -119,7 +119,6 @@ export const citywideQueryHandler: ChatTopicHandler = {
     const msg = (ctx.message || '').toLowerCase()
     return (
       SUBVENTION_LEGALITY_REGEX.test(msg) ||
-      PROJECT_PAYMENT_PLANS_REGEX.test(msg) ||
       COMPETITOR_COMPARISON_REGEX.test(msg) ||
       RE_FIRM_REGEX.test(msg) ||
       RICHEST_LIVE_REGEX.test(msg) ||
@@ -152,8 +151,16 @@ export const citywideQueryHandler: ChatTopicHandler = {
       NRI_LEGAL_FEMA_REGEX.test(msg) ||
       OC_CC_TM_REGEX.test(msg) ||
       STUDENT_COLIVING_REGEX.test(msg) ||
-      CIRCLE_MARKET_RATE_REGEX.test(msg) ||
-      ctx.intent?.purpose === 'investment'
+      CIRCLE_MARKET_RATE_REGEX.test(msg)
+      // `ctx.intent?.purpose === 'investment'` used to be an arm of this OR.
+      //
+      // `purpose` is sticky session intent, so one buyer saying "I'm buying to
+      // invest" routed EVERY later turn of that session into this handler —
+      // ahead of the twelve handlers below it and ahead of the generic
+      // project-detail path — whatever the question actually was. The thirty
+      // patterns above already match investment questions on their own wording,
+      // which is the right test: what was asked, not what was asked three
+      // turns ago.
     )
   },
 
@@ -472,26 +479,34 @@ export const citywideQueryHandler: ChatTopicHandler = {
 
     // ── 7. Personal Finance, Salary & EMI Budget Planning ─────────────────────────
     if (PERSONAL_FINANCE_EMI_REGEX.test(msgLower)) {
-      // Basic mortgage calculator math
-      let budgetEstimate = '₹70 Lakh – ₹1.2 Cr'
-      let emiAdvice = ''
+      // This branch used to handle exactly two incomes.
+      //
+      //   if (msgLower.includes('1.5 lakh') || msgLower.includes('1.5l')) …
+      //   else if (msgLower.includes('30,000') || msgLower.includes('30k')) …
+      //   else  → a paragraph of generic advice and no arithmetic at all
+      //
+      // Both branches carried the figures as prose literals, so the numbers
+      // could not be checked and did not agree with each other. Every other
+      // income — ₹80k, ₹2 lakh, ₹3.5 lakh — fell to the else and got no
+      // calculation, which is the shape of failure a buyer reads as the
+      // assistant not understanding the question.
+      //
+      // `affordability.ts` already does this properly: FOIR band, EMI ceiling,
+      // loan solved from the EMI, price at 80% LTV, down payment, all at the
+      // configured rate and tenure. It works for any income.
+      const income = statedMonthlyIncome(ctx.message)
+      const afford = income != null ? computeAffordability(income) : null
 
-      if (msgLower.includes('1.5 lakh') || msgLower.includes('1.5l')) {
-        budgetEstimate = '₹80 Lakh – ₹1.1 Cr'
-        emiAdvice = `With a monthly in-hand income of **₹1.5 Lakh**, standard banking norms allow up to 40–50% Fixed Obligation to Income Ratio (FOIR). That supports an EMI capacity of **₹60,000 – ₹70,000/month**, which translates to a comfortable home loan eligibility of **₹65–75 Lakh** (at 8.5% for 20 years). With a ₹25 Lakh down payment, your total safe budget envelope is **₹90 Lakh – ₹1.0 Cr**.`
-      } else if (msgLower.includes('30,000') || msgLower.includes('30k')) {
-        emiAdvice = `An EMI cap of **₹30,000/month** (at 8.5% interest over 20 years) supports a home loan of approximately **₹35 Lakh**. For a ₹1 Crore flat, you would need a down payment of **₹65 Lakh**. If your down payment is lower (e.g. ₹15–20 Lakh), you should consider properties in the **₹50–55 Lakh** price range.`
-      } else {
-        emiAdvice = `As a prudent financial rule: ensure your home loan EMI does not exceed 40% of your net monthly in-hand salary, and maintain an emergency reserve of at least 6 months of expenses post-downpayment.`
-      }
+      const emiAdvice = afford
+        ? `On a stated monthly income of ${formatInr(afford.monthlyIncome)}, banks size the loan by FOIR — the share of income that may go to debt.\n\n` +
+          `${renderAffordabilityTable(afford)}\n\n` +
+          `Computed at ${afford.rate}% over ${afford.tenureYears} years at an 80% loan-to-value. Keep the EMI at the comfortable end unless you have no other obligations, and hold six months of expenses in reserve after the down payment.`
+        : `Tell me your monthly in-hand income and I'll work out the EMI you can carry, the loan that supports, and the property price it reaches.\n\n` +
+          `The rule banks apply: your EMI should not exceed 40% of net monthly income — 50% at the absolute stretch — and you should still hold six months of expenses after the down payment.`
 
-      const replyText = `### Financial Planning & Home Loan Feasibility\n\n` +
+      const replyText = `### Home loan feasibility\n\n` +
         `${emiAdvice}\n\n` +
-        `#### Realistic Property Options Within Safe Budget Bands:\n` +
-        `- **Under ₹75 Lakh**: Spacious 2 BHK / 3 BHK units in **Greater Noida West (Sector 10, Sector 16B)** with full amenities.\n` +
-        `- **₹80 Lakh – ₹1.2 Cr**: Ready-to-move 2 BHK / 3 BHK units in **Sector 75, Sector 78, or Sector 137** near metro lines.\n` +
-        `- **Above ₹1.5 Cr**: Premium 3 BHK / 4 BHK apartments in **Sector 150 or Sector 128 Expressway**.\n\n` +
-        `*Would you like to see verified project options in a specific price band?*`
+        `*Want me to pull verified projects inside that range?*`
 
       const chips = [
         {
@@ -558,7 +573,10 @@ export const citywideQueryHandler: ChatTopicHandler = {
 
       if (projects.length > 0) {
         const rows = projects.map(p =>
-          `| **${p.name}** | ${p.sector} | ₹${p.price_min_cr?.toFixed(2)} Cr | ${p.builder?.name || 'Verified Builder'} | ${p.status || 'Active'} |`
+          // "Verified Builder" and "Active" as fallbacks assert a status about a
+          // developer and a project we hold no record for — the exact thing
+          // noAssertedVerification.test.ts exists to catch. A gap prints a dash.
+          `| **${p.name}** | ${p.sector} | ${p.price_min_cr != null ? `₹${p.price_min_cr.toFixed(2)} Cr` : '—'} | ${p.builder?.name || '—'} | ${p.status ? String(p.status).replace(/_/g, ' ') : '—'} |`
         ).join('\n')
 
         const replyText = `### Top Recommended Projects Under ₹${budgetMax} Cr\n\n` +
@@ -1801,75 +1819,26 @@ However, **pure builder-funded Possession-Linked Plans (PLP)** — where you pay
         return true
       }
 
-      // ── PROJECT PAYMENT PLANS, MILESTONES & CURRENT OFFERS ──────────────────
-      if (PROJECT_PAYMENT_PLANS_REGEX.test(msg)) {
-        const isEliteX = /elite\s*x/i.test(msg) || /sector\s*10/i.test(msg)
-        const projectName = isEliteX ? 'Elite X' : 'Elite X'
-        const sector = 'Sector 10, Greater Noida West'
-        const rera = 'UPRERAPRJ916631/02/2024'
-
-        const replyText =
-          `### Verified Payment Plans & Official Offers for **${projectName}**\n` +
-          `*📍 Location: ${sector} | 🛡️ UP-RERA: ${rera} | 🗓️ Possession: Dec 2028*\n\n` +
-          `Elite Group offers structured, RERA-compliant payment options tailored for both end-users and investors. Below is the full breakdown of official payment schedules and active promotional benefits:\n\n` +
-          `---\n\n` +
-          `#### 1. Available Payment Schemes\n\n` +
-          `| Payment Plan | Milestone Schedule | Upfront Requirement | Best Suited For |\n` +
-          `| :--- | :--- | :--- | :--- |\n` +
-          `| **Flexi Plan (30:40:30)** | • **30%** within 30 days of booking<br>• **40%** on Superstructure Top-Out (~16 mos)<br>• **30%** on Offer of Possession (Dec 2028) | 30% Booking & Allotment | Balanced cash-flow buyers wanting low milestone frequency |\n` +
-          `| **Construction Linked (10:90 CLP)** | • **10%** at Booking<br>• **10%** on Excavation<br>• **10%** on Raft / Foundation<br>• **10%** per 5-floor slab cycles<br>• **10%** on Possession | 10% Initial Down Payment | **Highest Safety**: Payments strictly gated to physical site progress |\n` +
-          `| **Down Payment Plan (8% Off)** | • **10%** at Booking<br>• **80%** within 45 Days<br>• **10%** on Offer of Possession | 90% in 45 Days | Self-funded investors maximizing upfront BSP discounts |\n` +
-          `| **Possession Linked (20:80 PLP)** | • **20%** at Booking & Agreement<br>• **10%** on Superstructure completion<br>• **70%** on Offer of Possession | 20% Booking | Buyers wanting minimal capital lock-in until handover |\n` +
-          `| **Investor Special (25:25:25:25)** | • **25%** at Booking<br>• **25%** at 12 Months<br>• **25%** on Superstructure<br>• **25%** on Possession | 25% Annual Tranches | Long-term capital appreciation & wealth growth portfolios |\n\n` +
-          `---\n\n` +
-          `#### 2. Current Builder Offers & Financial Incentives\n` +
-          `- 💰 **Upfront Price Discount**: **8% Direct BSP Waiver** on selecting the Down Payment Plan.\n` +
-          `- 🚗 **Car Parking Allotment**: Covered basement parking package bundled with 3 BHK & 4 BHK bookings.\n` +
-          `- 🛡️ **Escrow Account Backing**: All buyer tranches deposit directly into the **HDFC Bank RERA Escrow Account** to guarantee fund allocation only to Sector 10 construction.\n` +
-          `- 🏦 **Bank Loan Pre-Approvals**: Approved for 75% to 80% financing with **SBI, HDFC Bank, ICICI Bank**, with current home loan interest rates around **8.50% – 8.75%**.\n\n` +
-          `---\n\n` +
-          `#### 3. Total Cost Sheet Breakdown (Estimated Base)\n` +
-          `- **Base Selling Price (BSP)**: ~₹6,500 – ₹8,500 / sq.ft (Starting ₹1.08 Cr for 3 BHK, up to ₹2.07 Cr for 3BHK+Servant / 4BHK).\n` +
-          `- **Additional Charges**: IFMS (₹75/sq.ft), Club Membership (₹2,00,000), Power Backup & Meter (₹1,25,000 + ₹50/sq.ft).\n` +
-          `- **Government Levies**: 5% GST (under-construction residential) + Stamp Duty (approx. 7% at registry).\n\n` +
-          `*Would you like a customized EMI calculation for a specific configuration (e.g., 3 BHK Standard vs 3 BHK+Servant), or would you like to compare this with Ace Hanei's payment plans?*`
-
-        const chips = [
-          {
-            id: `chip_pp_cost_${Date.now()}`,
-            actionType: 'TEXT_MESSAGE',
-            label: `${projectName} Cost Sheet Breakdown`,
-            icon: 'calculator',
-            analyticsId: 'chip_pp_cost',
-            priority: 1,
-            payload: { text: `Show full cost sheet breakdown for ${projectName} including BSP, PLC, parking, and taxes` },
-          },
-          {
-            id: `chip_pp_clp_vs_plp_${Date.now()}`,
-            actionType: 'TEXT_MESSAGE',
-            label: 'CLP vs Flexi 30:40:30 Difference',
-            icon: 'scales',
-            analyticsId: 'chip_pp_clp_flexi',
-            priority: 2,
-            payload: { text: `What is the risk and financial difference between CLP and Flexi 30:40:30 for ${projectName}?` },
-          },
-          {
-            id: `chip_pp_compare_${Date.now()}`,
-            actionType: 'TEXT_MESSAGE',
-            label: `Compare ${projectName} vs Ace Hanei`,
-            icon: 'scales',
-            analyticsId: 'chip_pp_ace_compare',
-            priority: 3,
-            payload: { text: `Compare payment plans and pricing of ${projectName} vs Ace Hanei Sector 12 Greater Noida West` },
-          },
-        ]
-
-        ctx.send('token', { token: replyText })
-        ctx.emitUiState({ stage: 'RESEARCH', thinking: `Loaded verified RERA payment plans and builder offers for ${projectName}`, chips })
-        ctx.send('done', { sessionId: ctx.sessionId, intentState: 'GATHERING', intent: ctx.intent })
-        ctx.res.end()
-        return true
-      }
+      // The hardcoded "Elite X" payment-plan block that stood here is gone.
+      //
+      // It answered EVERY payment-plan question as Elite X — the project name
+      // came from `isEliteX ? 'Elite X' : 'Elite X'`, a ternary with identical
+      // branches — with a fixed sector, a fixed RERA number, a fixed Dec 2028
+      // possession, five invented schedules, an "8% Direct BSP Waiver", a named
+      // bank escrow account and bank interest rates, all under the heading
+      // "Verified Payment Plans & Official Offers", and chips offering a
+      // comparison against a second hardcoded project. Its regex also matched a
+      // bare "discounts?" and "current offers?", so "any discounts available?"
+      // produced the whole thing.
+      //
+      // Nothing replaces it here, because the dynamic answer already exists and
+      // this branch was shadowing it: `paymentPlansHandler` resolves whichever
+      // project the buyer named and reads that project's own `payment_plans`
+      // rows, `costSheetHandler` and `unitConfigurationHandler` do the same for
+      // their topics, and the generic project-detail path projects the whole
+      // public field allowlist through `projectFactsBlock`. Deleting the branch
+      // is what makes payment plans dynamic — every one of those runs after
+      // this handler in `CHAT_TOPIC_HANDLERS` and could never be reached.
     }
   },
 }

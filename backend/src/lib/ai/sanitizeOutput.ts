@@ -130,15 +130,28 @@ export interface SanitizeResult {
  * handled as the citation it is, rather than substituted into one.
  */
 function normalizeCitations(input: string): { text: string; count: number } {
+  // This deleted every source parenthetical outright, including the
+  // "(market data)" and "(verified data)" labels it is supposed to collapse TO —
+  // which left `ALLOWED_CITATION_RE` and `MARKET_CITATION` dead and made a
+  // Noida-wide average read as though it were verified for the project in hand.
+  // CLAUDE.md's market tier requires the qualifier every time; an unlabelled
+  // market figure is the fact-tier failure the tiers exist to prevent.
   CITATION_PARENTHETICAL.lastIndex = 0
   let count = 0
   const text = input.replace(CITATION_PARENTHETICAL, (match) => {
+    // A parenthetical naming one of our own sources keeps its label as written.
+    const inner = match.slice(1, -1)
+    if (ALLOWED_CITATION_RE.test(inner)) return match
     count += 1
-    return ''
-  }).replace(/\s*\((?:market\s+data|realtypals\s+data|verified\s+data|our\s+data|unverified)\)/gi, '')
-  if (count === 0) return { text: input.replace(/\s*\((?:market\s+data|realtypals\s+data|verified\s+data|our\s+data|unverified)\)/gi, ''), count: 0 }
+    return MARKET_CITATION
+  })
+  if (count === 0) return { text: input, count: 0 }
   return {
-    text: text.replace(/\s{2,}/g, ' '),
+    // Two adjacent outside citations on one line collapse to one label rather
+    // than stuttering "(market data) (market data)".
+    text: text
+      .replace(/(\(market data\))(?:\s*\(market data\))+/gi, '$1')
+      .replace(/[ \t]{2,}/g, ' '),
     count,
   }
 }

@@ -109,8 +109,15 @@ export function buildAdaptiveChips(ctx: AnsweredContext): ChipAction[] {
     const pickable = projects.filter((p) => p.id).slice(0, 8).map((p) => ({ id: p.id!, name: p.name }))
 
     if (pickable.length >= 2) {
+      // The trailing ellipsis is what tells the buyer this opens a picker.
+      //
+      // These labels read `Cost breakdown for ${pickable[0].name}` — naming the
+      // first card while the payload carried up to eight, which is the guess
+      // the comment above says was removed. A buyer sees one project's name,
+      // taps it expecting that project, and gets a dropdown; or reads the label
+      // and never taps, which is the seven-in-eight case all over again.
       offer('money', chip(
-        'adaptive_pick_cost', 'TEXT_MESSAGE', `Cost breakdown for ${pickable[0]?.name || 'projects'}`,
+        'adaptive_pick_cost', 'TEXT_MESSAGE', 'Full cost of…',
         {
           text: `Show the complete cost breakdown, including charges and taxes, for ${pickable[0]?.name || 'the shortlisted projects'}.`,
           projects: pickable,
@@ -119,7 +126,7 @@ export function buildAdaptiveChips(ctx: AnsweredContext): ChipAction[] {
         }, 2,
       ))
       offer('place', chip(
-        'adaptive_pick_plan', 'TEXT_MESSAGE', `Payment plan for ${pickable[0]?.name || 'projects'}`,
+        'adaptive_pick_plan', 'TEXT_MESSAGE', 'Payment plan for…',
         {
           text: `Show the full payment schedule and offers for ${pickable[0]?.name || 'the shortlisted projects'}.`,
           projects: pickable,

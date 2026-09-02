@@ -182,6 +182,31 @@ export interface ProjectFactsOptions {
  * columns, and relation shapes are summarised by the caller (see
  * buildProjectFacts) rather than dumped raw.
  */
+/**
+ * Public fields that are buyer-facing on a page but have no business in a prompt.
+ *
+ * Being in the exposure allowlist means a field may reach the buyer. It does not
+ * mean it should reach the MODEL — these three are billed on every turn and each
+ * is either unusable or a liability:
+ *
+ * `rera_url` is the worst of them. Prompt rule 17 forbids sending a buyer off
+ * the platform and `EXTERNAL_URL_PATTERNS` strips up-rera.in from the output,
+ * yet the facts block was handing the model that exact link on every project
+ * turn — the rule said don't, and the data said here it is. The RERA number, its
+ * validity and the construction timeline are all in our own rows.
+ *
+ * `hero_image_url` cannot be quoted in prose; the property cards carry images.
+ *
+ * `marketing_claims` is developer copy — "Ultra-Luxury", "Prime Residential
+ * Living", "85%+ Open Space" — and no prompt rule names it. Handing puffery to
+ * an advisor whose first principle is not exaggerating is the same mistake as
+ * the rera_url one: the prompt forbids the register that the data supplies.
+ *
+ * Trimming these is also what keeps the block inside its token budget without
+ * raising the budget, which masterDataCoverage.test.ts deliberately makes hard.
+ */
+export const PROMPT_EXCLUDED_FIELDS = new Set(['rera_url', 'hero_image_url', 'marketing_claims'])
+
 export function projectScalarFacts(
   row: Record<string, unknown>,
   options: ProjectFactsOptions = {},
@@ -192,6 +217,7 @@ export function projectScalarFacts(
 
   for (const [key, value] of Object.entries(safe)) {
     if (!isPublicField(key)) continue // relations are handled separately
+    if (PROMPT_EXCLUDED_FIELDS.has(key)) continue
     let formatted = formatValue(key, value)
     if (formatted === null) continue
     if ((key === 'description' || key === 'long_description') && formatted.length > maxDescription) {

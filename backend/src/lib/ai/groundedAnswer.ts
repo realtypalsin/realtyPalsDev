@@ -14,6 +14,7 @@ import { prisma } from '../db'
 import { DEFAULT_CITY, SUPPORTED_CITIES } from '../config/cities'
 import { webSearch } from '../web'
 import { executeWithFallbackChain } from './fallbackChain'
+import { profileFor } from './inferenceProfile'
 import { getCachedResponse, setCachedResponse } from './semanticCache'
 import type { OpenQueryDetection } from '../discovery/openQuery'
 import { buildGeneralConversationalPrompt } from './prompts/generalPrompt'
@@ -167,6 +168,56 @@ async function findBuilderMentioned(message: string): Promise<string | null> {
   }
 }
 
+/** Digits that carry no factual weight on their own. */
+const TRIVIAL_NUMBERS = new Set(['1', '2', '3', '0'])
+
+function normalizeForMatch(text: string): string {
+  return text.toLowerCase().replace(/[,\s]/g, '')
+}
+
+/**
+ * Drop sentences containing a number that does not appear in the grounding.
+ *
+ * The pre-send gate: a fabricated price, year or count is the failure mode that
+ * costs the most trust, and the one that is cheap to catch deterministically.
+ * Prose claims are not checked.
+ *
+ * **It runs only when we supplied the numbers ourselves.** Applied to every
+ * answer it deletes correct general knowledge — asked about capital gains, the
+ * lane answers "20% with indexation under Section 112A", and with no database
+ * block to match against, every such sentence is ungrounded by this test and
+ * the buyer gets an empty reply. So the caller passes the database context and
+ * nothing else: when we handed the model our own figures, it must quote them;
+ * when the question is general knowledge, this gate has no opinion.
+ *
+ * ponytail: numeric-substring match only. It drops legitimately derived figures
+ * (a total computed from a per-sqft rate) along with invented ones — correct for
+ * this path, since a grounded answer should quote rather than compute. Move to a
+ * claim-level LLM check if derived figures ever need to survive here.
+ */
+export function stripUngroundedSentences(
+  answer: string,
+  groundingContext: string,
+): { text: string; dropped: string[] } {
+  const haystack = normalizeForMatch(groundingContext)
+  const sentences = answer.split(/(?<=[.!?])\s+/)
+  const kept: string[] = []
+  const dropped: string[] = []
+
+  for (const sentence of sentences) {
+    const numbers = sentence.match(/\d[\d,]*(?:\.\d+)?/g) ?? []
+    const ungrounded = numbers.filter((n) => {
+      const clean = n.replace(/,/g, '')
+      if (TRIVIAL_NUMBERS.has(clean)) return false
+      return !haystack.includes(normalizeForMatch(clean))
+    })
+    if (ungrounded.length > 0) dropped.push(sentence.trim())
+    else kept.push(sentence)
+  }
+
+  return { text: kept.join(' ').trim(), dropped }
+}
+
 // ── Entry point ──────────────────────────────────────────────────────────────
 
 export interface GroundedAnswerInput {
@@ -240,6 +291,7 @@ export async function runGroundedAnswer(
   })
 
   // 4. Stream / Generate Answer via Fallback Chain
+  const profile = profileFor(message)
   const collected: string[] = []
   const collect = (event: string, data: Record<string, unknown>) => {
     if (event === 'token' && typeof data.token === 'string') collected.push(data.token)
@@ -256,7 +308,27 @@ export async function runGroundedAnswer(
       userMessage: message,
       userId,
       sessionId,
-      config: { maxTokens: 600 },
+      // Two fixes over `{ maxTokens: 600 }`:
+      //
+      // `tools: false` — CLAUDE.md is explicit that a caller passing a stub
+      // `onToolCall` must disable the catalogue. This one answers every tool
+      // call with `{}`, so the model could call a tool, get nothing, call
+      // again, and exhaust its tool cycles without emitting a single token.
+      // The general lane is the one that must never come back empty.
+      //
+      // The profile — this lane is the whole general path now, and it was
+      // running on the chain's default smart model with the default thinking
+      // budget for "hi" and "what is the capital of france" alike.
+      // `profileFor` reads the shape off the message with a regex and picks
+      // the lite model with no thinking for a lookup, the smart one for a
+      // judgement call. The 900 ceiling stays because a general answer that
+      // needs more than that has become a project question.
+      config: {
+        model: profile.model,
+        thinkingBudget: profile.thinkingBudget,
+        maxTokens: Math.min(profile.maxTokens ?? 900, 900),
+        tools: false,
+      },
     })
     raw = result.text || collected.join('')
   } catch (err) {
@@ -264,7 +336,20 @@ export async function runGroundedAnswer(
     return null
   }
 
-  const text = raw.trim()
+  // Numbers we supplied must be quoted, not drifted off. Only `dbContext` is
+  // the reference — see stripUngroundedSentences on why the web block and
+  // general knowledge are deliberately out of scope.
+  let text = raw.trim()
+  if (dbContext) {
+    const { text: checked, dropped } = stripUngroundedSentences(text, dbContext)
+    if (dropped.length > 0) {
+      console.warn('[GROUNDED:UNGROUNDED_DROPPED]', { count: dropped.length, first: dropped[0]?.slice(0, 120) })
+    }
+    // A gate that empties the answer has failed, not the answer. Fall back to
+    // the full text rather than sending the buyer nothing.
+    if (checked.length >= 40) text = checked
+  }
+
   if (!text || text.length < 10) return null
 
   setCachedResponse(message, { token: text, responseMode: 'grounded' }, OPEN_CACHE_TTL_MS, OPEN_CACHE_SCOPE)

@@ -55,23 +55,45 @@ export const totalOutflowHandler: ChatTopicHandler = {
       : null
 
     if (!project) {
-      const clarifyText = `### Interactive Purchase & EMI Budget Planner
+      // This branch had regrown the bug the file header describes.
+      //
+      // Where the original invented one base price (₹1.35 Cr for "Standard
+      // Luxury Apartment"), this invented three — ₹85 Lakh for a "2 BHK
+      // Standard", ₹1.50 Crore for a "3 BHK Premium", ₹2.50 Crore for a "4 BHK
+      // Luxury" — then computed down payments, loan amounts and two EMI columns
+      // off them at an unsourced 8.75%, headed it "a realistic planning
+      // breakdown", quoted a "₹4.0 – ₹6.5 Lakh" possession-charge band that
+      // matches no entry in NOIDA_MARKET_RANGES, and reported confidence HIGH.
+      // A buyer arranges their financing around these numbers.
+      //
+      // What survives is what we can actually source: the statutory rates,
+      // which UP fixes and are identical for every project, and the market
+      // ranges — each carrying MARKET_QUALIFIER, because a Noida typical is not
+      // an answer about the project the buyer is asking about. The all-in
+      // figure itself needs a project, so it asks for one.
+      const s = UP_STATUTORY
+      const clarifyText = `### All-in purchase cost
 
-Here is a realistic planning breakdown for standard residential segments in Noida / Greater Noida at current home loan interest rates (~**8.75%**):
+For the actual number I need a specific project — the all-in figure turns on that developer's own cost sheet, and the charges below vary several lakh between builders.
 
-| Configuration | Typical Base Cost | 20% Down Payment | 80% Loan Amount | 20-Year EMI (8.75%) | 25-Year EMI (8.75%) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **2 BHK Standard** | **₹85.0 Lakh** | ₹17.0 Lakh | ₹68.0 Lakh | **₹60,100 / mo** | **₹55,800 / mo** |
-| **3 BHK Premium** | **₹1.50 Crore** | ₹30.0 Lakh | ₹1.20 Crore | **₹1,06,050 / mo** | **₹98,550 / mo** |
-| **4 BHK Luxury** | **₹2.50 Crore** | ₹50.0 Lakh | ₹2.00 Crore | **₹1,76,750 / mo** | **₹1,64,250 / mo** |
+**What UP fixes, and applies to every project:**
 
----
+| Levy | Rate |
+| :--- | ---: |
+| Stamp duty | ${s.stampDutyPct}% (${s.stampDutyFemalePct}% for a female buyer) |
+| Registration | ${s.registrationPct}% |
+| GST, under construction | ${s.gstUnderConstructionPct}% |
+| GST, ready to move with OC | ${s.gstReadyToMovePct}% |
 
-#### 💡 Key Outflow Considerations
-1. **Statutory Levies (UP)**: Allow approx. **12% extra** for under-construction flats (5% GST + 7% Stamp Duty + Registration fee).
-2. **Developer Possession Charges**: Allow ₹4.0 – ₹6.5 Lakh for covered car parking, club membership, IFMS, and power backup.
+**Typical developer charges in Noida** — ${MARKET_QUALIFIER}:
 
-*Which project or target budget would you like a personalized monthly EMI and cost sheet breakdown for?*`
+- Covered car parking: ${NOIDA_MARKET_RANGES.coveredParkingInr}
+- Club membership: ${NOIDA_MARKET_RANGES.clubMembershipInr}
+- IFMS: ${NOIDA_MARKET_RANGES.ifmsPerSqft}
+- Power backup: ${NOIDA_MARKET_RANGES.powerBackupInr}
+- All-in load over base price: ${NOIDA_MARKET_RANGES.allInclusiveLoadUnderConstructionPct} under construction, ${NOIDA_MARKET_RANGES.allInclusiveLoadReadyToMovePct} ready to move
+
+Name the project, or give me a budget and configuration, and I'll compute the full outflow and the monthly EMI against real figures. Which is it?`
 
       ctx.send('token', { token: clarifyText })
       ctx.emitUiState({
@@ -84,7 +106,10 @@ Here is a realistic planning breakdown for standard residential segments in Noid
           { id: `chip_top_projects_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Top Projects Under ₹1.5 Cr', icon: 'buildings', analyticsId: 'chip_top_under_1_5', priority: 4, payload: { text: 'Show top verified residential projects under ₹1.5 Crore in Noida and Greater Noida' } },
         ],
         missingFields: [],
-        confidence: 'HIGH',
+        // We hold no project-specific figure here, and confidence follows the
+        // weakest tier used. HIGH on a market range is the fake confidence
+        // score CLAUDE.md forbids.
+        confidence: 'LOW',
       })
       ctx.send('done', { sessionId: ctx.sessionId, intentState: 'CLARIFYING', intent: ctx.intent, responseMode: 'chat' })
       ctx.res.end()

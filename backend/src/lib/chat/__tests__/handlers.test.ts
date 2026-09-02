@@ -55,6 +55,36 @@ describe('topic handler registry', () => {
     assert.deepEqual(order, ['b'])
   })
 
+  it('closes the response for a handler that forgot to', async () => {
+    // 33 of the 35 answering branches across the handlers emitted `done` and
+    // never called res.end(). The router's call site only returns, so the SSE
+    // stream stayed open taking a ping every three seconds — the answer arrived
+    // and then never finished, and the 3s heartbeat leaked with it.
+    const { ctx, out } = makeContext()
+    const forgetful: ChatTopicHandler = {
+      id: 'forgetful',
+      description: 'answers but never ends the response',
+      matches: () => true,
+      handle: async c => { c.send('done', {}) },
+    }
+    assert.equal(await runTopicHandlers([forgetful], ctx), true)
+    assert.equal(out.ended, true, 'the response was left open')
+  })
+
+  it('leaves the response open when every handler declines', async () => {
+    // A decline means the generic path below still has to answer on this
+    // socket, so closing it here would cost the buyer the reply entirely.
+    const { ctx, out } = makeContext()
+    const decliner: ChatTopicHandler = {
+      id: 'decliner',
+      description: 'declines after inspection',
+      matches: () => true,
+      handle: async () => false,
+    }
+    assert.equal(await runTopicHandlers([decliner], ctx), false)
+    assert.equal(out.ended, false, 'a decline must not end the response')
+  })
+
   it('falls through to the generic path when nothing matches', async () => {
     const { ctx } = makeContext()
     assert.equal(await runTopicHandlers(CHAT_TOPIC_HANDLERS, ctx), false)

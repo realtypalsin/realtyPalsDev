@@ -4,7 +4,14 @@ export const INJECTION_PATTERNS: RegExp[] = [
   /disregard\s+(your\s+|the\s+)?(system\s+|prior\s+|previous\s+)?prompt/i,
   /you\s+are\s+now\s+/i, // Tightened: any "you are now" is suspicious; lookahead escapes are trivial
   /repeat\s+(the\s+|your\s+|above\s+|following\s+)(text|prompt|instructions)/i,
-  /\bDAN\b|\bACT\s+AS\b/i,
+  /\bDAN\b/i,
+  // "act as" alone blocked "can you act as my negotiator" — a request this
+  // product exists to serve; `negotiat` is in the classifier's own advisory
+  // pattern. A guardrail that dead-ends a buyer asking for negotiation help is
+  // a worse outcome than the jailbreak it was aimed at, and the jailbreak shape
+  // is always "act as" plus a persona defined by NOT having our rules.
+  /\bact\s+as\s+(?:a|an|the)?\s*(?:dan\b|unrestricted|unfiltered|uncensored|jailbreak|jailbroken|different\s+(?:ai|assistant|model)|another\s+(?:ai|assistant|model)|chatgpt|gpt|claude|language\s+model|ai\s+(?:without|with\s+no))/i,
+  /\bact\s+as\s+if\s+you\s+(?:have\s+no|had\s+no|are\s+not\s+bound|don'?t\s+have)/i,
   /pretend\s+(?:you\s+)?(are|have\s+no|to be|that you)/i, // Expanded to cover more pretend framings
   /hypothetically\s+you\s+/i, // "hypothetically you are..."
   /for\s+a\s+(?:screenplay|novel|story|scene|script|game)/i, // Fiction framings
@@ -28,9 +35,19 @@ export const INJECTION_PATTERNS: RegExp[] = [
   /rules\s+mat\s+mano/i,
   /pehle\s+wale\s+instructions\s+ignore/i,
   /koi\s+bhi\s+role\s+play\s+karo/i,
-  // Devanagari script jailbreak patterns (most common Hindi phrases)
-  /[ऀ-ॿ]*(?:सिस्टम|प्रॉम्प्ट|निर्देश)[ऀ-ॿ]*/i, // System/prompt/instruction in Devanagari
-  /[ऀ-ॿ]*(?:भूल|छुपा|दिखा)[ऀ-ॿ]*/i, // Forget/hide/show in Devanagari
+  // Devanagari jailbreak patterns, as PHRASES.
+  //
+  // These were two bare word-alternations wrapped in `[ऀ-ॿ]*`, which matches
+  // the empty string — so the patterns reduced to "contains सिस्टम, प्रॉम्प्ट,
+  // निर्देश, भूल, छुपा or दिखा anywhere". दिखा is "show" and निर्देश is
+  // "instruction/guideline", so "मुझे Sector 150 में फ्लैट दिखाओ" — show me
+  // flats in Sector 150 — was refused as a prompt injection, as was
+  // "घर खरीदने के दिशा निर्देश बताइए", a request for home-buying guidelines.
+  // A jailbreak is the words together, never one of them alone.
+  /सिस्टम\s*(?:प्रॉम्प्ट|प्रांप्ट)/i,
+  /प्रॉम्प्ट\s*(?:बताओ|बताइए|दिखाओ|क्या\s*है)/i,
+  /(?:निर्देश|नियम|इंस्ट्रक्शन)[^\n]{0,12}(?:भूल|अनदेखा|नज़रअंदाज|मत\s*मानो)/i,
+  /भूल\s*जा(?:ओ|)[^\n]{0,20}(?:निर्देश|नियम|सब\s*कुछ)/i,
   /\[system\]/i,
   /<\|im_start\|>/i,
   /<\|endoftext\|>/i,

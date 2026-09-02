@@ -170,6 +170,19 @@ export interface ChatTopicHandler {
 /**
  * Runs the first matching handler. Returns true when one produced a response,
  * in which case the router must not continue.
+ *
+ * **It closes the response itself.** Ending an SSE stream is not something
+ * thirty-five separate branches should each have to remember, and they did not:
+ * across the handlers, 35 branches emitted a `done` event and 2 called
+ * `res.end()`. The other 33 left the HTTP response open — the answer arrived,
+ * then the socket sat there taking a `ping` every three seconds until the
+ * client gave up, which on screen is a reply that never finishes. The router's
+ * call site just `return`s, so nothing downstream closed it either. The 3s
+ * heartbeat is cleared on the response's `finish` event, so each hung request
+ * also leaked its own interval.
+ *
+ * A handler that already ends the response is unaffected: `writableEnded`
+ * makes this a no-op for the two that do.
  */
 export async function runTopicHandlers(
   handlers: readonly ChatTopicHandler[],
@@ -178,7 +191,12 @@ export async function runTopicHandlers(
   for (const handler of handlers) {
     if (!handler.matches(ctx)) continue
     const handled = await handler.handle(ctx)
-    if (handled !== false) return true
+    if (handled === false) continue
+    if (!ctx.res.writableEnded) {
+      console.log('[CHAT:TOPIC_LANE_CLOSED]', { handler: handler.id })
+      ctx.res.end()
+    }
+    return true
   }
   return false
 }

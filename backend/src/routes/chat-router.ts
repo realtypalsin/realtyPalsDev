@@ -954,7 +954,28 @@ router.post('/', async (req: Request, res: Response) => {
       )
     }
 
-    if (queryClassification.queryKind === 'OPEN' && !(asksForInventory && intent.sector) && !asksAffordability && !asksLegalSafety && !asksOurOwnNumbers) {
+    /**
+     * Answer the turn as a general question, and finish it.
+     *
+     * This is the floor of the pipeline: it always produces an answer, because
+     * `runGroundedAnswer` reads our own rows first, searches the web only for a
+     * gap, and `buildNoGroundingReply` covers the case where neither returned
+     * anything. Nothing below it may refuse.
+     *
+     * It exists as a function rather than only as the OPEN lane because the
+     * lanes further down used to dead-end instead of falling back here. The
+     * project-detail lane's "I need a project name to answer that" was the one
+     * that showed in the demo: `attributeKeywords` in the classifier matches
+     * `maintenance`, `security`, `aqi`, `location`, `where`, `parking`, `green`
+     * and twenty more, so "what maintenance should I expect in Noida?" was read
+     * as a DRILLDOWN, arrived with no project id, and was answered with a
+     * question back. Every one of those is an ordinary general question this
+     * function answers.
+     *
+     * Callers must `return` immediately after awaiting it — it writes the
+     * transcript, emits `done` and ends the response.
+     */
+    const answerAsGeneralQuestion = async (lane: string): Promise<void> => {
       const openDetection = detectOpenQuery(message, hasVerifiedProjectNames)
         ?? { topic: 'GENERAL' as const, reason: 'Fail-open general question' }
 
@@ -1010,6 +1031,7 @@ router.post('/', async (req: Request, res: Response) => {
       }
 
       console.log('[CHAT:OPEN_LANE]', {
+        lane,
         topic: openDetection.topic,
         entity: openDetection.entity,
         grounded: Boolean(grounded),
@@ -1063,6 +1085,10 @@ router.post('/', async (req: Request, res: Response) => {
         responseMode: 'chat',
       })
       res.end()
+    }
+
+    if (queryClassification.queryKind === 'OPEN' && !(asksForInventory && intent.sector) && !asksAffordability && !asksLegalSafety && !asksOurOwnNumbers) {
+      await answerAsGeneralQuestion('OPEN')
       return
     }
 
@@ -1799,19 +1825,24 @@ EXECUTIVE INSTRUCTIONS:
    After the fact, add the one line that says what it means for the buyer.
 3. Do NOT output long text paragraphs or dump lists of unit types/payment plans unless the user explicitly requested them.
 4. Maintain a clean executive tone without decorative emojis.
-5. Do not end with a follow-up question. A factual answer ends when the fact is given.
+5. Close with ONE short follow-up question naming the logical next step for this
+   buyer — the next detail worth pulling, a comparison, or a site visit. One
+   line, no preamble, and never a generic "anything else?". The sibling
+   project-detail lane in this file already mandates this; this rule used to say
+   the opposite, so the same buyer got a conversation or a dead stop depending
+   on which lane took the turn.
 
 USING THE FACTS:
-5. The facts block carries every field we hold for these projects — maintenance,
+6. The facts block carries every field we hold for these projects — maintenance,
    pet policy, lift count, water source, ceiling height, land tenure, distances
    to school/hospital/airport, flood risk, AQI, safety scores, OC and RERA
    standing, litigation, escrow, NRI eligibility, resale lock-in and more. If
    the user asks about any of them and the key is present, answer it directly.
-6. A key that is ABSENT means we do not hold that fact. Say so plainly — "that
+7. A key that is ABSENT means we do not hold that fact. Say so plainly — "that
    isn't in our records for this project, our advisory team can confirm it" —
    and never substitute a typical, standard or estimated value. An absent key is
    never permission to guess.
-7. Quote the value as given. Do not round a distance, re-scale a score, or
+8. Quote the value as given. Do not round a distance, re-scale a score, or
    convert a range into a single number.`
           }
 
@@ -2123,21 +2154,24 @@ USING THE FACTS:
         requiredFields: plan.requiredFields.slice(0, 3),
       })
 
-      // Step 2: Validate plan is actionable
-      if (!isActionable(plan) && plan.projectIds.length === 0) {
-        const clarification = getClarificationMessage(plan) || 'Which project are you asking about?'
-        console.log('[CHAT:PROJECT_DETAIL:CLARIFY]', Date.now(), { question: clarification })
-        send('token', { token: clarification })
-        send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
-        res.end()
-        return
-      }
-
-      // Step 3: Fetch verified data from gateway
+      // Step 2 & 3: no project to drill into.
+      //
+      // Both of these used to answer with a question — "Which project are you
+      // asking about?" and "I need a project name to answer that." — which is
+      // the reply that made general questions look broken. This lane is
+      // reached whenever the classifier's `attributeKeywords` regex matched,
+      // and that regex contains `maintenance`, `security`, `location`, `where`,
+      // `aqi`, `green`, `parking`, `possession`, `builder` and twenty more
+      // words that appear in perfectly ordinary Noida-wide questions carrying
+      // no project name at all.
+      //
+      // A question with no project in it is a general question. Answer it.
       if (plan.projectIds.length === 0) {
-        send('token', { token: 'I need a project name to answer that. Which project are you asking about?' })
-        send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent })
-        res.end()
+        console.log('[CHAT:PROJECT_DETAIL:NO_PROJECT_FALLBACK]', {
+          query: message.slice(0, 80),
+          clarificationWouldHaveBeen: getClarificationMessage(plan) ?? null,
+        })
+        await answerAsGeneralQuestion('PROJECT_DETAIL_NO_PROJECT')
         return
       }
 
@@ -2235,9 +2269,34 @@ USING THE FACTS:
           where: { id: plan.projectIds[0] },
           include: { builder: true }
         })
+        // This branch means the gateway found no facts for THIS intent — not
+        // that the project is unverified, and not that it is verified either.
+        //
+        // It used to print a table asserting "RERA Approved & Verified" and
+        // "Active Verified Project", plus a builder named "Reputed Regional
+        // Developer" when the row had none: three claims of verification about
+        // the one thing we had just failed to load. Then it dead-ended on
+        // "being updated by our verified data team", which is the reply that
+        // made the demo look broken.
+        //
+        // Now it prints only the columns the row actually holds and asks what
+        // to look up next, so the turn stays a conversation.
         const projectName = dbProj?.name || 'this project'
-        const builderName = dbProj?.builder?.name || 'Reputed Regional Developer'
-        const msg = `### 🏢 ${projectName} Overview\n\n| Property Detail | Value |\n| :--- | :--- |\n| **Project Name** | ${projectName} |\n| **Developer** | ${builderName} |\n| **RERA Standing** | RERA Approved & Verified |\n| **Status** | Active Verified Project |\n\n*Detailed milestone facts for this specific inquiry are being updated by our verified data team.*`
+        const rows = [
+          dbProj?.builder?.name ? `| **Developer** | ${dbProj.builder.name} |` : null,
+          dbProj?.sector ? `| **Location** | ${dbProj.sector}, ${dbProj.city ?? DEFAULT_CITY} |` : null,
+          dbProj?.status ? `| **Status** | ${String(dbProj.status).replace(/_/g, ' ')} |` : null,
+          dbProj?.rera_number ? `| **UP-RERA** | ${dbProj.rera_number} |` : null,
+          dbProj?.price_range_label ? `| **Price** | ${dbProj.price_range_label} |` : null,
+        ].filter(Boolean)
+
+        const msg =
+          `### ${projectName}\n\n` +
+          (rows.length > 0
+            ? `| Detail | Value |\n| :--- | :--- |\n${rows.join('\n')}\n\n`
+            : '') +
+          `I don't have the specific detail you asked about on record for ${projectName} yet — that's a gap in our data, not a problem with the project.\n\n` +
+          `I can go deeper on its configurations, payment plans, cost sheet or possession timeline, or line it up against similar projects in ${dbProj?.sector || DEFAULT_CITY}. Which would help most?`
         send('token', { token: msg })
         send('done', { sessionId: currentSessionId, intentState: 'SHORTLISTED', intent })
         res.end()
@@ -3831,7 +3890,12 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
           sector: intent?.sector,
           queryKind: queryClassification?.queryKind,
         })
-      } catch {}
+      } catch (e) {
+        // Analytics must never break a request, but swallowing the error
+        // silently makes a misconfigured deploy look healthy — which is the
+        // failure mode `npm run verify:observability` exists to catch.
+        console.warn('[CHAT:ANALYTICS_ERROR]', (e as Error).message)
+      }
 
       try {
         const lf = getLangfuse()
@@ -3853,7 +3917,9 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
           })
           lf.flushAsync().catch(() => {})
         }
-      } catch {}
+      } catch (e) {
+        console.warn('[CHAT:LANGFUSE_ERROR]', (e as Error).message)
+      }
     }
 
     console.log('[CHAT] BEFORE send(done)', Date.now())

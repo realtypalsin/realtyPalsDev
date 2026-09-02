@@ -116,17 +116,49 @@ export function classifyQueryDeterministic(
 
   // 1. DRILLDOWN: User asks specific property attributes of a project (payment plan, cost sheet, rera, floor plan, amenities, etc.)
   const attributeKeywords = /\b(payment\s+plans?|cost\s+sheets?|price\s+breakdown|carpet|carpet\s+area|super\s+area|emi|maintenance|parking|amenities|facilities|layout|configuration|timeline|possession|construction|status|builder|reputation|trust|verification|rera|floor\s+plans?|floors|top\s+floor|height|tower|towers|address|full\s+address|complete\s+address|location|where|vastu|facing|orientation|security|safety|cctv|aqi|green|architect|designer|theme|tagline|specs)\b/i
-  if (attributeKeywords.test(msg)) {
+
+  /**
+   * DRILLDOWN is a question about ONE project, so it needs a project in scope.
+   *
+   * Without this the gate fired on the keyword alone, and the keyword list holds
+   * `maintenance`, `security`, `location`, `where`, `parking`, `possession`,
+   * `builder`, `aqi`, `green`, `safety`, `status` and `height` — words that
+   * appear in ordinary Noida-wide questions naming no project at all. Those
+   * reached the project-detail lane with an empty `projectIds`, which answered
+   * with "I need a project name to answer that." Being the FIRST gate after the
+   * open-query check, it also shadowed the advisory, ranking and summary gates
+   * below it, so a whole class of general questions could never reach them.
+   *
+   * A project is in scope when the message named one we verified, when the
+   * session is focused on one, or when the message refers back to one.
+   */
+  const refersBackToAProject = /\b(it|its|it's|this|that|the\s+project|there|they|their)\b/i.test(msg)
+  const hasProjectInScope =
+    ((intentObj.projectNames?.length ?? 0) > 0 && (opts.hasVerifiedProjectNames ?? true)) ||
+    Boolean((intent as { focus_project_id?: string | null }).focus_project_id) ||
+    Boolean((intent as { targetProjectId?: string | null }).targetProjectId) ||
+    refersBackToAProject
+
+  if (attributeKeywords.test(msg) && hasProjectInScope) {
     return {
       queryKind: 'DRILLDOWN',
       renderTarget: 'text',
       confidence: 'HIGH',
-      reason: 'Attribute question -> DRILLDOWN (text)',
+      reason: 'Attribute question about a project in scope -> DRILLDOWN (text)',
     }
   }
 
   // 2. Property SEARCH Action: "show me flats", "find properties", "search", "list", "looking for", "available", "2 BHK in Sector 76"
-  const isSearchAction = /\b(show\s+me|find\s+me|search|list\s+(all|the)?|looking\s+for|available\s+in|flats|apartments|homes)\b/i.test(msg) ||
+  // An inventory noun on its own is not a search. `flats|apartments|homes` used
+  // to be alternatives in the verb group, so "Is parking usually included in
+  // Noida apartments?" — a question about a charge — was read as a property
+  // search and answered with cards. The noun counts only alongside a filter or
+  // a scope, which is what an actual search carries ("flats in Sector 150",
+  // "apartments under 1.5 cr").
+  const inventoryNoun = /\b(flats?|apartments?|homes?|properties|societ(?:y|ies))\b/i
+  const searchFilter = /\b(sector|under|below|within|upto|up\s+to|budget|crore|cr|lakh|lac|near|nearby|\d\s*bhk)\b/i
+  const isSearchAction = /\b(show\s+me|find\s+me|search|list\s+(all|the)?|looking\s+for|available\s+in)\b/i.test(msg) ||
+    (inventoryNoun.test(msg) && searchFilter.test(msg)) ||
     (/\b(\d\s*bhk)\b/i.test(msg) && /\b(sector|in|under|budget|crore|lakh)\b/i.test(msg))
   const isSpecificAttributeQuestion = /\b(what is|where is|give me|explain|how many|what are|details of|about)\b/i.test(msg)
 
@@ -275,9 +307,20 @@ export function classifyQuery(
     ? { ...intent, projectNames: [] }
     : intent
 
-  if (queryKind === 'DISCOVERY' && !hasPropertySearchSignal(searchSignalIntent) && /\?|^(who|what|where|why|how|which|when|is|are|does|do|tell)\b/i.test(userMessage.trim())) {
+  // The sentence-shape half of this condition used to be a required list of
+  // opening words plus a question mark, and everything outside it still came
+  // back as property cards: "hi", "explain capital gains tax on property sale",
+  // "should i buy now or wait for rates to drop" — three turns of a demo, all
+  // answered with a shortlist nobody asked for.
+  //
+  // Shape is the wrong test. The property that matters is whether the user is
+  // shopping, and `hasPropertySearchSignal` already answers that from the
+  // extracted BHK, budget, sector and project name. With no such signal there is
+  // nothing to search for, so OPEN is right whatever the sentence looks like —
+  // and the open lane hands inventory questions back to retrieval anyway.
+  if (queryKind === 'DISCOVERY' && !hasPropertySearchSignal(searchSignalIntent)) {
     queryKind = 'OPEN'
-    reason = 'Question with no property-search signal — fail open to OPEN, not DISCOVERY'
+    reason = 'No property-search signal — fail open to OPEN, not DISCOVERY'
   }
 
   return {

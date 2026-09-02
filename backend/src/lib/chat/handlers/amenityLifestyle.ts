@@ -159,22 +159,29 @@ export const amenityLifestyleHandler: ChatTopicHandler = {
       })
     }
 
+    // Every cell here carried a fallback literal: a project with no club in its
+    // amenity rows was given a "Grand Resident Club", one with no sports rows
+    // got "Swimming pool & gym", and a null open_space_pct became "70%+
+    // Landscaped greens" — under a heading claiming the facilities were
+    // verified. Amenities are the single most site-visit-discoverable claim in
+    // the product, so a wrong yes here is found out in person. A gap prints a
+    // dash; the amenity list we hold is incomplete, not confirmed-absent.
     const rows = amenityProjects.map(p => {
       const amNames = (p.amenities || []).map(a => a.name)
-      const clubhouse = amNames.find(a => /club/i.test(a)) || 'Grand Resident Club'
-      const sports = amNames.filter(a => /court|pool|swim|sport|track|tennis|gym/i.test(a)).slice(0, 3).join(', ') || 'Swimming pool & gym'
-      const green = p.open_space_pct != null ? `${p.open_space_pct}% open space` : '70%+ Landscaped greens'
+      const clubhouse = amNames.find(a => /club/i.test(a)) || '—'
+      const sports = amNames.filter(a => /court|pool|swim|sport|track|tennis|gym/i.test(a)).slice(0, 3).join(', ') || '—'
+      const green = p.open_space_pct != null ? `${p.open_space_pct}% open space` : '—'
       return `| **${p.name}** | ${p.sector} | ${clubhouse} | ${sports} | ${green} |`
     }).join('\n')
 
-    const title = sec ? `Amenities & Lifestyle Guide — ${sec}` : `Premier Lifestyle Societies (Verified Swimming Pool, Gym & Club Facilities)`
+    const title = sec ? `Amenities & Lifestyle Guide — ${sec}` : `Societies with a recorded pool, gym or club`
     const amenityText = `### ${title}
 
 | Society | Sector | Clubhouse & Community | Swimming Pool & Sports | Open Green Cover |
 | :--- | :--- | :--- | :--- | :--- |
 ${rows}
 
-*All featured communities are gated residential societies offering certified swimming pools, high-end fitness centres, and active resident communities.*
+*A dash means we hold no entry for that facility — the amenity lists we have are incomplete rather than confirmed-absent, so it is worth checking on a site visit.*
 
 *Would you like detailed unit floor plans, monthly maintenance charges, or price breakdowns for any of these societies?*`
 

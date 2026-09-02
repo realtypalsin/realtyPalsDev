@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { PROJECT_PUBLIC_SELECT, ALLOWED_RELATIONS } from '../projectExposure'
-import { projectScalarFacts } from '../projectFactsBlock'
+import { projectScalarFacts, PROMPT_EXCLUDED_FIELDS } from '../projectFactsBlock'
 
 /**
  * Every buyer-facing column must be answerable in chat.
@@ -35,6 +35,12 @@ const NOT_BUYER_FACTS: Record<string, string> = {
   cover_image: 'rendered, not narrated',
   images: 'rendered, not narrated',
   builder_id: 'foreign key — the builder relation carries the name',
+
+  // These three are buyer-facing on the project page but withheld from the
+  // prompt by PROMPT_EXCLUDED_FIELDS, which explains each in full.
+  hero_image_url: 'rendered on the card, not narrated — same as cover_image',
+  rera_url: 'an off-platform link, which prompt rule 17 forbids the model from offering',
+  marketing_claims: 'developer puffery; no prompt rule names it and repeating it breaks the no-exaggeration rule',
 }
 
 function scalarFieldsFromAllowlist(): string[] {
@@ -108,6 +114,19 @@ describe('every buyer-facing column reaches the chat prompt', () => {
     const rendered = JSON.stringify(facts)
     for (const leak of ['SENTINEL_EMBEDDING', 'SENTINEL_KEYWORDS', 'SENTINEL_THEME', 'SENTINEL_CONFIDENCE']) {
       assert.ok(!rendered.includes(leak), `${leak} reached the prompt`)
+    }
+  })
+
+  it('every field the block withholds is declared here', () => {
+    // The two lists are the same decision recorded in two places, and the one
+    // that can drift silently is this one: dropping a field in
+    // projectFactsBlock without listing it turns the walk above into a failure
+    // someone silences, which is how the exclusion set stops meaning anything.
+    for (const field of PROMPT_EXCLUDED_FIELDS) {
+      assert.ok(
+        field in NOT_BUYER_FACTS,
+        `${field} is withheld from the prompt but not declared in NOT_BUYER_FACTS with a reason`,
+      )
     }
   })
 

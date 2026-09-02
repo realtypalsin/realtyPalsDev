@@ -270,34 +270,49 @@ export function renderPaymentPlanTable(plans: PaymentPlanRow[], limit = 5): stri
   const rows = plans.slice(0, limit)
 
   // 1. Clean Summary Comparison Table of all available schemes
+  // `watch_out` has its own column, restored: the rewrite that added the
+  // milestone breakdown dropped it, and a payment schedule shown without its
+  // catch is exactly the one-sided answer the trade-off rule forbids. It is
+  // also the field the model omitted most often back when it drew this itself,
+  // which is why rendering it in code was the point.
   const summaryHeader =
-    '| Payment Scheme | Milestone Structure | Discount / Key Benefit |\n' +
-    '| :--- | :--- | :--- |'
+    '| Payment Scheme | Milestone Structure | Discount / Key Benefit | Watch out |\n' +
+    '| :--- | :--- | :--- | :--- |'
 
   const summaryBody = rows.map((p) => {
     const name = p.plan_name || humanPlanType(p.plan_type)
     const ms = milestonesOf(p)
+    // 'RERA Phased' and 'Standard Tranches' were the fallbacks here. Both name a
+    // structure we do not hold — a buyer reads "Standard Tranches" as a fact
+    // about this developer's terms. A gap prints ABSENT.
     const structure = ms.length > 0
       ? ms.map((m) => (m.pct != null ? `${String(m.pct).replace(/%+$/, '')}%` : '')).filter(Boolean).join(' : ') || `${ms.length} Stages`
-      : p.total_duration_months ? `${p.total_duration_months} Months` : 'RERA Phased'
+      : p.total_duration_months ? `${p.total_duration_months} Months` : ABSENT
     const discount = p.discount_offered_pct
       ? `**${p.discount_offered_pct}% BSP Discount**`
-      : p.down_payment_pct ? `${p.down_payment_pct}% Down Payment` : 'Standard Tranches'
-    return `| **${cell(name)}** | ${cell(structure)} | ${cell(discount)} |`
+      : p.down_payment_pct
+        ? `${p.down_payment_pct}% Down Payment`
+        : p.booking_amount_lakh
+          ? `₹${p.booking_amount_lakh} lakh booking`
+          : ABSENT
+    return `| **${cell(name)}** | ${cell(structure)} | ${cell(discount)} | ${cell(p.watch_out)} |`
   })
 
   // 2. Compact Milestone Breakdown for the top 2 primary plans (avoids endless mobile scroll)
   const scheduled = rows.filter((p) => milestonesOf(p).length > 0).slice(0, 2)
   const detailBlocks = scheduled.map((p) => {
     const name = p.plan_name || humanPlanType(p.plan_type)
+    // `amt` is the instalment in rupees, and it is the number a buyer is
+    // actually planning around — "10% on booking" does not tell them what to
+    // transfer. It was stored on the milestone and dropped by the renderer.
     const header =
-      '| Stage / Milestone | Timeline / Trigger | Share |\n' +
-      '| :--- | :--- | ---: |'
+      '| Stage / Milestone | Timeline / Trigger | Share | Amount |\n' +
+      '| :--- | :--- | ---: | ---: |'
     const body = milestonesOf(p).map((m) => {
       const stage = m.milestone || (m.stage != null ? `Stage ${m.stage}` : ABSENT)
       const when = m.timeline || m.due || ABSENT
       const pct = m.pct != null ? `${String(m.pct).replace(/%+$/, '')}%` : ABSENT
-      return `| ${cell(stage)} | ${cell(when)} | ${cell(pct)} |`
+      return `| ${cell(stage)} | ${cell(when)} | ${cell(pct)} | ${cell(m.amt)} |`
     })
     return `#### ${name}\n\n${header}\n${body.join('\n')}`
   })
@@ -337,24 +352,50 @@ export function renderCostSheetTable(
   const isRtm = projectInfo?.status === 'ready_to_move'
   const lines: Array<[string, string, string]> = []
 
+  // Every developer charge below used to carry a fallback range —
+  // '₹6,500 – ₹8,500 / sq.ft' BSP, '₹3.50 – ₹4.50 Lakh' parking,
+  // '₹1.50 – ₹2.50 Lakh' club, '₹50 – ₹75 / sq.ft' IFMS — and the power-backup
+  // row printed '₹1.25 – ₹1.75 Lakh' unconditionally for a field this interface
+  // does not even carry. So a project whose cost sheet we hold nothing about
+  // still rendered a complete, confident, entirely invented bill of costs. A
+  // charge with no figure gets no row: the omission is the signal.
+  //
+  // `projectSpecificFigures` counts how many of these came from the row, and
+  // the table is suppressed below two. A single BSP under a "Cost Component"
+  // header padded out with statutory rates is not a cost sheet, and rendering
+  // one tells the model a breakdown is on screen when it is not.
+  let projectSpecificFigures = 0
+
   // 1. Base Price
   if (typeof sheet?.base_price_per_sqft === 'number') {
-    lines.push(['Base Selling Price (BSP)', `${rupees(sheet.base_price_per_sqft)} / sq.ft`, 'Verified base rate'])
+    lines.push(['Base Selling Price (BSP)', `${rupees(sheet.base_price_per_sqft)}/sqft`, 'Verified base rate'])
+    projectSpecificFigures += 1
   } else if (projectInfo?.price_range_label) {
     lines.push(['Base Selling Price (BSP)', projectInfo.price_range_label, 'Starting unit rate'])
+    projectSpecificFigures += 1
   } else if (typeof sheet?.base_cost_cr === 'number') {
     lines.push(['Base Cost', `₹${sheet.base_cost_cr} Cr`, 'Starting ticket size'])
-  } else {
-    lines.push(['Base Selling Price (BSP)', '₹6,500 – ₹8,500 / sq.ft', 'As per unit configuration'])
+    projectSpecificFigures += 1
   }
 
-  // 2. Developer Charges
-  lines.push(['Covered Car Parking', typeof sheet?.parking_cost === 'number' ? fromRupees(sheet.parking_cost) : '₹3.50 – ₹4.50 Lakh', 'Dedicated basement parking'])
-  lines.push(['Club Membership', typeof sheet?.club_membership === 'number' ? fromRupees(sheet.club_membership) : '₹1.50 – ₹2.50 Lakh', 'Access to clubhouse & amenities'])
-  lines.push(['IFMS (Maintenance Security)', typeof sheet?.ifms === 'number' ? fromRupees(sheet.ifms) : '₹50 – ₹75 / sq.ft', 'Interest-free refundable corpus'])
-  lines.push(['Power Backup & Metering', '₹1.25 – ₹1.75 Lakh', 'Dual meter & DG backup load'])
+  // 2. Developer charges — only the ones this project's row actually holds.
+  const charge = (label: string, value: number | null | undefined, note: string) => {
+    if (typeof value !== 'number' || value <= 0) return
+    lines.push([label, fromRupees(value), note])
+    projectSpecificFigures += 1
+  }
+  charge('Covered Car Parking', sheet?.parking_cost, 'Dedicated basement parking')
+  charge('Club Membership', sheet?.club_membership, 'Access to clubhouse & amenities')
+  charge('IFMS (Maintenance Security)', sheet?.ifms, 'Interest-free refundable corpus')
 
-  // 3. Statutory Levies
+  if (typeof sheet?.all_inclusive_price_cr === 'number') {
+    projectSpecificFigures += 1
+  }
+
+  if (projectSpecificFigures < 2) return ''
+
+  // 3. Statutory levies. Fixed by UP law and identical for every project, so a
+  //    rate here is a lookup rather than a guess — the statutory tier.
   const gstRate = isRtm ? '0% (Exempt with OC)' : (typeof sheet?.gst_rate_pct === 'number' ? `${sheet.gst_rate_pct}%` : '5%')
   lines.push(['GST', gstRate, isRtm ? 'Ready to move with OC' : 'Under-construction residential'])
   lines.push(['UP Stamp Duty', typeof sheet?.stamp_duty_pct === 'number' ? `${sheet.stamp_duty_pct}%` : '7%', 'At registration (6% for women)'])

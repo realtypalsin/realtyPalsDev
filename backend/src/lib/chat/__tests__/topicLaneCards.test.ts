@@ -48,15 +48,50 @@ describe('the topic lane emits a card for the project it answered about', () => 
     assert.match(block, /CHAT:TOPIC_CARDS/, 'and the failure logged, not swallowed silently')
   })
 
-  it('handlers still do not emit their own cards', () => {
-    // If one starts to, this emission needs revisiting — the client replaces
-    // its card set per event, so two emissions in a turn means the last wins.
+  /**
+   * Handlers allowed to emit their own card set, and why.
+   *
+   * The client replaces its card set per event, so a second emission in a turn
+   * wins outright. That is a bug when the later set is narrower than the
+   * router's and correct when it is genuinely better — which is the case for a
+   * citywide amenity search: the router emitted at most the one focused
+   * project, and the buyer asked which societies have a pool. The shortlist is
+   * the answer, so it should be the card set.
+   *
+   * An entry here is a claim that the handler's set supersedes the router's.
+   * Anything not listed must not emit, or a project-detail answer silently
+   * loses its card to a handler that had less to show.
+   */
+  const MAY_SUPERSEDE_ROUTER_CARDS: Record<string, string> = {
+    'amenityLifestyle.ts':
+      'a citywide amenity search answers with a shortlist of societies, which is a wider and more relevant set than the single focused project',
+  }
+
+  it('only declared handlers emit their own cards', () => {
     for (const file of readdirSync(HANDLER_DIR).filter(f => f.endsWith('.ts') && f !== 'index.ts')) {
       const src = readFileSync(join(HANDLER_DIR, file), 'utf8')
+      if (!/send\(\s*'properties'/.test(src)) continue
       assert.ok(
-        !/send\(\s*'properties'/.test(src),
-        `${file} emits its own properties event — reconcile with the router's emission`,
+        file in MAY_SUPERSEDE_ROUTER_CARDS,
+        `${file} emits its own properties event — reconcile with the router's emission, or declare why it supersedes it`,
       )
+    }
+  })
+
+  it('a superseding handler replaces the set rather than widening it', () => {
+    // The scope rule still holds for these: exact results only, nothing nearby
+    // riding along, same as the router's own emission.
+    for (const file of Object.keys(MAY_SUPERSEDE_ROUTER_CARDS)) {
+      const src = readFileSync(join(HANDLER_DIR, file), 'utf8')
+      const at = src.search(/send\(\s*'properties'/)
+      assert.ok(at !== -1, `${file} is declared as a card emitter but emits none`)
+      assert.match(src.slice(at, at + 400), /nearbyResults: \[\]/, `${file} lets nearby projects ride along`)
+    }
+  })
+
+  it('each card-emission exemption carries a stated reason', () => {
+    for (const [file, reason] of Object.entries(MAY_SUPERSEDE_ROUTER_CARDS)) {
+      assert.ok(reason && reason.length > 20, `${file} is exempted without a real reason`)
     }
   })
 })

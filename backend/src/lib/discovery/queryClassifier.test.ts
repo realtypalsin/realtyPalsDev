@@ -23,6 +23,45 @@ describe('Query Classifier', () => {
       assert.equal(result?.renderTarget, 'text')
     })
 
+    // The demo failure class: an attribute keyword with no project in scope.
+    // Each of these matched `attributeKeywords` on the keyword alone, was
+    // classified DRILLDOWN, reached the project-detail lane with no project id
+    // and was answered with "I need a project name to answer that."
+    for (const q of [
+      'What maintenance should I expect in Noida?',
+      'How is the security in Noida societies?',
+      'What is the AQI like in Greater Noida?',
+      'Where do most families prefer to buy in Noida?',
+      'Is parking usually included in Noida apartments?',
+      'How much construction delay is normal in Noida?',
+    ]) {
+      it(`does not claim DRILLDOWN with no project in scope: "${q}"`, () => {
+        const result = classifyQueryDeterministic(q, {} as Partial<Intent>)
+        assert.notEqual(
+          result?.queryKind,
+          'DRILLDOWN',
+          `"${q}" names no project, so the project-detail lane cannot answer it`,
+        )
+      })
+    }
+
+    it('still claims DRILLDOWN when the session is focused on a project', () => {
+      const result = classifyQueryDeterministic(
+        'What is the maintenance?',
+        { focus_project_id: 'abc-123' } as unknown as Partial<Intent>,
+      )
+      assert.equal(result?.queryKind, 'DRILLDOWN')
+    })
+
+    it('still claims DRILLDOWN for a verified named project', () => {
+      const result = classifyQueryDeterministic(
+        'Nirala Estate maintenance charges',
+        { projectNames: ['Nirala Estate'] } as Partial<Intent>,
+        { hasVerifiedProjectNames: true },
+      )
+      assert.equal(result?.queryKind, 'DRILLDOWN')
+    })
+
     it('detects RANKING queries', () => {
       const result = classifyQueryDeterministic(
         'What are the best projects under 1.5 crore in Sector 62?',
@@ -73,20 +112,34 @@ describe('Query Classifier', () => {
       assert.equal(result.confidence, 'HIGH')
     })
 
-    it('falls back to LLM-provided queryKind', () => {
+    // Both of these used to assert DISCOVERY for a message with no BHK, no
+    // budget, no sector and no project name. That is what put property cards
+    // under "hi", "explain capital gains tax on property sale" and "should i
+    // buy now or wait for rates to drop" — three turns of a demo answered with
+    // a shortlist nobody asked for. DISCOVERY now requires a search signal.
+    it('honours an LLM DISCOVERY when there is something to search for', () => {
       const result = classifyQuery(
         'Some query',
-        { queryKind: 'DISCOVERY' } as Partial<Intent>
+        { queryKind: 'DISCOVERY', sector: 'Sector 150', bhk: [3] } as Partial<Intent>
       )
       assert.equal(result.queryKind, 'DISCOVERY')
     })
 
-    it('defaults to DISCOVERY when queryKind is absent', () => {
+    it('overrides an LLM DISCOVERY that has no search signal', () => {
+      const result = classifyQuery(
+        'Some query',
+        { queryKind: 'DISCOVERY' } as Partial<Intent>
+      )
+      assert.equal(result.queryKind, 'OPEN')
+    })
+
+    it('falls open to OPEN, not DISCOVERY, when queryKind is absent', () => {
       const result = classifyQuery(
         'Some query',
         {} as Partial<Intent>
       )
-      assert.equal(result.queryKind, 'DISCOVERY')
+      assert.equal(result.queryKind, 'OPEN')
+      assert.equal(result.renderTarget, 'text', 'cards are for buyers who are shopping')
     })
   })
 })

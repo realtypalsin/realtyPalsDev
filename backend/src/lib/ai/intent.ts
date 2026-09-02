@@ -54,7 +54,21 @@ export function mergeIntent(previous: Intent, update: z.infer<typeof IntentSchem
   // 1. A previous project exists, AND
   // 2. The new query is NOT an open/advisory/market/comparison question, AND
   // 3. No new sector was specified.
-  const isGeneralOrAdvisory = update.queryKind === 'ADVISORY' || update.queryKind === 'OPEN' || update.queryKind === 'RANKING' || Boolean((update as any).is_comparison_query);
+  // A comparison of NAMED projects is not a general market question.
+  //
+  // `is_comparison_query` was an unconditional arm of this, and the flag drives
+  // `sector: undefined` below — so "compare ATS Homekraft and Arihant Abode",
+  // asked while the buyer was looking at Sector 10, dropped Sector 10 from
+  // intent. Every later turn then had no locality, and the sticky-sector work
+  // that this flag was added to support was undone by the comparison itself.
+  //
+  // A comparison with no project names IS vague enough to clear the sector —
+  // "which is better?" alone should not stay pinned to wherever the buyer last
+  // looked — so the flag still counts in that case.
+  const isVagueComparison =
+    Boolean((update as { is_comparison_query?: boolean }).is_comparison_query) &&
+    (update.projectNames?.length ?? 0) === 0
+  const isGeneralOrAdvisory = update.queryKind === 'ADVISORY' || update.queryKind === 'OPEN' || update.queryKind === 'RANKING' || isVagueComparison;
   const isFollowUpQuery = Boolean(
     previous.projectNames &&
     previous.projectNames.length === 1 &&

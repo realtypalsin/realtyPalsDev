@@ -783,3 +783,166 @@ one-at-a-time handler retirement with a corpus run behind each deletion. Three
 of tonight's bugs came from that area, which is the argument FOR doing it and
 against doing it in one night. Phase 4 has its API but no UI. Phase 5 and 6 are
 partly delivered through the fixes above rather than as themselves.
+
+---
+
+## Session 2026-09-02 — routing audit after the demo failure
+
+### What the demo failure actually was
+
+Reported as "general queries keep failing, sometimes there are no cards, it
+feels over-engineered." Four independent causes, none of them prompt quality:
+
+1. **33 of 35 answering branches across the topic handlers emitted a `done`
+   event and never called `res.end()`.** The router's call site only returns,
+   so nothing downstream closed the stream either. The answer arrived and the
+   socket then sat open taking a `ping` every three seconds until the client
+   gave up — on screen, a reply that never finishes. Each hung request also
+   leaked its 3s heartbeat interval, since that is cleared on `finish`.
+   Fixed in ONE place: `runTopicHandlers` now ends the response after a handler
+   reports handled (guarded by `writableEnded`, so the two that already did are
+   unaffected). Pinned by two tests in `handlers.test.ts`.
+
+2. **The project-detail lane answered general questions with a question.**
+   `attributeKeywords` in `queryClassifier` contains maintenance, security,
+   location, where, parking, possession, builder, aqi, green, safety, status,
+   height — words in ordinary Noida-wide questions naming no project. Those were
+   classified DRILLDOWN, reached the lane with an empty `projectIds`, and got
+   "I need a project name to answer that."
+   Two fixes: DRILLDOWN now requires a project in scope (named-and-verified,
+   `focus_project_id`, `targetProjectId`, or an anaphoric reference), and the
+   lane's two dead ends now call `answerAsGeneralQuestion`.
+
+3. **DISCOVERY was the fail-open default, so non-shopping turns got cards.**
+   The override to OPEN required a question mark plus an opening word from a
+   fixed list. "hi", "explain capital gains tax on property sale" and "should i
+   buy now or wait for rates to drop" all missed it and came back as property
+   shortlists. Sentence shape was the wrong test — `hasPropertySearchSignal`
+   already answers "is this buyer shopping" from the extracted BHK, budget,
+   sector and project name. DISCOVERY now requires a search signal, full stop.
+   Also: bare flats/apartments/homes was a search verb, so "Is parking usually
+   included in Noida apartments?" was read as a search. The noun now needs a
+   filter or scope beside it.
+
+4. **`runGroundedAnswer` passed a stub `onToolCall` without `config.tools:
+   false`** — the one call site in the codebase missing it, and CLAUDE.md is
+   explicit that the combination makes the model loop through every tool cycle
+   and return no text. The general lane was the one that must never come back
+   empty. It now also picks model and thinking budget from `profileFor(message)`
+   instead of running the smart model with a default reasoning budget for "hi".
+
+### The general lane is now the floor of the pipeline
+
+`answerAsGeneralQuestion` in `chat-router.ts` is the extracted OPEN lane, called
+from OPEN and from the project-detail lane's no-project case. It always produces
+something: `runGroundedAnswer` reads our rows first, searches the web only for a
+gap, and `buildNoGroundingReply` covers the rest. **Nothing below it may refuse.**
+`generalPrompt.ts` now carries the funnel explicitly — broad topic, then a
+micro-market, then a shortlist, then one project — asking for exactly the one
+missing rung, and funnelling nobody who is not buying.
+
+### Fabrications found and removed
+
+The demo's real risk was not the refusals, it was the confident invented data
+sitting behind them. Each of these presented literals as verified project facts:
+
+* **`citywideQuery.ts` answered EVERY payment-plan question as "Elite X"** —
+  `const projectName = isEliteX ? 'Elite X' : 'Elite X'`, a ternary with
+  identical branches — with a fixed sector, RERA number, Dec 2028 possession,
+  five invented schedules, an "8% Direct BSP Waiver", a named bank escrow
+  account and bank interest rates, headed "Verified Payment Plans & Official
+  Offers", plus chips comparing against a second hardcoded project. Its regex
+  matched a bare "discounts", so "any discounts?" produced the whole thing.
+  Deleted. `paymentPlansHandler` resolves whichever project was named and reads
+  its own rows; it runs later in the registry and could never be reached.
+* **`ctx.intent?.purpose === 'investment'` was an OR-arm of the same matcher**, so
+  one sticky intent field routed every later turn of a session into that
+  1,875-line handler whatever was asked. Removed.
+* **`projectFacts.living_specifications` gave all 14 nullable columns a fallback
+  literal** — Ganga Jal water, Rs 2.75/sq.ft maintenance, Rs 21/kWh DG power,
+  10.2 ft ceilings, 3 lifts per tower, 75% open space, pets allowed, dues
+  cleared — so every un-enriched project was described as the same imaginary
+  building.
+* **`getFloorPlans` defaulted `floors` to 'G+32 Floors', `total_towers` to 7 and
+  `top_floor` to '32nd Floor'** (which also rendered "31nd Floor").
+* **`projectDataGateway` reintroduced `delivery_score ?? 90`** — the file's own
+  comment block records those defaults as removed — plus 'A-grade construction
+  standards' with no quality score, "null active cases", and a clean NCLT
+  standing asserted for a builder never checked.
+* **`marketTable.renderCostSheetTable` gave every developer charge a fallback
+  range** (BSP 6,500-8,500, parking 3.50-4.50L, club 1.50-2.50L, IFMS
+  50-75/sqft) and printed a power-backup row unconditionally for a field the
+  interface does not carry. Charges are now omitted when absent, and the table
+  is suppressed below two project-specific figures.
+* **`totalOutflow`'s no-project branch had regrown its documented bug** — where
+  the original invented one base price, this invented three (85L / 1.5Cr /
+  2.5Cr), computed EMIs off them at an unsourced 8.75%, and reported HIGH.
+* **`citywideQuery`'s EMI branch handled exactly two incomes** ('1.5 lakh',
+  '30,000') as prose literals; every other income got no arithmetic at all.
+  Now uses `affordability.ts`, which works for any income.
+* **`amenityLifestyle` invented amenities** — no club row became "Grand Resident
+  Club", no sports rows became "Swimming pool & gym", null open space became
+  "70%+ Landscaped greens" — under a heading claiming they were verified.
+  Amenities are the most site-visit-discoverable claim in the product.
+* **`citywideQuery:561` used 'Verified Builder' and 'Active' as fallbacks**, which
+  `noAssertedVerification.test.ts` exists to catch.
+* **The project-detail lane's insufficient-data branch asserted "RERA Approved &
+  Verified" and "Active Verified Project"** for the one thing it had just failed
+  to load, then dead-ended on "being updated by our verified data team".
+
+### Two prompt-hygiene finds
+
+* **`sanitizeOutput.normalizeCitations` had been rewritten to delete every source
+  parenthetical, including the "(market data)" label it is supposed to collapse
+  TO.** `ALLOWED_CITATION_RE` and `MARKET_CITATION` were left dead and the
+  function contradicted its own doc comment. A Noida-wide average then read as
+  though verified for the project in hand. Collapsing restored.
+* **`rera_url` was in the facts block on every project turn.** Prompt rule 17
+  forbids sending a buyer off-platform and `EXTERNAL_URL_PATTERNS` strips
+  up-rera.in from the output — the rule said don't while the data said here it
+  is, which is why the model kept writing "verify at up-rera.in".
+  `PROMPT_EXCLUDED_FIELDS` now withholds it, plus `hero_image_url` (unquotable)
+  and `marketing_claims` (developer puffery no prompt rule names). That also
+  brought the facts block back inside its token budget without raising the
+  budget, which `masterDataCoverage.test.ts` deliberately makes hard.
+
+### Decisions
+
+* **Front-door router over a rewrite.** The lane cascade stays; the general lane
+  became its floor. A full dispatcher rewrite (handlers demoted to fact
+  providers, the ~40 gates deleted) is correct and does not fit before the demo.
+  This was written so that rewrite is a deletion, not a second rewrite.
+* **`stripUngroundedSentences` restored but scoped to `dbContext` only.** Applied
+  to every answer it deletes correct general knowledge — asked about capital
+  gains the lane answers "20% under Section 112A", and with no database block to
+  match against, every such sentence is ungrounded by the test. It now only
+  holds the model to numbers we actually supplied, and falls back to the full
+  text if the gate would empty the answer.
+* **Test exemptions are declared with reasons, never silenced.**
+  `chatFieldCoverage` and `topicLaneCards` both had their invariant met by a
+  real exception; each now carries a named allowlist with a stated reason and a
+  test asserting the reason exists. `amenityLifestyle` is allowed to emit its own
+  card set because a citywide amenity shortlist genuinely supersedes the router's
+  single focused card.
+* **`renderTarget` is backend-only.** The frontend has no branch on it —
+  `streamReducer` accumulates `properties` and `token` onto the same message, so
+  dual emission works purely by the backend choosing to emit. No frontend change
+  was needed.
+
+### State
+
+Backend and frontend typecheck clean. Backend suite: 4 failures that were mine
+fixed, 9 pre-existing ones fixed, 0 remaining. Two tests are flaky under
+full-suite DB contention and pass in isolation — `propertyEngagement` and
+`integrations.test.ts` "lists all projects with pagination"; both are 2-5s DB
+round-trips hitting a 10s timeout, not logic failures.
+
+### Not done
+
+* Retiring the topic handlers into the generic path (the structural fix).
+  `citywideQuery.ts` is still 1,875 lines behind 30 ORed regexes and 3 prisma
+  calls, and is still first in the registry.
+* `citywideQuery` branch 14 keys off `isSec150` and branch 3 off `isGurgaon` —
+  the same per-query hardcoding pattern, not yet unwound.
+* No live-LLM verification of the general lane. Everything above is typecheck
+  plus unit tests plus offline routing probes.
