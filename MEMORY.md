@@ -1017,3 +1017,120 @@ scoring engine and the 58KB `prompts/base.ts`, none of which this work went
 near. Intent extraction already fast-paths there (0ms), so the time is
 retrieval, scoring and the main prompt. That is the next latency job and it is
 a bigger one than this was.
+
+---
+
+## Session 2026-09-03 — the conversation funnel, measured turn by turn
+
+Ran the same 15-turn conversation against production four times, in one session
+each, carrying `sessionId` forward. Script: `journey.mjs` (scratchpad). Every
+claim below is from a recorded transcript, not inspection.
+
+### What was already good
+
+Turns 1-6 need no work and are better than the ChatGPT transcript they were
+compared against: one question at a time instead of a six-item form, and real
+inventory named in prose (Prateek Wisteria, Antriksh Golf View I, Divine
+Meadows, ATS Nobility, Elite X) where ChatGPT cited a blog.
+
+### The four things that were missing, all of them state
+
+**1. A workplace was read as a place to buy.** "central noida, sector 63 noida
+in particular for office" set `sector: Sector 63`; the sector lane correctly
+found no residential inventory in a commercial district and answered "It is a
+business district, not a residential sector... connect with our advisory team."
+Sector 63 then stayed sticky for two more turns.
+
+`discovery/commuteAnchor.ts` moves it to `intent.workplace` and returns the
+residential belt. It clears `sector` only when the sector IS the workplace, so
+"flats in 78, I work in 63" keeps Sector 78 as a real filter.
+`handlers/commuteShortlist.ts` renders the belt against held inventory, with
+cards. After the fix, that turn produces a commute-ranked answer naming real
+projects with real price bands and a closing choice question.
+
+**2. Back-references resolved to nothing.** "tell me about the first one" hit
+the entity lookup as that literal string and the stateless general lane answered
+with an essay about Jewar Airport. `discovery/reference.ts` resolves ordinals
+against `last_projects`, which already held the ordered set and had no reader
+for ordinal language.
+
+**3. The general lane had no conversation state at all.**
+`buildGeneralConversationalPrompt` took `{userMessage, webContext, city,
+hasVerifiedData}`. That is why "what are the negatives" closed by asking whether
+the buyer was leaning toward Sector 150, six turns after they named Sector 63.
+`ai/stateBrief.ts` passes budget, configuration, workplace, purpose, focus
+project and the ordered list just shown. After the fix that same turn opens
+"While Noida offers fantastic value near your Sector 63 workplace within your ₹2
+Cr budget..." and names the Sector 62/63 traffic bottleneck.
+
+A stateful answer is not shareable, so a turn carrying a brief neither reads nor
+writes the open-answer cache.
+
+**4. No handler-answered turn ever persisted its intent.**
+`persistIntentToMemory` sat near the bottom of the POST handler, past the
+topic-handler lane and every other early return. So all fourteen handlers saved
+nothing, and the workplace was gone by the next turn — the turn that asks for
+the shortlist. It also saved `hydratedIntent`, the pre-post-processing copy, so
+the anchor and any resolved ordinal were never in what it wrote. Now saved as
+soon as intent is final, and again at the end.
+
+`hydrateIntentFromMemory` carries an explicit allowlist, not a spread, so
+`workplace` had to be added there too — and is NOT reset on a sector change,
+because moving the search does not move where they work.
+
+### Two bugs I introduced and caught on the next run
+
+**The commute handler claimed every later turn.** It matched on `workplace &&
+belt && !sector`, and the workplace is sticky by design, so it answered "what is
+the payment plan for it", "tell me about the first one" and "compare it with the
+second option" with the identical 1,324-character belt shortlist. **This is the
+same bug as `purpose === 'investment'` in citywideQuery, which I had removed two
+commits earlier.** A handler must match on what was ASKED. Now gated on
+`flags.commuteAnchorJustStated` — set only when the anchor matched this
+message — or an explicit request for the belt, and it stands down once a sector
+is chosen or a project is in scope. Five of its seven tests are that regression.
+
+**The referent list was the wrong list.** The handler rendered a shortlist and
+never wrote it to `last_projects`, so "the first one" resolved to ATS Nobility in
+Sector 4 — a different result set, a sector the buyer had never seen. The list
+that was displayed has to be the list an ordinal indexes.
+
+### Also removed: 82 fabricated sector coordinates
+
+`SECTOR_CENTROID_CACHE` in `discovery/geo.ts` was documented as "pre-computed
+from historical project data". Every entry was the previous one plus exactly
+0.0060 latitude and 0.0058 longitude — a linear ramp from Sector 75 outward.
+Sector 100 came out ~17km east of where it is. `getSectorCentroid` fell back to
+it whenever a sector held no project with coordinates, and both `nearby.ts` and
+the spatial branch of `projects.ts` then ran a Haversine radius search from the
+invented point. It returns null now; every caller already handled null.
+
+Curated adjacency in `SECTOR_ADJACENCY` is real and is what the commute belts
+build on. Sector 63 was only a VALUE there, so `getNearbySectors` fell through
+to a ±1/±2/±5 guess and offered Sectors 64, 65 and 68 — industrial.
+`EMPLOYMENT_HUB_BELTS` curates the belts for the employment sectors instead.
+
+### Still broken, measured on the fourth run
+
+* **Cards are uncorrelated with funnel stage.** 19 emitted on "my budget would
+  be 2cr max" before location or purpose is known, and 19 again on "how much
+  would the EMI be" and "i want to visit this weekend". Card emission needs to
+  be owned by conversation stage, not by whichever lane happens to answer.
+* **Comparison does not use the ordinal pair.** `resolveOrdinalPair` exists and
+  is tested but is not wired into the comparison path, so "compare it with the
+  second option" still answers "we currently do not have a second project in our
+  records".
+* **Latency on the discovery lane.** T8 41s, T9 31s, T5 26s. Untouched by the
+  general-lane work; it runs `discoverProjects`, the scoring engine and the 58KB
+  `prompts/base.ts`.
+* **Chips still regress** to the generic trio on some late turns.
+
+### The flow, as it now stands
+
+```
+greeting -> intent -> PLACE -> shortlist -> one project -> visit
+   OK        OK        OK       OK          partial        OK
+```
+
+PLACE was the broken rung and is the one that changed most: a stated workplace
+now produces commute-ranked areas with cards instead of a refusal.
