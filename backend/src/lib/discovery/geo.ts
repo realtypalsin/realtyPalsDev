@@ -63,8 +63,22 @@ export async function getSectorCentroid(
       AND lat IS NOT NULL AND lng IS NOT NULL
     `
 
-    if (result && result.length > 0 && result[0]) {
-      return result[0]
+    /**
+     * `AVG()` over zero matching rows returns one row of NULLs, not no rows.
+     *
+     * So this used to return `{ lat: null, lng: null }` for any sector we hold
+     * nothing in — an object, and therefore truthy at every call site. Measured:
+     * `resolveLocationTerm` echoes an unmatched term back as a `literal` sector,
+     * so "Too high. Cheaper nearby?" became a sector name, this returned a
+     * null-coordinate centroid, the proximity lane accepted it as an anchor, and
+     * the buyer was told: "We don't hold any projects within 3.5 km of Too high.
+     * Cheaper nearby?." The whole message printed as a place.
+     *
+     * A centroid without coordinates is not a centroid.
+     */
+    const row = result?.[0]
+    if (typeof row?.lat === 'number' && typeof row?.lng === 'number') {
+      return { lat: row.lat, lng: row.lng }
     }
   } catch (err) {
     console.error(`Failed to compute sector centroid for ${sector} from DB:`, err)
