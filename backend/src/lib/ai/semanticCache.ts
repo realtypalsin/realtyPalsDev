@@ -170,7 +170,24 @@ function readLocal(key: string, countMiss = true): CachedEntry | null {
 // rental-yield or appreciation questions, a category-of-party question routes to
 // the open path, and `appreciation_potential_5yr` no longer reaches a prompt.
 // Every one of those changes what an answer to the same words means.
-const REDIS_PREFIX = 'ac:v5:'
+// Bumped to v6 on 3 Sep 2026, and the reason is the same shape as the note
+// above: what an answer to the same words means has changed, so the old ones
+// must not be served under the new interpretation.
+//
+// Observed on the verification run: "What is the resale value of my 20 year old
+// house in Delhi?" came back in 1.5 seconds with the 890-character pre-fix
+// answer — a fluent valuation for a city and a service we do not cover — while
+// the deployed build declines it in one sentence. The cache read happens before
+// every gate in the router, and the scope is global, so a bad answer cached
+// before a fix stays reachable by any user for the whole 12-hour TTL.
+//
+// Changes since v5: off-topic subjects (eating out, live traffic, school
+// admissions, valuing a property you own) now decline instead of answering;
+// identity documents are refused rather than acknowledged; out-of-scope cities
+// no longer resolve to a Noida sector; the general lane carries buyer state, so
+// an answer written for one buyer's budget and focus is no longer shareable at
+// all; and chips are suppressed on grievance and refusal turns.
+const REDIS_PREFIX = 'ac:v6:'
 
 /** A read that takes longer than this is not worth waiting for — the LLM call it */
 const REDIS_READ_TIMEOUT_MS = Number(process.env.ANSWER_CACHE_READ_TIMEOUT_MS ?? 250)
