@@ -27,7 +27,37 @@ export const statutoryTaxHandler: ChatTopicHandler = {
   matches: ctx => ctx.flags.isStatutoryTaxQuery === true,
 
   handle: async ctx => {
-    const text = `### Statutory taxes & registration charges (Uttar Pradesh)
+    /**
+     * Some buyers ask how to AVOID these, not what they are.
+     *
+     * Measured: "Can I buy a flat without paying stamp duty and registration if
+     * the builder gives me a builder-buyer agreement on stamp paper?" got the
+     * rate table below and nothing else. The table says "Mandatory" in a column,
+     * which is not an answer — the buyer asked whether a specific arrangement
+     * works, and silence on the premise reads as it working.
+     *
+     * This is the worst possible question to answer topically. An unregistered
+     * agreement transfers no title, and a buyer who acts on that loses the flat
+     * and the money. So the answer comes first, then the rates.
+     */
+    const asksHowToAvoid =
+      /\b(without paying|avoid|avoiding|skip|skipping|escape|evade|not pay|don'?t pay|dodge|bypass|get around|save on)\b[^.?!]{0,40}\b(stamp|registration|registry|gst|tax)\b/i.test(ctx.message) ||
+      /\b(stamp paper|notaris|notariz|unregistered|power of attorney|\bpoa\b|cash (?:deal|component|payment)|under[- ]?report|undervalu)\b/i.test(ctx.message)
+
+    const avoidanceAnswer = asksHowToAvoid
+      ? `**No — and the arrangement described does not transfer ownership.**
+
+Stamp duty and registration are levies of the Uttar Pradesh government, not charges the builder can waive. A builder-buyer agreement on plain or notarised stamp paper is a contract to sell, not a title transfer: until the sale deed is registered and stamp duty paid, the flat is not legally yours. You would have no registered title to mortgage, sell or defend, and no protection if the same unit were sold to someone else.
+
+What legitimately reduces the bill:
+- Registering with a **female primary owner** — ${UP_STATUTORY.stampDutyFemalePct}% instead of ${UP_STATUTORY.stampDutyPct}%, concession capped at ${inr(UP_STATUTORY.stampDutyFemaleConcessionCapInr)}.
+- Buying **ready-to-move with an Occupancy Certificate** — GST drops to ${UP_STATUTORY.gstReadyToMovePct}% from ${UP_STATUTORY.gstUnderConstructionPct}%, which on a ₹2 Cr flat is around ₹10 L.
+- Valuing at the **circle rate** where it is genuinely lower than the agreement value; duty is charged on the higher of the two, so this only helps where the circle rate is above your price.
+
+`
+      : ''
+
+    const text = `${avoidanceAnswer}### Statutory taxes & registration charges (Uttar Pradesh)
 
 These are set by law and are the same for every project.
 

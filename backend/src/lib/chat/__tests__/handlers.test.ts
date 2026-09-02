@@ -279,3 +279,38 @@ describe('commute shortlist handler', () => {
     assert.equal(commuteShortlistHandler.matches(ctx), false)
   })
 })
+
+describe('statutory_tax answers the question, not just the topic', () => {
+  // "Can I buy a flat without paying stamp duty and registration if the builder
+  // gives me a builder-buyer agreement on stamp paper?" returned the rate table
+  // and nothing else. The table says "Mandatory" in a column, which is not an
+  // answer — and silence on the premise reads as the arrangement working. A
+  // buyer who acts on that loses both the flat and the money.
+  for (const q of [
+    'Can I buy a flat without paying stamp duty and registration if the builder gives me a builder-buyer agreement on stamp paper?',
+    'how do I avoid stamp duty',
+    'can I skip registration and just do a notarised agreement',
+    'what if I pay a cash component to reduce the registry value',
+  ]) {
+    it(`refuses the premise: "${q.slice(0, 48)}"`, async () => {
+      const { ctx, out } = makeContext({ message: q, flags: { isStatutoryTaxQuery: true } })
+      await statutoryTaxHandler.handle(ctx)
+      const text = tokenText(out)
+      assert.match(text, /^\*\*No —/, 'the answer must lead with the refusal, not the rate table')
+      assert.match(text, /does not transfer ownership|not legally yours/i)
+      // And it still has to be useful: name what legitimately reduces the bill.
+      assert.match(text, /female primary owner/i)
+    })
+  }
+
+  it('does not lecture a buyer who only asked what the rates are', async () => {
+    const { ctx, out } = makeContext({
+      message: 'what is the stamp duty in UP',
+      flags: { isStatutoryTaxQuery: true },
+    })
+    await statutoryTaxHandler.handle(ctx)
+    const text = tokenText(out)
+    assert.ok(!/^\*\*No —/.test(text), 'a plain rate question gets the rates')
+    assert.match(text, /Statutory taxes & registration charges/)
+  })
+})
