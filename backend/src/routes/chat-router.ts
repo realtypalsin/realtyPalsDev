@@ -993,6 +993,105 @@ router.post('/', async (req: Request, res: Response) => {
     })
 
     /**
+     * "What was my first budget?" — answered from the revision log, exactly.
+     *
+     * Measured after the log was added and it still failed: the reply was "We
+     * do not have a record of your previous budget saved in our current session
+     * notes", because the turn was classified as a property question and
+     * answered by a lane that never receives the state brief. The brief only
+     * reaches the general lane.
+     *
+     * A question about the conversation is not a property question, and it has
+     * an exact answer sitting in memory. Deterministic beats prompting here:
+     * there is nothing to reason about, and a model given the history will
+     * sometimes hedge about it anyway.
+     */
+    const asksAboutHistory =
+      /\b(first|original|initial|earlier|previous|earliest)\b[^?.!]{0,24}\b(budget|price range|sector|area|location)\b/i.test(message) ||
+      /\b(budget|sector|area)\b[^?.!]{0,20}\b(i (first|originally|initially) (said|gave|mentioned|wanted))\b/i.test(message) ||
+      /\bwhat (was|were) my (first|original|initial)\b/i.test(message)
+
+    if (asksAboutHistory) {
+      const bh = intent.budgetHistory ?? []
+      const sh = intent.sectorHistory ?? []
+      const cr = (n: number) => (n >= 1 ? `₹${n} Cr` : `₹${Math.round(n * 100)} L`)
+      const parts: string[] = []
+
+      if (bh.length > 1) {
+        parts.push(`Your first budget this session was **${cr(bh[0])}**, and you moved it to ${bh.slice(1).map(cr).join(', then ')}.`)
+      } else if (bh.length === 1) {
+        parts.push(`You've given me one budget so far — **${cr(bh[0])}**.`)
+      }
+      if (sh.length > 1) {
+        parts.push(`On location you started with ${sh[0]} and moved to ${sh.slice(1).join(', then ')}.`)
+      } else if (sh.length === 1) {
+        parts.push(`The only area you've named is ${sh[0]}.`)
+      }
+
+      if (parts.length > 0) {
+        console.log('[CHAT:HISTORY_ANSWERED]', { budgets: bh, sectors: sh })
+        send('token', {
+          token: `${parts.join(' ')}\n\nWant me to go back to that, or stay where we are?`,
+        })
+        emitUiState({
+          stage: 'RESEARCH',
+          thinking: 'Reading back what you told me.',
+          chips: [],
+          missingFields: [],
+          confidence: 'HIGH',
+        })
+        send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
+        res.end()
+        return
+      }
+      // No history to read back. Fall through and let the ordinary path answer
+      // rather than claiming a record we do not have.
+    }
+
+    /**
+     * Subjects we do not hold, answered honestly and briefly.
+     *
+     * Measured twice, and the second attempt was worse than the first. Asked
+     * for biryani places near Sector 137, the first build invented three named
+     * venues; after the proximity lane was reached it returned "Everything we
+     * hold within 3.5 km of Sector 137" — a table of five apartment projects,
+     * answering a completely different question.
+     *
+     * Both come from the same cause: an off-topic subject with a Noida place
+     * name in it looks like a property query to every gate downstream. Naming
+     * the subject here ends the turn in one honest sentence and offers the
+     * thing we can actually do.
+     */
+    const offTopic: Array<[RegExp, string]> = [
+      // Narrow deliberately. A bare `food` matches "does it have a food court",
+      // which is an amenity question we answer from rows, and `bar` matches a
+      // breakfast bar. This list is eating out and nightlife, nothing adjacent.
+      [/\b(biryani|restaurants?|eateries|dhaba|cafes?|coffee\s+shops?|pubs?|breweries|brewery|nightlife|clubs?\s+to\s+party|street\s+food|places?\s+to\s+eat)\b/i, 'places to eat and go out'],
+      [/\b(traffic|jam|congestion)\b.*\b(right now|today|currently|live)\b|\blive traffic\b/i, 'live traffic'],
+      [/\b(school admission|admission (?:process|odds|chances)|cut[- ]?off)\b/i, 'school admissions'],
+      [/\b(resale value|market value|valuation|what.*worth)\b.*\b(my|our)\b|\b(my|our)\b.*\b(resale value|valuation|worth)\b/i, 'valuing a property you already own'],
+    ]
+    const offTopicSubject = offTopic.find(([re]) => re.test(message))?.[1]
+    if (offTopicSubject) {
+      console.log('[CHAT:OFF_TOPIC]', { subject: offTopicSubject, q: message.slice(0, 50) })
+      send('token', {
+        token:
+          `That one's outside what I can speak to properly — I don't hold verified data on ${offTopicSubject}, and I'd rather say so than guess.\n\n` +
+          `What I can do is the property side: what's available in a sector, what a project actually costs all-in, how builders have delivered, and what the commute looks like. Where shall we pick up?`,
+      })
+      emitUiState({
+        stage: 'RESEARCH',
+        thinking: `Outside our data: ${offTopicSubject}.`,
+        chips: [],
+        missingFields: [],
+        confidence: 'HIGH',
+      })
+      send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
+      res.end()
+      return
+    }
+
+    /**
      * Save intent NOW, not only at the end of the turn.
      *
      * `persistIntentToMemory` is called once, near the bottom of this handler —
