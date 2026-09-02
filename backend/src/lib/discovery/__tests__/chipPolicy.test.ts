@@ -6,7 +6,7 @@
 
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { chipsAreWelcome, chipIsRelevant } from '../chipPolicy'
+import { chipsAreWelcome, chipIsRelevant, chipIsActionable } from '../chipPolicy'
 
 describe('chip policy — when to stay silent', () => {
   // Verbatim from the run. This turn was offered "Top Rated Builders",
@@ -64,6 +64,43 @@ describe('chip relevance', () => {
   it('keeps generic controls, which carry no claim', () => {
     for (const label of ['What are the trade-offs?', 'Compare these 3', 'Calculate Monthly EMI', 'Check RERA status']) {
       assert.equal(chipIsRelevant(label, 'anything', 'anything'), true, label)
+    }
+  })
+})
+
+describe('chip actionability', () => {
+  const ctx = (over: Partial<import('../chipPolicy').ChipContext> = {}) =>
+    ({ cardCount: 0, hasProject: false, hasBudget: false, hasLocation: false, ...over })
+
+  // On-topic and useless is the other half of a bad chip: each of these passes
+  // any subject check and still leads to a dead end or a question the buyer has
+  // to answer first.
+  it('does not offer a comparison of fewer things than it names', () => {
+    assert.equal(chipIsActionable('Compare these 3', ctx({ cardCount: 2 })), false)
+    assert.equal(chipIsActionable('Compare these 3', ctx({ cardCount: 3 })), true)
+    assert.equal(chipIsActionable('Compare these', ctx({ cardCount: 1 })), false)
+  })
+
+  it('does not offer an EMI calculation with nothing to calculate from', () => {
+    assert.equal(chipIsActionable('Calculate Monthly EMI', ctx()), false)
+    assert.equal(chipIsActionable('Calculate Monthly EMI', ctx({ hasBudget: true })), true)
+    assert.equal(chipIsActionable('Calculate Monthly EMI', ctx({ hasProject: true })), true)
+  })
+
+  it('does not offer project actions with no project', () => {
+    assert.equal(chipIsActionable('Full cost of…', ctx()), false)
+    assert.equal(chipIsActionable('Payment plan for…', ctx({ cardCount: 4 })), true)
+    assert.equal(chipIsActionable('Schedule a Site Visit', ctx({ hasProject: true })), true)
+  })
+
+  it('does not offer nearby sectors before anywhere is named', () => {
+    assert.equal(chipIsActionable('Explore nearby sectors', ctx()), false)
+    assert.equal(chipIsActionable('Explore nearby sectors', ctx({ hasLocation: true })), true)
+  })
+
+  it('leaves ordinary controls alone', () => {
+    for (const l of ['What are the trade-offs?', 'Which of these is the safest bet?', 'Show Sector 78']) {
+      assert.equal(chipIsActionable(l, ctx({ cardCount: 5, hasLocation: true })), true, l)
     }
   })
 })

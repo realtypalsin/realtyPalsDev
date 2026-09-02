@@ -73,7 +73,7 @@ import { projectCatalog } from '../lib/projectCatalog'
 import { applyCommuteAnchor, beltFor } from '../lib/discovery/commuteAnchor'
 import { resolveOrdinalReference, resolveOrdinalPair, resolveSuperlativeReference, needsShownContext } from '../lib/discovery/reference'
 import { cardBudgetFor, capCards, MAX_CARDS } from '../lib/discovery/cardBudget'
-import { chipsAreWelcome, chipIsRelevant } from '../lib/discovery/chipPolicy'
+import { chipsAreWelcome, chipIsRelevant, chipIsActionable } from '../lib/discovery/chipPolicy'
 import { buildStateBrief } from '../lib/ai/stateBrief'
 import { isProximityQuestion, nearbyCoverage } from '../lib/discovery/nearby'
 import {
@@ -357,6 +357,9 @@ router.post('/', async (req: Request, res: Response) => {
    */
   let lastAnswerText = ''
 
+  /** Cards actually rendered this turn — drives chip actionability. */
+  let cardsShownThisTurn = 0
+
   const send = (event: string, data: Record<string, unknown>) => {
     // Internal ranker artifacts never leave the server, whichever emit produced
     // the payload. Measured: 51% of every project object, 80KB of a 120KB
@@ -394,6 +397,7 @@ router.post('/', async (req: Request, res: Response) => {
       if (offered > exact.length) {
         console.log('[CHAT:CARD_BUDGET]', { offered, shown: exact.length, limit: budget.limit, reason: budget.reason })
       }
+      cardsShownThisTurn = exact.length
       return sseWrite(res, event, { ...data, exactResults: exact, nearbyResults: nearby })
     }
     if (event === 'token' && typeof data.token === 'string') {
@@ -699,11 +703,25 @@ router.post('/', async (req: Request, res: Response) => {
         }
         chips = []
       } else {
-        chips = chips.filter(c => chipIsRelevant(String(c.label ?? ''), message, lastAnswerText))
+        // Two filters, because a chip fails in two different ways: it can be
+        // about the wrong subject, or about the right subject and lead nowhere.
+        // "Compare these 3" with two cards, or "Calculate EMI" before any price
+        // is known, passes any topic check and still wastes the tap.
+        const chipCtx = {
+          cardCount: cardsShownThisTurn,
+          hasProject: (intent?.projectNames?.length ?? 0) > 0,
+          hasBudget: intent?.budgetMax != null || intent?.budgetMin != null,
+          hasLocation: Boolean(intent?.sector || intent?.workplace),
+        }
+        const usable = (c: C) =>
+          chipIsRelevant(String(c.label ?? ''), message, lastAnswerText) &&
+          chipIsActionable(String(c.label ?? ''), chipCtx)
+
+        chips = chips.filter(usable)
         // A branch-specific recovery set is still allowed — those are written
         // for the turn they belong to. The generic floor is not.
         if (chips.length === 0 && opts.fallbackChips?.length) {
-          chips = opts.fallbackChips.filter(c => chipIsRelevant(String(c.label ?? ''), message, lastAnswerText))
+          chips = opts.fallbackChips.filter(usable)
         }
       }
 
@@ -2277,9 +2295,26 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
             const mentions = projectMentionCounts.get(p.id)?.count || 1
             const weightagePct = totalInquiries > 0 ? Math.round((mentions / totalInquiries) * 100) : Math.round(100 / detailedTargetProjects.length)
 
-            // Every populated public field, not a hand-picked eleven.
+            /**
+             * Every populated public field for one project; the shortlist
+             * projection for several.
+             *
+             * Measured on a six-project Sector 150 search: the full blocks came
+             * to 38,682 characters against a 33,313-character system prompt —
+             * the projects outweighed the entire instruction set — and the turn
+             * took 11.1 seconds to its FIRST token on gemini-3.6-flash while
+             * emitting only 262 characters. Time to first token tracks input
+             * size, so this is where discovery latency actually lives.
+             *
+             * Two projects is still a comparison and keeps the full detail. Past
+             * that it is a shortlist, and nobody is reading six water sources.
+             * The moment one is picked, the drilldown refetches everything.
+             */
             const baseObj: Record<string, any> = {
-              ...buildProjectFacts(p as unknown as Record<string, unknown>, { topics: askedFactTopics }),
+              ...buildProjectFacts(p as unknown as Record<string, unknown>, {
+                topics: askedFactTopics,
+                shortlist: detailedTargetProjects.length > 2,
+              }),
               location: `${p.sector}, ${p.city}`,
               status: p.status === 'ready_to_move' ? 'Ready to Move' : p.status === 'new_launch' ? 'New Launch' : 'Under Construction',
             }

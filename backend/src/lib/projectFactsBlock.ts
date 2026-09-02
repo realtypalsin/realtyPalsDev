@@ -173,7 +173,36 @@ export interface ProjectFactsOptions {
    * of detectFactTopics(message) to add the ones the question actually needs.
    */
   topics?: Set<FactTopic>
+  /**
+   * Shortlist mode: the fields that separate one project from another, only.
+   *
+   * The full block is ~6.4 KB per project, which is right for a drilldown and
+   * ruinous for a shortlist. Measured on a six-project Sector 150 search: the
+   * facts came to 38,682 characters against a 33,313-character system prompt —
+   * the projects were bigger than the entire instruction set — and the turn
+   * took 11.1 seconds to its FIRST token on gemini-3.6-flash. Time to first
+   * token tracked input size, not output: the same call emitted only 262
+   * characters.
+   *
+   * A buyer comparing six wants price, size, status, builder, location and the
+   * one or two things that distinguish them. Nobody is reading six water
+   * sources. When they pick one, the drilldown fetches everything.
+   */
+  shortlist?: boolean
 }
+
+/**
+ * Fields kept in shortlist mode, in the order a buyer scans them.
+ *
+ * Deliberately short. Anything not here is still one question away — the
+ * project lane refetches in full the moment a project is in focus.
+ */
+const SHORTLIST_FIELDS = new Set([
+  'name', 'sector', 'city', 'status', 'possession_date', 'possession_label',
+  'price_min_cr', 'price_max_cr', 'price_range_label', 'price_per_sqft',
+  'rera_number', 'total_units', 'total_towers', 'open_space_pct',
+  'land_area_acres', 'tagline', 'location_concerns',
+])
 
 /**
  * Flattens one project row into `key: value` lines, omitting everything empty.
@@ -218,6 +247,7 @@ export function projectScalarFacts(
   for (const [key, value] of Object.entries(safe)) {
     if (!isPublicField(key)) continue // relations are handled separately
     if (PROMPT_EXCLUDED_FIELDS.has(key)) continue
+    if (options.shortlist && !SHORTLIST_FIELDS.has(key)) continue
     let formatted = formatValue(key, value)
     if (formatted === null) continue
     if ((key === 'description' || key === 'long_description') && formatted.length > maxDescription) {
@@ -287,7 +317,12 @@ export function buildProjectFacts(
   row: Record<string, unknown> & RelationShapes,
   options: ProjectFactsOptions = {},
 ): Record<string, unknown> {
-  const maxItems = options.maxListItems ?? 15
+  // In shortlist mode the relations are capped hard too: a comparison needs the
+  // configurations and a handful of amenities, not forty of each across six
+  // projects. Amenity lists and connectivity rows are the other half of the
+  // 6.4 KB-per-project cost the scalar allowlist alone does not reach.
+  const shortlist = options.shortlist === true
+  const maxItems = options.maxListItems ?? (shortlist ? 4 : 15)
   const facts: Record<string, unknown> = projectScalarFacts(row, options)
 
   if (row.builder && typeof row.builder.name === 'string') facts.builder = row.builder.name
@@ -302,7 +337,7 @@ export function buildProjectFacts(
   }
 
   if (row.amenities?.length) {
-    facts.amenities = row.amenities.slice(0, 40).map(a => a.name).filter(Boolean)
+    facts.amenities = row.amenities.slice(0, shortlist ? 8 : 40).map(a => a.name).filter(Boolean)
   }
 
   if (row.connectivity?.length) {

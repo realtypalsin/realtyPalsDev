@@ -102,3 +102,50 @@ export function chipIsRelevant(label: string, message: string, answerText: strin
   // same subject, and chip labels are too short to demand more.
   return words.some(w => haystack.includes(w.toLowerCase()))
 }
+
+/**
+ * Can this chip actually do anything right now?
+ *
+ * `chipIsRelevant` asks whether a chip is about the right SUBJECT. That misses
+ * the other half: a chip can be perfectly on-topic and still lead nowhere.
+ * "Compare these 3" with two cards on screen, "Calculate monthly EMI" before
+ * any price is known, "Payment plan for…" with no project in scope — each is
+ * about property, each passes a topic check, and each takes the buyer to a dead
+ * end or to a question they have to answer first.
+ *
+ * A chip is a shortcut. A shortcut to a prompt for more input is not one.
+ */
+export interface ChipContext {
+  /** Cards rendered on this turn. */
+  cardCount: number
+  /** True when a single project is in scope. */
+  hasProject: boolean
+  /** True when a budget or a price band is known. */
+  hasBudget: boolean
+  /** True when a sector or workplace has been established. */
+  hasLocation: boolean
+}
+
+export function chipIsActionable(label: string, ctx: ChipContext): boolean {
+  const l = (label ?? '').toLowerCase()
+
+  // "Compare these N" needs at least N things to compare.
+  if (/\bcompare\b/.test(l)) {
+    const named = /\bcompare\s+(?:these\s+)?(\d+)/.exec(l)
+    const needed = named ? Number(named[1]) : 2
+    if (ctx.cardCount < Math.max(2, needed)) return false
+  }
+
+  // A money calculation needs a number to calculate from.
+  if (/\b(emi|loan|affordab|monthly outgo|instal)/.test(l) && !ctx.hasBudget && !ctx.hasProject) return false
+
+  // Project-scoped actions need a project, or at least cards to pick from.
+  if (/\b(payment plan|cost sheet|floor plan|site visit|brochure|full cost|rera status)\b/.test(l)
+    && !ctx.hasProject && ctx.cardCount === 0) return false
+
+  // "Explore nearby sectors" means nothing before anywhere has been named.
+  if (/\b(nearby|other|alternative|explore)\b[^.]*\b(sector|area|option)/.test(l)
+    && !ctx.hasLocation && ctx.cardCount === 0) return false
+
+  return true
+}
