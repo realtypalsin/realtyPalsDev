@@ -1134,3 +1134,90 @@ greeting -> intent -> PLACE -> shortlist -> one project -> visit
 
 PLACE was the broken rung and is the one that changed most: a stated workplace
 now produces commute-ranked areas with cards instead of a refusal.
+
+---
+
+## Session 2026-09-03 (later) — cards by stage, always close with a question, positional comparison
+
+The three items left open, plus a replay of a Gemini conversation the founder
+rated highly, turn for turn, against ours.
+
+### Card budget — `discovery/cardBudget.ts`
+
+17-20 cards were emitted on nearly every discovery turn across four 15-turn
+runs, whatever the buyer had said. Nineteen for "my budget would be 2cr max",
+their second constraint; nineteen again for "how much would the EMI be" and "i
+want to visit this weekend", neither of which asks for inventory.
+
+The cap comes from stated constraints, because that is what makes a shortlist
+mean anything: nothing stated gets **0** cards and a question instead, one
+constraint **4**, two or more **6**, and a project in focus **3** so a drilldown
+does not bury its own subject. A workplace counts as a location because it also
+implies a ranking.
+
+**Applied in the `send` wrapper, not at the seven emit sites** — same reasoning
+as `runTopicHandlers` closing the response in one place. Note the TDZ hazard
+there: `intent` is a `let` declared *below* that closure, so the read is wrapped
+in try/catch falling back to the cap.
+
+Measured after: 0 cards on turns 1-4, max 6 thereafter, 2 on a drilldown.
+
+### Always close with one question — `prompts/base.ts`
+
+`outputContract` carried "end with a follow-up question only if the buyer asked
+you to write or compare something — a factual answer ends when the fact is
+given." Correct for a reference tool, wrong for an advisor mid-purchase: half
+the turns ended flat and a buyer just told a price had nowhere to go.
+
+Now exactly ONE question, and it must be the next rung of the ladder. Three
+failure modes are named in the prompt because all three were observed:
+re-asking what they already said, a generic "anything else?", and stacking
+questions into a form. Measured after: 11 of 13 turns hand back, and the two
+that do not are a lead-capture request and one edge case.
+
+The fourth Perplexity-derived rule is now deliberately reversed; the comment
+records why, so it does not get "restored" later.
+
+### Positional comparison
+
+`resolveOrdinalPair` had been written and tested and never wired in, so "compare
+it with the second option" still answered "we currently do not have a second
+project in our records". It now fills the gap *after* name matching, so a buyer
+who names both projects still gets those two.
+
+### Replaying the Gemini transcript against ours
+
+Same 13 turns. Verdict: **parity on conversation, ahead on grounding, behind on
+speed.**
+
+* "i like open area better, dont want it to be conjusted" — Gemini gave prose
+  about Sector 150's mandated low density plus speculative resale bands. Ours
+  answered from rows: 80% open space, 5 acres, 480 units across 3 towers,
+  3-side-open layout, zero shared walls. Ours is checkable; theirs is not.
+* "lets see what we can get if we increase our budget a bit" — both widened
+  correctly and offered a choice. Comparable.
+* "i like to be in an appartment society" — ours gave two projects with real
+  carpet areas (1,945 and 2,350 sq.ft), real bands, and a trade-off each.
+
+**One thing in the Gemini flow to deliberately NOT copy:** its final turn handed
+out channel-partner phone numbers (+91 84478 80880, +91 85870 00070). Those are
+unverifiable, almost certainly invented, and handing a buyer an outside number is
+the off-platform referral prompt rule 17 exists to forbid. Ours asks for the
+buyer's name and number and keeps the lead.
+
+### The gap that is now top of the list
+
+Latency on the discovery lane: 22-28s per turn on this run. The general lane is
+1.6-1.9s to first byte; discovery is untouched and runs `discoverProjects`, the
+scoring engine and the 58KB `prompts/base.ts`. Against a hosted assistant that
+answers in a second or two, this is the remaining visible difference.
+
+### Still open
+
+* Turn 7 narrowed to a single project where the buyer had asked about an area
+  quality ("open, not congested"). Grounded and it asks back, but arguably one
+  rung too far down the ladder.
+* No form-factor field in Intent. "apartment society, not a villa or independent
+  floor" is answered by the model from prose, not filtered in retrieval.
+* Budget *relaxation* ("if we increase a bit") works through the model widening
+  its own reading, not through an explicit intent move.
