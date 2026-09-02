@@ -15,6 +15,7 @@ import { DEFAULT_CITY, SUPPORTED_CITIES } from '../config/cities'
 import { webSearch } from '../web'
 import { executeWithFallbackChain } from './fallbackChain'
 import { profileFor } from './inferenceProfile'
+import { MODELS } from '../config'
 import { builderMentionedIn } from '../builderNames'
 import { getCachedResponse, setCachedResponse } from './semanticCache'
 import type { OpenQueryDetection } from '../discovery/openQuery'
@@ -373,9 +374,29 @@ export async function runGroundedAnswer(
       // the lite model with no thinking for a lookup, the smart one for a
       // judgement call. The 900 ceiling stays because a general answer that
       // needs more than that has become a project question.
+      // The lite model with no thinking, whatever shape the question is.
+      //
+      // `profileFor` gives an ADVISORY question `gemini-3.6-flash` with a
+      // 512-token thinking budget, which is right for the project lanes — a
+      // comparison across four sectors and six constraints is what that budget
+      // is for. It is wrong here, and it was the entire latency tail: measured
+      // against production, the only two advisory-shaped queries in an
+      // eight-query run were the two slowest at 57.0s and 23.4s while every
+      // factual and lookup query landed between 4.2s and 10.8s.
+      //
+      // Probed directly on the same question ("is Noida good for families"):
+      //
+      //   gemini-3.6-flash, thinking 512   first token 6,248ms, total 19,899ms
+      //   gemini-3.5-flash-lite, thinking 0  first token 3,458ms, total 3,626ms
+      //
+      // 5.5x on the total and nearly 2x on time-to-first-token, for an answer
+      // now capped at 120-160 words with no project rows behind it. There is no
+      // reasoning chain here to spend a thinking budget on, and thinking bills
+      // at the output rate — so this is cheaper as well as faster. The project
+      // lanes keep their profiles; only this one is pinned.
       config: {
-        model: profile.model,
-        thinkingBudget: profile.thinkingBudget,
+        model: MODELS.GEMINI_LITE,
+        thinkingBudget: 0,
         maxTokens: Math.min(profile.maxTokens ?? 900, 900),
         tools: false,
       },
