@@ -95,6 +95,8 @@ describe('chip actionability', () => {
 
   it('does not offer nearby sectors before anywhere is named', () => {
     assert.equal(chipIsActionable('Explore nearby sectors', ctx()), false)
+    // But an entry point is not a nearby-reference: a greeting must keep it.
+    assert.equal(chipIsActionable('Explore Top Noida Sectors', ctx()), true)
     assert.equal(chipIsActionable('Explore nearby sectors', ctx({ hasLocation: true })), true)
   })
 

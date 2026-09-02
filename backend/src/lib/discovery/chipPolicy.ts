@@ -143,8 +143,11 @@ export function chipIsActionable(label: string, ctx: ChipContext): boolean {
   if (/\b(payment plan|cost sheet|floor plan|site visit|brochure|full cost|rera status)\b/.test(l)
     && !ctx.hasProject && ctx.cardCount === 0) return false
 
-  // "Explore nearby sectors" means nothing before anywhere has been named.
-  if (/\b(nearby|other|alternative|explore)\b[^.]*\b(sector|area|option)/.test(l)
+  // "Explore NEARBY sectors" means nothing before anywhere has been named —
+  // nearby to what? But "Explore top Noida sectors" is an entry point and is
+  // exactly right on an opening turn, so bare `explore` must not be in here.
+  // Including it left a greeting with no chips at all.
+  if (/\b(nearby|other|alternative|adjacent|similar)\b[^.]*\b(sector|area|option)/.test(l)
     && !ctx.hasLocation && ctx.cardCount === 0) return false
 
   return true
