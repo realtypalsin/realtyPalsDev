@@ -9,7 +9,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { detectCommuteAnchor, applyCommuteAnchor, beltFor } from '../commuteAnchor'
-import { resolveOrdinalReference, resolveOrdinalPair, needsShownContext } from '../reference'
+import { resolveOrdinalReference, resolveOrdinalPair, resolveSuperlativeReference, needsShownContext } from '../reference'
 import { cardBudgetFor, capCards, MAX_CARDS } from '../cardBudget'
 import type { Intent } from '../types'
 
@@ -208,5 +208,40 @@ describe('card budget', () => {
     assert.deepEqual(capCards(rows, 3), [1, 2, 3])
     assert.deepEqual(capCards(rows, 0), [])
     assert.deepEqual(capCards(undefined, 5), [])
+  })
+})
+
+describe('superlative references', () => {
+  const shown = [
+    { id: 'a', name: 'Golden Palms', priceMinCr: 0.72 },
+    { id: 'b', name: 'Ace Platinum', priceMinCr: 0.88 },
+    { id: 'c', name: 'ATS Pristine', priceMinCr: 4.30 },
+  ]
+
+  // Measured: "What is the per sqft rate on the cheapest one and what would the
+  // total registry cost be?" — asked right after six cards — answered neither
+  // question. It returned a micro-market price table, because the superlative
+  // resolved to nothing and the word "rate" then triggered that table.
+  it('resolves "the cheapest one" against the shown list', () => {
+    assert.equal(resolveSuperlativeReference('per sqft rate on the cheapest one', shown)?.project.name, 'Golden Palms')
+  })
+
+  it('resolves the other direction too', () => {
+    assert.equal(resolveSuperlativeReference('tell me about the most expensive one', shown)?.project.name, 'ATS Pristine')
+  })
+
+  it('resolves nothing when no prices are known', () => {
+    // Guessing which is cheapest without prices would answer about the wrong
+    // building.
+    const unpriced = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }]
+    assert.equal(resolveSuperlativeReference('the cheapest one', unpriced), null)
+  })
+
+  it('does not fire on an ordinary question about price', () => {
+    assert.equal(resolveSuperlativeReference('what is the price of ATS Pristine', shown), null)
+  })
+
+  it('counts as needing the shown list', () => {
+    assert.equal(needsShownContext('what is the rate on the cheapest one'), true)
   })
 })

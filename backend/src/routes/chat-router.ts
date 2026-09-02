@@ -40,7 +40,7 @@ import { classifyQuery } from '../lib/discovery/queryClassifier'
 import { detectOpenQuery } from '../lib/discovery/openQuery'
 import { runGroundedAnswer, buildNoGroundingReply } from '../lib/ai/groundedAnswer'
 import { findProjectsMentioned, buildProseChips, linkProjectNames, findSectorsMentioned, findSectorsAsked, buildOpenAnswerChips, resolveProjectNames } from '../lib/discovery/proseEntities'
-import { computeConversationState, getFloorChips, CONVERTING_TURN_THRESHOLD } from '../lib/discovery/conversationEngine'
+import { computeConversationState, CONVERTING_TURN_THRESHOLD } from '../lib/discovery/conversationEngine'
 import { getMemory, upsertMemory } from '../lib/ai/memory'
 import { buildContextMessages } from '../lib/ai/context'
 import { maybeCompress } from '../lib/ai/compression'
@@ -71,8 +71,9 @@ import { buildUnknownProjectReply } from '../lib/chat/unknownProject'
 import { runTopicHandlers } from '../lib/chat/handlerContext'
 import { projectCatalog } from '../lib/projectCatalog'
 import { applyCommuteAnchor, beltFor } from '../lib/discovery/commuteAnchor'
-import { resolveOrdinalReference, resolveOrdinalPair, needsShownContext } from '../lib/discovery/reference'
+import { resolveOrdinalReference, resolveOrdinalPair, resolveSuperlativeReference, needsShownContext } from '../lib/discovery/reference'
 import { cardBudgetFor, capCards, MAX_CARDS } from '../lib/discovery/cardBudget'
+import { chipsAreWelcome, chipIsRelevant } from '../lib/discovery/chipPolicy'
 import { buildStateBrief } from '../lib/ai/stateBrief'
 import { isProximityQuestion, nearbyCoverage } from '../lib/discovery/nearby'
 import {
@@ -346,6 +347,16 @@ router.post('/', async (req: Request, res: Response) => {
   // model stream, topic handler, hardcoded fallback. Emoji and competitor names
   // are stripped at this one point rather than trusting a prompt rule: both were
   // prompt rules first and both shipped anyway.
+  /**
+   * What the buyer has been told so far this turn.
+   *
+   * Chip relevance is judged against the answer, not just the question — a chip
+   * naming a project the reply never mentioned is the noise that put chips at
+   * 4.4/10. Accumulated here because this is the one place every token passes
+   * through, whatever produced it.
+   */
+  let lastAnswerText = ''
+
   const send = (event: string, data: Record<string, unknown>) => {
     // Internal ranker artifacts never leave the server, whichever emit produced
     // the payload. Measured: 51% of every project object, 80KB of a 120KB
@@ -393,6 +404,7 @@ router.post('/', async (req: Request, res: Response) => {
         )
       }
       if (!clean.text) return
+      if (lastAnswerText.length < 4000) lastAnswerText += clean.text
       return sseWrite(res, event, { ...data, token: clean.text })
     }
     return sseWrite(res, event, data)
@@ -661,11 +673,38 @@ router.post('/', async (req: Request, res: Response) => {
         chips = filterNewChips(currentSessionId, chips)
       }
 
-      // Every step above is subtractive — this is the only additive one.
-      if (chips.length === 0) {
-        chips = opts.fallbackChips?.length
-          ? opts.fallbackChips
-          : (getFloorChips(intent, projects) as unknown as C[])
+      /**
+       * No chips is a valid answer, and it used to be impossible to reach.
+       *
+       * This was the only additive step in an otherwise subtractive pipeline:
+       * when every filter above had correctly emptied the set, it injected a
+       * generic floor. So a turn that had earned no chips got the cold-start
+       * trio instead of none — which is how a buyer eleven turns into a
+       * shortlist was offered "Help me set a budget", and how someone alleging
+       * their token had been taken and their calls ignored was offered "Top
+       * Rated Builders". Chips scored 4.4/10 across the run, and this was the
+       * largest single cause.
+       *
+       * `chipsAreWelcome` decides whether the turn is one where a shortcut
+       * makes sense at all — a grievance, a refund demand, an identity-document
+       * boundary or any reply that declined something gets silence.
+       * `chipIsRelevant` then drops a chip naming a project or sector that
+       * appears in neither the question nor the answer.
+       */
+      const answerSoFar = String(state.thinking ?? '')
+      const welcome = chipsAreWelcome(message, `${answerSoFar} ${lastAnswerText}`)
+      if (!welcome.allowed) {
+        if (chips.length > 0 || opts.fallbackChips?.length) {
+          console.log('[CHAT:CHIPS_SUPPRESSED]', { reason: welcome.reason, q: message.slice(0, 50) })
+        }
+        chips = []
+      } else {
+        chips = chips.filter(c => chipIsRelevant(String(c.label ?? ''), message, lastAnswerText))
+        // A branch-specific recovery set is still allowed — those are written
+        // for the turn they belong to. The generic floor is not.
+        if (chips.length === 0 && opts.fallbackChips?.length) {
+          chips = opts.fallbackChips.filter(c => chipIsRelevant(String(c.label ?? ''), message, lastAnswerText))
+        }
       }
 
       chips = chips.slice(0, 4)
@@ -810,8 +849,18 @@ router.post('/', async (req: Request, res: Response) => {
     // reached the entity lookup as that literal string, missed, and the general
     // lane answered about Jewar Airport. The ordered set is already on the
     // session in `last_projects`.
+    // Price carried through so "the cheapest one" can resolve against the same
+    // list "the first one" resolves against.
     const shownProjects = (cachedProjectsFromSession ?? [])
-      .map(p => ({ id: String(p.id), name: String(p.name) }))
+      .map(p => ({
+        id: String(p.id),
+        name: String(p.name),
+        priceMinCr: typeof (p as { priceMin?: number }).priceMin === 'number'
+          ? (p as { priceMin?: number }).priceMin
+          : typeof (p as { price_min_cr?: number }).price_min_cr === 'number'
+            ? (p as { price_min_cr?: number }).price_min_cr
+            : null,
+      }))
       .filter(p => p.id && p.name)
 
     /**
@@ -873,10 +922,49 @@ router.post('/', async (req: Request, res: Response) => {
       }
 
       const ref = resolveOrdinalReference(message, shownProjects)
-      if (ref) {
-        intent.projectNames = [ref.project.name]
-        ;(intent as { targetProjectId?: string }).targetProjectId = ref.project.id
-        console.log('[CHAT:ORDINAL_REF]', { position: ref.index + 1, resolved: ref.project.name })
+      const sup = ref ? null : resolveSuperlativeReference(message, shownProjects)
+      const resolved = ref?.project ?? sup?.project ?? null
+      if (resolved) {
+        intent.projectNames = [resolved.name]
+        ;(intent as { targetProjectId?: string }).targetProjectId = resolved.id
+        console.log('[CHAT:REFERENT]', {
+          kind: ref ? `position ${ref.index + 1}` : `superlative ${sup?.kind}`,
+          resolved: resolved.name,
+        })
+      }
+
+      /**
+       * A reference we cannot resolve is asked about, never guessed.
+       *
+       * Measured: "What about the first one though?" — after four turns of
+       * drift, with no list on the session — was answered "If you are referring
+       * to the initial property we looked at, such as a flagship luxury launch
+       * like Godrej Tropical Isle in Sector 146…". That project had never been
+       * mentioned by either side. Asked to resolve a pointer it could not, the
+       * model produced a confident answer about something else entirely, which
+       * is worse than any refusal.
+       *
+       * So the turn stops here. Deterministic: a model told to ask for
+       * clarification will sometimes offer a candidate instead, and offering a
+       * candidate is the bug.
+       */
+      if (!resolved && needsShownContext(message) && shownProjects.length === 0) {
+        console.log('[CHAT:REFERENT_UNRESOLVED]', { q: message.slice(0, 60) })
+        send('token', {
+          token:
+            `I want to make sure I answer about the right one — I've lost track of which options you mean, so I'd rather ask than guess.\n\n` +
+            `Tell me the project or sector by name and I'll pull what we hold on it, or say the word and I'll put a fresh shortlist together.`,
+        })
+        emitUiState({
+          stage: 'CLARIFYING',
+          thinking: 'Which option did you mean?',
+          chips: [],
+          missingFields: [],
+          confidence: 'LOW',
+        }, { skipDedup: true })
+        send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
+        res.end()
+        return
       }
     }
 
@@ -897,6 +985,8 @@ router.post('/', async (req: Request, res: Response) => {
       purpose: intent.purpose ?? null,
       focusProjectName: intent.projectNames?.[0] ?? null,
       shown: shownProjects.length ? shownProjects.map(p => ({ name: p.name })) : null,
+      budgetHistoryCr: intent.budgetHistory ?? null,
+      sectorHistory: intent.sectorHistory ?? null,
       summaryLocation: sessionData?.summary_location ?? null,
       summaryFinancial: sessionData?.summary_financial ?? null,
       summaryTimeline: sessionData?.summary_timeline ?? null,
@@ -3695,10 +3785,32 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     const modelRoute = routeToModel(classification)
     // The cost profile for this turn: model, thinking budget and reply ceiling,
     const profile = profileFor(message)
+    /**
+     * Thinking is capped at 256 tokens on this lane.
+     *
+     * `profileFor` allots 512 for an advisory turn and 1,024 for a reasoning
+     * one, and thinking delays the FIRST token as well as the last. Probed
+     * directly on one question, same prompt, same key:
+     *
+     *   gemini-3.6-flash, thinking 512   first token 6,248ms, total 19,899ms
+     *   gemini-3.5-flash-lite, thinking 0  first token 3,458ms, total 3,626ms
+     *
+     * Discovery turns measured 20-30s end to end against 1.7s to first byte on
+     * the general lane, and the two advisory-shaped turns in an eight-query run
+     * were the two slowest at 57.0s and 23.4s.
+     *
+     * Capped rather than removed, deliberately: a four-sector, six-constraint
+     * comparison is what this product is for and it does benefit from some
+     * reasoning, so the model choice stays as the profile decided. 256 is the
+     * factual-tier budget — enough to organise a verdict and a trade-off, not
+     * enough to plan an essay. This is the one change in this pass whose
+     * quality effect is a judgement rather than a measurement; re-measure it if
+     * comparison answers start reading thin.
+     */
     const inferenceConfig: InferenceConfig = {
       maxTokens: profile.maxTokens,
       model: modelRoute === 'cheap' ? MODELS.GEMINI_LITE : profile.model,
-      thinkingBudget: profile.thinkingBudget,
+      thinkingBudget: Math.min(profile.thinkingBudget, 256),
     }
     console.log(
       `[CHAT:PROFILE] shape=${profile.shape} model=${inferenceConfig.model} think=${profile.thinkingBudget} maxTokens=${profile.maxTokens}`,

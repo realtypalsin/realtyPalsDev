@@ -50,6 +50,41 @@ const BARE_ORDINALS: Array<[RegExp, number]> = [
 export interface ShownProject {
   id: string
   name: string
+  /** Entry price, when known — lets a superlative resolve. */
+  priceMinCr?: number | null
+}
+
+/**
+ * Superlatives point into the shown list too.
+ *
+ * Measured: "What is the per sqft rate on the cheapest one and what would the
+ * total registry cost be?" — asked directly after six cards — answered neither
+ * question. It returned a micro-market price table, because "the cheapest one"
+ * resolved to nothing and the word "rate" then triggered the market table.
+ *
+ * Ordinals were handled and superlatives were not, which is an odd place to
+ * draw the line: both are ways of pointing at a row the buyer can see.
+ */
+const SUPERLATIVES: Array<[RegExp, 'min' | 'max']> = [
+  [/\b(?:the\s+)?(?:cheapest|lowest[- ]priced|least expensive|most affordable|budget)\s+(?:one|option|project|society|choice|pick)?/i, 'min'],
+  [/\b(?:the\s+)?(?:most expensive|costliest|priciest|dearest|highest[- ]priced|premium)\s+(?:one|option|project|society|choice|pick)?/i, 'max'],
+]
+
+/** The cheapest or dearest of the shown set, when prices are known. */
+export function resolveSuperlativeReference(
+  message: string,
+  shown: readonly ShownProject[],
+): { project: ShownProject; kind: 'min' | 'max' } | null {
+  if (!shown.length) return null
+  for (const [re, kind] of SUPERLATIVES) {
+    if (!re.test(message ?? '')) continue
+    const priced = shown.filter(p => typeof p.priceMinCr === 'number')
+    if (!priced.length) return null
+    const sorted = [...priced].sort((a, b) => (a.priceMinCr as number) - (b.priceMinCr as number))
+    const project = kind === 'min' ? sorted[0] : sorted[sorted.length - 1]
+    return project ? { project, kind } : null
+  }
+  return null
 }
 
 /**
@@ -123,6 +158,7 @@ export function needsShownContext(message: string): boolean {
     BARE_ORDINALS.some(([re]) => re.test(text)) ||
     /\b(?:these|those|them|the\s+(?:above|ones?|shortlist|list|options))\b/i.test(text) ||
     /\bwhich\s+(?:of\s+)?(?:these|those|them)\b/i.test(text) ||
-    /\bfirst\s+(?:two|three|four|couple)\b/i.test(text)
+    /\bfirst\s+(?:two|three|four|couple)\b/i.test(text) ||
+    SUPERLATIVES.some(([re]) => re.test(text))
   )
 }

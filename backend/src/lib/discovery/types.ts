@@ -39,6 +39,18 @@ export interface Intent {
   workplace?: string
   /** Residential sectors to search instead, commute-closest first. */
   workplace_belt?: string[]
+
+  /**
+   * Every budget the buyer has stated this session, oldest first.
+   *
+   * "What was my first budget again?" returned the latest one, because a single
+   * current value cannot answer a question about what changed. Maintained by
+   * `hydrateIntentFromMemory`, which is the only place that sees the stored and
+   * incoming values together.
+   */
+  budgetHistory?: number[]
+  /** Every sector the buyer has searched this session, oldest first. */
+  sectorHistory?: string[]
 }
 
 export type IntentState = 'COLD' | 'GATHERING' | 'READY_TO_SEARCH' | 'SHORTLISTED'

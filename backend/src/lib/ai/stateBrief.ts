@@ -32,6 +32,10 @@ export interface ConversationState {
   focusProjectName?: string | null
   /** Projects named or carded on the previous turn, in the order shown. */
   shown?: Array<{ name: string }> | null
+  /** Every budget stated this session, oldest first. */
+  budgetHistoryCr?: number[] | null
+  /** Every sector searched this session, oldest first. */
+  sectorHistory?: string[] | null
   /** Compressed per-topic summaries carried on the session row. */
   summaryLocation?: string | null
   summaryFinancial?: string | null
@@ -66,6 +70,19 @@ export function buildStateBrief(state: ConversationState): string {
   if (state.possession) facts.push(`Possession preference: ${state.possession}`)
   if (state.purpose) {
     facts.push(`Purpose: ${state.purpose === 'investment' ? 'investment' : state.purpose === 'endUse' ? 'self-use' : state.purpose}`)
+  }
+  // What changed, so "my first budget" and "the sector I started with" are
+  // answerable. Only worth printing once there is actually a revision.
+  if ((state.budgetHistoryCr?.length ?? 0) > 1) {
+    const h = state.budgetHistoryCr as number[]
+    facts.push(
+      `Budgets stated this session, in order: ${h.map(crore).join(' then ')}. ` +
+      `Their FIRST budget was ${crore(h[0])} and their current one is ${crore(h[h.length - 1])}.`,
+    )
+  }
+  if ((state.sectorHistory?.length ?? 0) > 1) {
+    const h = state.sectorHistory as string[]
+    facts.push(`Areas searched this session, in order: ${h.join(' then ')}.`)
   }
   if (state.focusProjectName) facts.push(`Project currently in focus: ${state.focusProjectName}`)
   if (state.shown?.length) {

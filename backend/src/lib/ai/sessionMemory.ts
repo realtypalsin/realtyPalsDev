@@ -8,6 +8,19 @@
 import { prisma } from '../db'
 import type { Intent } from '../discovery'
 
+/**
+ * A field's stated values in order, with consecutive repeats collapsed.
+ *
+ * Six entries is plenty: it answers "my first", "my original" and "before that"
+ * without turning session memory into an audit log.
+ */
+function appendRevision<T>(history: T[] | undefined, value: T | undefined | null): T[] | undefined {
+  if (value === undefined || value === null) return history
+  const prev = history ?? []
+  if (prev.length > 0 && prev[prev.length - 1] === value) return prev
+  return [...prev, value].slice(-6)
+}
+
 export async function getSessionMemory(sessionId: string) {
   try {
     const memory = await prisma.sessionMemory.findUnique({
@@ -72,6 +85,27 @@ export async function hydrateIntentFromMemory(
      * spread — the same reason the workplace was being lost. A buyer states a
      * preference once and expects it to hold.
      */
+    /**
+     * Where the buyer's stated constraints have BEEN, not just where they are.
+     *
+     * Measured: "let's stick to my very first budget… what was my first budget
+     * again?" was answered "Your maximum budget recorded in our system is ₹1.4
+     * Cr". The first was ₹1.8 Cr; ₹1.4 Cr was the second. Intent holds one
+     * current value per field, so any question about what CHANGED — first,
+     * original, earlier, before — has nothing to read.
+     *
+     * Appended here rather than in the router because this is the one function
+     * that sees the stored value and the new one together. Capped: a revision
+     * log is context, not an archive.
+     */
+    budgetHistory: appendRevision(
+      stored.budgetHistory,
+      currentIntent.budgetMax ?? stored.budgetMax,
+    ),
+    sectorHistory: appendRevision(
+      stored.sectorHistory,
+      currentIntent.sector ?? stored.sector,
+    ),
     lifestyleKeywords: currentIntent.lifestyleKeywords ?? stored.lifestyleKeywords,
     areaMin: currentIntent.areaMin ?? stored.areaMin,
     areaMax: currentIntent.areaMax ?? stored.areaMax,
