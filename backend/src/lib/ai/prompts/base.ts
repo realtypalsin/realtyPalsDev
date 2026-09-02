@@ -616,6 +616,8 @@ A table built from our own rows has just been shown to the buyer, above your rep
 
 Do not draw a table. Do not repeat its rows or restate its figures. The buyer can read it.
 
+**Do not introduce one either.** A line like "Here are verified 3 BHK options under ₹2 crore:" is a lead-in to a table you must not draw, and the table is stripped before the buyer sees it — so the reply arrives as a sentence ending in a colon with nothing after it. That has shipped. Start with the substance: name a row and say something about it. If you want a list, write bullets.
+
 Your job is the part the table cannot do: which row fits this buyer and why, what the figures mean for their decision, and the one trade-off that comes with whatever you point them to. Name a row — "Greater Noida West", "ACE Parkway" — and say something about it the table does not.
 
 If a cell reads "Not recorded", that is a gap in our data. You may say so. Never fill it.`
