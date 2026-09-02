@@ -3962,10 +3962,28 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
      * quality effect is a judgement rather than a measurement; re-measure it if
      * comparison answers start reading thin.
      */
+    /**
+     * When the cards carry the substance, the prose does not need the reasoning
+     * model.
+     *
+     * Measured on the same 44,403-character prompt, six projects, thinking 256:
+     *
+     *   gemini-3.6-flash       first token 6,503ms
+     *   gemini-3.5-flash-lite  first token 3,786ms
+     *
+     * And in production the general lane — which is lite — answers in 2-3s
+     * while discovery sits at 21-24s. A card-rendering turn writes a lead-in
+     * and two or three differentiators; the table and the cards hold the
+     * figures. That is squarely what the lite tier is for.
+     *
+     * A turn with NO cards is different: a comparison or an advisory judgement
+     * has to carry its reasoning in the prose, and it keeps the smart model.
+     */
+    const proseIsSecondary = cardsAreRendering || Boolean(renderedTable)
     const inferenceConfig: InferenceConfig = {
       maxTokens: profile.maxTokens,
-      model: modelRoute === 'cheap' ? MODELS.GEMINI_LITE : profile.model,
-      thinkingBudget: Math.min(profile.thinkingBudget, 256),
+      model: modelRoute === 'cheap' || proseIsSecondary ? MODELS.GEMINI_LITE : profile.model,
+      thinkingBudget: Math.min(profile.thinkingBudget, proseIsSecondary ? 0 : 256),
     }
     console.log(
       `[CHAT:PROFILE] shape=${profile.shape} model=${inferenceConfig.model} think=${profile.thinkingBudget} maxTokens=${profile.maxTokens}`,
