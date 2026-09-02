@@ -1344,3 +1344,102 @@ rather than a measurement.
   structural (tagged sections, one concern each) and was not attempted here.
 * **`chipIsRelevant` is a keyword overlap**, not a ranker. It catches the bad
   cases measured; it will not catch a chip that is on-topic but useless.
+
+---
+
+## Session 2026-09-03 (late) — discovery latency, base.ts, chip actionability
+
+### Profile first: retrieval was never the problem
+
+Measured locally against the real database before changing anything:
+
+```
+projectCatalog          237ms
+discoverProjects     79-228ms   (13-20 exact results)
+getBaseSystemPrompt       0ms
+```
+
+The 20-35s was the model call. And on the model call, **time to first token
+tracks INPUT size, not output**:
+
+```
+72,009 char prompt, gemini-3.6-flash, thinking 256
+  -> first token 11,093ms, total 11,207ms, output 262 chars
+```
+
+262 characters of output. Nothing about generation length explains eleven
+seconds.
+
+### Two cuts, both measured
+
+**Project facts were bigger than the entire instruction set.** Six projects came
+to 38,682 chars against a 33,313-char system prompt — 6.4 KB each, because
+`buildProjectFacts` projects the whole public field allowlist. Right for a
+drilldown, ruinous for a shortlist: nobody comparing six is reading six water
+sources. `shortlist: true` keeps what separates them and caps relations to 4
+items / 8 amenities. **6,764 -> 2,462 chars per project, -64%.** Two projects is
+still a comparison and keeps full detail.
+
+**Every turn carried all six advisory playbooks** — 5,569 chars of which at most
+one applies. Moved to `prompts/playbooks.ts`, selected by wording plus resolved
+intent, max two, none for a greeting.
+
+Result: **72,009 -> 44,403 chars, first token 11,093ms -> 6,503ms (-41%)**, same
+model, same thinking budget.
+
+### Then the model, on the same measured basis
+
+```
+44,403 char prompt:  gemini-3.6-flash 6,503ms   gemini-3.5-flash-lite 3,786ms
+```
+
+A card-rendering turn writes a lead-in and two or three differentiators; the
+cards and table hold every figure. So `proseIsSecondary` (cards rendering or a
+table rendered) routes to lite with thinking 0. A turn with NO cards keeps the
+smart model — a comparison or advisory judgement has to carry its reasoning in
+the prose.
+
+Production: discovery **22s -> 18-20s**.
+
+### The honest ceiling
+
+Local LLM leg with the new prompt is 3.8s; production discovery turns are 18-20s.
+So **~14s of a production discovery turn is still not the model** — it is the
+Render-to-Supabase round trips, scoring, and the rest of the pipeline, none of
+which reproduces locally where the same retrieval runs in 79-228ms.
+
+Closing that needs stage timings emitted from production and read back, which is
+a deploy cycle plus analysis. Not attempted. **Anyone picking this up: instrument
+first, do not guess — every latency assumption in this session that was not
+measured turned out wrong.**
+
+### Chips: actionability, not just topic
+
+`chipIsRelevant` asks whether a chip is about the right SUBJECT. It misses the
+other half — a chip can be on-topic and lead nowhere. `chipIsActionable` blocks:
+"Compare these 3" with fewer than three cards, an EMI calculation with no budget
+and no project, project-scoped actions with neither a project nor cards, and
+"nearby sectors" before anywhere is named.
+
+**Over-corrected once and caught it:** bare `explore` was in that last rule, so
+"Explore Top Noida Sectors" was blocked on the opening turn — where it is the
+single most useful thing to offer — and a greeting came back with no chips at
+all. An entry point is not a nearby-reference.
+
+### Three regex bugs, all the same shape
+
+`\brefund\b` misses "refunded". `\brelocat\b` misses "relocating". `\bprice\b`
+misses "prices". Word-boundary-after-stem never matches an inflected form. When
+matching buyer vocabulary, use `\w*` or list the forms — this has now bitten
+three times in two sessions.
+
+### claudeResponse.md
+
+**The file is 0 bytes.** Nothing to work from; no content was inferred or
+invented. If it was meant to carry a plan, it did not save.
+
+### State
+
+358 tests passing, typecheck / lint / build clean, all deployed. Behaviour on the
+verification suite is unchanged by the latency work — grievance turns silent,
+history exact, off-topic declined, referents resolved or asked about.
