@@ -1849,3 +1849,22 @@ now this.
   so the deterministic table and its new provenance line never render. The
   follow-up phrasing ("what is the payment plan?") routes correctly.
 * Migration `drop_fabricated_defaults` still unapplied by choice.
+
+### The resolver bug the doc named — confirmed, three sites
+
+`.find()` over `projectCatalog()` with substring containment. First element
+wins, catalogue order is heap order, and a shorter name matches everything a
+longer one does. **11 catalogue names are a prefix of another's.**
+
+Verified after the fix: "cost sheet for Maxblis White House II" → ₹11,814/sqft,
+"Maxblis White House" → ₹10,500/sqft. Two real answers, previously decided by
+heap order.
+
+`matchProjectInText` / `matchProjectsInText` in `lib/discovery/` — longest match
+wins, ties on id, never array order. Wired into `paymentPlans`, `costSheet`, and
+the router's `fuzzyMatch`. **Use these rather than writing another `.includes`
+loop**; every one of the 11 collisions is pinned in a test in both orders.
+
+Note the router's *other* containment matcher already sorted by name length
+desc. One of four sites had been fixed by hand, which is why the bug survived —
+it looked handled.
