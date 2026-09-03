@@ -71,7 +71,7 @@ import { buildUnknownProjectReply } from '../lib/chat/unknownProject'
 import { runTopicHandlers } from '../lib/chat/handlerContext'
 import { projectCatalog } from '../lib/projectCatalog'
 import { applyCommuteAnchor, beltFor } from '../lib/discovery/commuteAnchor'
-import { resolveOrdinalReference, resolveOrdinalPair, resolveSuperlativeReference, needsShownContext } from '../lib/discovery/reference'
+import { resolveOrdinalReference, resolveOrdinalPair, resolveSuperlativeReference, needsShownContext, resolveSectorReference, sectorsShownIn } from '../lib/discovery/reference'
 import { cardBudgetFor, capCards, MAX_CARDS } from '../lib/discovery/cardBudget'
 import { chipsAreWelcome, chipIsRelevant, chipIsActionable } from '../lib/discovery/chipPolicy'
 import { createTurnTimer } from '../lib/turnTimer'
@@ -943,6 +943,17 @@ router.post('/', async (req: Request, res: Response) => {
         if (!intent.workplace_belt?.length) intent.workplace_belt = beltFor(intent.workplace)
       }
 
+      /**
+       * The sectors our own last answer named, in the order it named them.
+       *
+       * A sector comparison renders as prose or a table, never as cards, so
+       * there is no `last_projects` equivalent to point into — the list lives
+       * only in the text the buyer just read. Read it back from there.
+       */
+      const shownSectors = sectorsShownIn(
+        [...chatHistory].reverse().find(m => m.role === 'assistant')?.content ?? '',
+      )
+
       const ref = resolveOrdinalReference(message, shownProjects)
       const sup = ref ? null : resolveSuperlativeReference(message, shownProjects)
       const resolved = ref?.project ?? sup?.project ?? null
@@ -970,7 +981,29 @@ router.post('/', async (req: Request, res: Response) => {
        * clarification will sometimes offer a candidate instead, and offering a
        * candidate is the bug.
        */
-      if (!resolved && needsShownContext(message) && shownProjects.length === 0) {
+      /**
+       * The same pointer, aimed at a sector.
+       *
+       * Only when no project resolved: a shortlist on screen is the stronger
+       * referent, and "the second one" after five cards means the second card,
+       * not the second sector mentioned somewhere in the prose above them.
+       */
+      let resolvedSector: string | null = null
+      if (!resolved) {
+        const secRef = resolveSectorReference(message, shownSectors)
+        if (secRef) {
+          resolvedSector = secRef.sector
+          intent.sector = secRef.sector
+          intent.spatialScope = undefined
+          console.log('[CHAT:REFERENT_SECTOR]', {
+            kind: `position ${secRef.index + 1}`,
+            resolved: secRef.sector,
+            of: shownSectors,
+          })
+        }
+      }
+
+      if (!resolved && !resolvedSector && needsShownContext(message) && shownProjects.length === 0) {
         console.log('[CHAT:REFERENT_UNRESOLVED]', { q: message.slice(0, 60) })
         send('token', {
           token:
@@ -1916,7 +1949,33 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
      * Normalising the subject once beats hyphenating fourteen patterns and
      * remembering to do it in the fifteenth.
      */
-    const topicText = message.replace(/[-_/]+/g, ' ').replace(/\s+/g, ' ')
+    /**
+     * The subject of the question, with the project's own name taken out.
+     *
+     * Every topic pattern below runs over this string, and a project name is
+     * not a topic. Measured in production: "When is possession for Ace
+     * Parkway?" and "What is near Ace Parkway?" both came back with a
+     * byte-identical list of amenities, because `park` is in the amenity
+     * alternation and "Ace Par**k**way" contains it. Three different questions,
+     * one wrong answer. The same collision silently suppressed the
+     * configuration handler — two topic flags lit, `singleTopic` went false,
+     * and both handlers declined, so a question with a purpose-built table
+     * renderer fell through to the generic prose path.
+     *
+     * Adding a word boundary to `park` fixes one project. Taking the name out
+     * fixes every project — Green Court, Spa Residences, The Golf Address and
+     * whatever is onboarded next month, none of which are asking about a golf
+     * course.
+     */
+    const topicText = (intent.projectNames ?? [])
+      .filter((n): n is string => typeof n === 'string' && n.length > 2)
+      .reduce(
+        (text, name) => text.replace(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), ' '),
+        message,
+      )
+      .replace(/[-_/]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
     const isSectorCompare = sectorMatches.length >= 2 && /compare|vs|versus|better|difference|which sector|between/i.test(topicText)
     const isSummaryRequest = /summarize|summary|entire session|weightage/i.test(topicText)
     const isCompareRequest = (intent as any)?.is_comparison_query || (intent.projectNames && intent.projectNames.length >= 2) || /\bcompare\b/i.test(topicText) || isSectorCompare
@@ -1958,8 +2017,16 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
       (intent.projectNames?.length ?? 0) < 2
     const isNewcomerOrientation = /(new to noida|new to (the )?city|don'?t know (this area|this city|the area)|which sector|best sector|where (should|to) (buy|look)|area guide|sector guide|best area for family|best area near)/i.test(topicText) && (sectorMatches.length === 0 || /which sector/i.test(topicText))
     const isReadyToMoveQuery = !isInventorySearch && /\b(ready to move|rtm|occupancy certificates?|which.*ready|ready propert(y|ies)|ready flats?)\b/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest
-    const isAmenityQuery = !isInventorySearch && /(amenit|sports|clubhouse|club|gym|fitness|pool|swimming|snooker|billiards|table tennis|squash|tennis|badminton|cricket|playground|play area|kid'?s? play|creche|daycare|park|green cover|open space|ev charg|theatre|library|banquet|spa|sauna|jacuzzi|which society has the best|best amenit|lifestyle|court|jogging|skating|golf)/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest
-    const isConnectivityQuery = !isInventorySearch && /(connectivity|distance to|how far|metro proximity|airport distance|jewar|expressway access|transit|commute)/i.test(topicText) && !isPaymentPlanRequest
+    const isAmenityQuery = !isInventorySearch && // The short tokens carry word boundaries. Without them `spa` matched inside
+// "spacious", `park` inside "parking" and `court` inside "courtyard" — each
+// one turning an unrelated question into an amenity answer.
+/(amenit|sports|clubhouse|\bclubs?\b|\bgym\b|fitness|\bpools?\b|swimming|snooker|billiards|table tennis|squash|tennis|badminton|cricket|playground|play area|kid'?s? play|creche|daycare|\bparks?\b|green cover|open space|ev charg|theatre|library|banquet|\bspa\b|sauna|jacuzzi|which society has the best|best amenit|lifestyle|\bcourts?\b|jogging|skating|\bgolf\b)/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest
+    const isConnectivityQuery = !isInventorySearch && // "What is near X" and "what's around it" are the same question as "how far
+// is the metro", and reached no handler — the connectivity table renders the
+// stored road distances and travel times, so the answer existed and the
+// matcher was the only thing missing.
+/(connectivity|distance to|how far|metro proximity|airport distance|jewar|expressway access|transit|commute)/i.test(topicText)
+      || /\b(what(?:'s| is| are)?\s+(?:all\s+)?(?:near|nearby|around|close to)|anything\s+near|nearby\s+(?:landmarks?|places?|amenities|schools?|hospitals?|malls?|metro)|what\s+surrounds)\b/i.test(topicText) && !isPaymentPlanRequest
     const isConfigurationQuery = !isInventorySearch && /(balcon|bedroom|bathroom|carpet area|super area|sqft|square feet|size of|how big|how many (balconies|rooms|bhk|bathrooms)|configuration|unit type|floor plan)/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest
     const isTotalOutflowQuery = /(total (price|cost|amount|outflow)|on.?road|all.?inclusive price|how much (in total|total will it cost)|with registry|final price)/i.test(topicText)
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId

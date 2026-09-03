@@ -80,9 +80,35 @@ export const amenityLifestyleHandler: ChatTopicHandler = {
         // captured the data, which is a different statement from "this
         // project has no amenities" — say the former, never imply either.
         if (amList.length > 0) amenityTiers.push('verified')
-        const amenityBlock = amList.length > 0
-          ? `**Verified Project Amenities:**\n${amList.slice(0, 8).map(a => `• ${a}`).join('\n')}`
-          : unverified('amenity list', targetProject.name)
+
+        /**
+         * Grouped into a table, and not truncated when the buyer asked for all.
+         *
+         * The previous block printed a flat bullet list capped at eight, which
+         * on "what ALL amenities are offered" answered a different question
+         * than the one asked — a project with thirty recorded amenities showed
+         * eight and said nothing about the other twenty-two. The cap now only
+         * applies to an incidental mention; an explicit request for the full
+         * list gets the full list, grouped by the category already stored on
+         * every row so thirty entries stay readable.
+         */
+        const wantsAll = /\b(all|full|complete|every|entire|list|what all)\b/i.test(ctx.message)
+        const byCategory = new Map<string, string[]>()
+        for (const a of targetProject.amenities) {
+          const key = String(a.category ?? 'OTHER').replace(/_/g, ' ')
+          const label = key.charAt(0) + key.slice(1).toLowerCase()
+          if (!byCategory.has(label)) byCategory.set(label, [])
+          byCategory.get(label)!.push(a.name)
+        }
+        const amenityBlock = amList.length === 0
+          ? unverified('amenity list', targetProject.name)
+          : byCategory.size > 1
+            ? `| Category | Amenities |\n| :--- | :--- |\n${
+                [...byCategory.entries()]
+                  .map(([cat, names]) => `| **${cat}** | ${(wantsAll ? names : names.slice(0, 6)).join(' · ')}${!wantsAll && names.length > 6 ? ` · +${names.length - 6} more` : ''} |`)
+                  .join('\n')
+              }\n\n_${amList.length} amenities recorded for ${targetProject.name}._`
+            : `**Verified Project Amenities:**\n${(wantsAll ? amList : amList.slice(0, 8)).map(a => `• ${a}`).join('\n')}${!wantsAll && amList.length > 8 ? `\n\n_…and ${amList.length - 8} more — ask for the full list._` : ''}`
 
         // open_space_pct is a per-project figure; a Noida-wide band cannot
         // stand in for it, so it is simply omitted when absent.

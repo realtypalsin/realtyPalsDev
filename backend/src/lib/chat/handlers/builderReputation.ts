@@ -1,4 +1,28 @@
 import type { ChatTopicHandler } from '../handlerContext'
+import { prisma } from '../../db'
+
+/**
+ * What the numbers in this table actually are.
+ *
+ * A buyer asking "what is the builder score" is asking two questions, and the
+ * second one — on what basis — matters more. These are stored columns on the
+ * developer, entered and reviewed by our analysts from delivery history and
+ * RERA filings. They are not computed live, not a public rating, and not
+ * sourced from the developer. Saying so costs one line and is the difference
+ * between a figure a buyer can weigh and a figure they have to trust blindly.
+ *
+ * This is the same reason `ProjectDna` scores stay internal: an unexplained
+ * number presented as a rating is the fake confidence score CLAUDE.md forbids.
+ * A number WITH its basis is not that.
+ */
+const SCORE_BASIS =
+  '**How to read these.** They are our own analyst assessment, recorded per ' +
+  'developer from completed-project handover dates, RERA filing history and ' +
+  'site inspections — not a public rating, not supplied by the developer, and ' +
+  'not recalculated live. Delivery score weighs completed handovers against ' +
+  'committed dates; construction quality and RERA compliance are reviewed per ' +
+  'delivered project. Treat them as a record of past projects, not a ' +
+  'guarantee about this one.'
 
 /**
  * The developer track record: delivery scores, handover delay, RERA compliance.
@@ -26,6 +50,40 @@ export const builderReputationHandler: ChatTopicHandler = {
     ctx.flags.isBuilderReputationQuery === true && ctx.flags.isBuilderCompare !== true,
 
   handle: async ctx => {
+      /**
+       * "What is the builder score for Ace Parkway?" is a question about ACE
+       * Group. Measured in production, it was answered with a league table of
+       * the six best-scoring developers in Noida — none of them ACE — and three
+       * chips offering to show projects by the other three. The buyer asked
+       * about the developer behind the building they are considering and got
+       * everyone except them.
+       *
+       * With a project in focus, that developer leads and the league table
+       * follows as context.
+       */
+      const focusName = ctx.activeProjectName
+      const focusBuilder = focusName
+        ? (await prisma.project.findFirst({
+            where: {
+              OR: [
+                { name: { contains: focusName, mode: 'insensitive' } },
+                { slug: { contains: focusName, mode: 'insensitive' } },
+              ],
+            },
+            select: {
+              name: true,
+              builder: {
+                select: {
+                  id: true, name: true, founded_year: true,
+                  delivery_score: true, average_delay_months: true,
+                  projects_delivered_count: true, total_projects_count: true,
+                  construction_quality_score: true, rera_compliance_score: true,
+                },
+              },
+            },
+          }))
+        : null
+
       const topBuilders = ctx.builders
         .filter(b => b.delivery_score && b.delivery_score > 0)
         .sort((a, b) => (b.delivery_score ?? 0) - (a.delivery_score ?? 0))
@@ -46,29 +104,79 @@ export const builderReputationHandler: ChatTopicHandler = {
         return `| **${b.name}** | ${b.delivery_score != null ? `${b.delivery_score}/100` : '—'} | ${delayStr} | ${deliveredStr} | ${qualStr} | ${reraStr} |`
       }).join('\n')
 
+      /**
+       * The focus developer's own scorecard, as a metric-per-row table.
+       *
+       * Rows are omitted rather than dashed when we hold nothing — a table of
+       * six dashes reads as a bad score, which is the specific misreading the
+       * league table's dash note exists to prevent. If nothing at all is
+       * recorded, say that in words instead of printing an empty table.
+       */
+      const focusBlock = (() => {
+        const b = focusBuilder?.builder
+        if (!b) return ''
+        const rows: string[] = []
+        const add = (metric: string, value: string | null, basis: string) => {
+          if (value != null) rows.push(`| ${metric} | ${value} | ${basis} |`)
+        }
+        add('Delivery score', b.delivery_score != null ? `**${b.delivery_score}/100**` : null,
+          'Completed handovers against committed dates')
+        add('Average handover delay', b.average_delay_months == null ? null
+          : b.average_delay_months === 0 ? 'On time' : `${b.average_delay_months} months`,
+          'Mean slippage across delivered projects')
+        add('Projects delivered', b.projects_delivered_count != null ? String(b.projects_delivered_count) : null,
+          'Completed and handed over')
+        add('Projects in progress', b.total_projects_count != null && b.projects_delivered_count != null
+          ? String(Math.max(0, b.total_projects_count - b.projects_delivered_count)) : null,
+          'Under construction or launched')
+        add('Construction quality', b.construction_quality_score != null ? `${b.construction_quality_score}/100` : null,
+          'Reviewed per delivered project')
+        add('RERA compliance', b.rera_compliance_score != null ? `${b.rera_compliance_score}/100` : null,
+          'Filing and disclosure history')
+        add('Operating since', b.founded_year != null ? String(b.founded_year) : null, 'Year founded')
+
+        const head = `### ${b.name} — the developer behind ${focusBuilder?.name ?? focusName}\n\n`
+        if (rows.length === 0) {
+          return `${head}We do not hold a scored track record for ${b.name}. That is a gap in our data, not a poor record — the advisory team can pull their delivery history directly.\n\n`
+        }
+        return `${head}| Metric | ${b.name} | What it is based on |\n| :--- | :--- | :--- |\n${rows.join('\n')}\n\n${SCORE_BASIS}\n\n`
+      })()
+
       const topSafeNames = topBuilders.slice(0, 3).map(b => b.name).join(', ')
       // The closing line named `topSafeNames || 'reputable tier-1 builders'`.
       // With no builders on record it recommended prioritising "reputable
       // tier-1 builders" — a recommendation with no referent, on the exact
       // question the buyer asked. It now only names builders we actually
       // scored, and says nothing when there are none.
-      const reputationText = `### Developer track record (Noida & Greater Noida)
+      const reputationText = `${focusBlock}### ${focusBlock ? 'How they compare' : 'Developer track record (Noida & Greater Noida)'}
 
 | Developer | Delivery score | Avg handover delay | Delivered | Construction quality | RERA compliance |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 ${builderRows}
 
-A dash means we have not scored that dimension for the developer — it is not a low score.${topSafeNames ? `\n\n**On this data**, ${topSafeNames} carry the strongest delivery records of those we hold. Delivery history is the best available predictor of handover risk, but it is a record of past projects, not a guarantee about this one.` : ''}`
+A dash means we have not scored that dimension for the developer — it is not a low score.${focusBlock ? '' : `\n\n${SCORE_BASIS}`}${topSafeNames && !focusBlock ? `\n\n**On this data**, ${topSafeNames} carry the strongest delivery records of those we hold. Delivery history is the best available predictor of handover risk, but it is a record of past projects, not a guarantee about this one.` : ''}`
 
-      const repChips = topBuilders.slice(0, 3).map((b, i) => ({
-        id: `chip_b_${i}_${Date.now()}`,
-        actionType: 'TEXT_MESSAGE',
-        label: `Projects by ${b.name}`,
-        icon: 'building',
-        analyticsId: `chip_b_${b.id}`,
-        priority: i + 1,
-        payload: { text: `Show me projects by ${b.name}` }
-      }))
+      /**
+       * With a project in focus, the next step is about that project. Offering
+       * "Projects by Purvanchal" to someone asking about ACE Parkway's
+       * developer sends them away from the thing they were assessing.
+       */
+      const focusProjectName = focusBuilder?.name ?? focusName
+      const repChips = focusBlock && focusProjectName
+        ? [
+            { id: `chip_bp_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: `Other projects by ${focusBuilder?.builder?.name ?? 'this developer'}`, icon: 'building', analyticsId: 'chip_b_focus', priority: 1, payload: { text: `Show me projects by ${focusBuilder?.builder?.name ?? ''}` } },
+            { id: `chip_br_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: `Is ${focusProjectName} RERA clean?`, icon: 'shield-check', analyticsId: 'chip_b_rera', priority: 2, payload: { text: `Is ${focusProjectName} RERA registered?` } },
+            { id: `chip_bd_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: `Possession timeline`, icon: 'calendar', analyticsId: 'chip_b_poss', priority: 3, payload: { text: `When is possession for ${focusProjectName}?` } },
+          ]
+        : topBuilders.slice(0, 3).map((b, i) => ({
+            id: `chip_b_${i}_${Date.now()}`,
+            actionType: 'TEXT_MESSAGE',
+            label: `Projects by ${b.name}`,
+            icon: 'building',
+            analyticsId: `chip_b_${b.id}`,
+            priority: i + 1,
+            payload: { text: `Show me projects by ${b.name}` }
+          }))
 
       ctx.send('token', { token: reputationText })
       ctx.emitUiState({

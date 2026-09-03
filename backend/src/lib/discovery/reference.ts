@@ -181,3 +181,83 @@ export function needsShownContext(message: string): boolean {
     SUPERLATIVES.some(([re]) => re.test(text))
   )
 }
+
+/**
+ * The same pointer, aimed at a sector rather than a project.
+ *
+ * Measured: after "Sector 62 vs Sector 79", the follow-up "The second one."
+ * resolved to nothing — `shown` holds projects, and two sectors had been
+ * compared in prose without a card between them. The turn asked for
+ * clarification, which is honest but is still a wasted turn on the single most
+ * natural follow-up a comparison can have.
+ *
+ * A sector is not a row we can look up by id, so this returns the label and the
+ * caller sets `intent.sector`. The ordered list comes from the last answer's own
+ * text — the sectors it named, in the order it named them, which is exactly the
+ * order the buyer is counting.
+ */
+const SECTOR_NOUN = '(?:one|option|sector|area|belt|location|choice|pick|micro[- ]?market)s?'
+const SECTOR_ORDINALS: Array<[RegExp, number]> = [
+  // String.raw, not a plain template: in a template literal `\b` is a backspace
+  // character and `\s` is the letter s, so the pattern silently becomes
+  // something that matches nothing. The alternations above predate this file's
+  // move to interpolated nouns and escape by hand; raw is harder to get wrong.
+  [new RegExp(String.raw`\b(?:the\s+)?(?:1st|first|former|topmost)\s+${SECTOR_NOUN}\b`, 'i'), 0],
+  [new RegExp(String.raw`\b(?:the\s+)?(?:2nd|second|latter)\s+${SECTOR_NOUN}\b`, 'i'), 1],
+  [new RegExp(String.raw`\b(?:the\s+)?(?:3rd|third)\s+${SECTOR_NOUN}\b`, 'i'), 2],
+  [new RegExp(String.raw`\b(?:the\s+)?last\s+${SECTOR_NOUN}\b`, 'i'), -1],
+  // Bare, noun implicit — "what about the second?", "the former".
+  [/\b(?:about|for|on)\s+(?:the\s+)?(?:1st|first)\b/i, 0],
+  [/\b(?:about|for|on)\s+(?:the\s+)?(?:2nd|second)\b/i, 1],
+  // "former" and "latter" need no noun and no anchor — they are unambiguous
+  // anaphors with no other meaning in a property conversation.
+  [/\b(?:the\s+)?former\b/i, 0],
+  [/\b(?:the\s+)?latter\b/i, 1],
+]
+
+/**
+ * Sectors named in a block of text, in order, without repeats.
+ *
+ * Deliberately reads the ANSWER rather than a stored list: a sector comparison
+ * is rendered as prose or a table, not as cards, so there is no `last_projects`
+ * equivalent to read. The text the buyer just read is the list they are
+ * pointing into.
+ */
+export function sectorsShownIn(text: string): string[] {
+  const out: string[] = []
+  const seen = new Set<string>()
+  for (const m of (text ?? '').matchAll(/\bSector\s+(\d+[A-Za-z]?)\b/gi)) {
+    const label = `Sector ${m[1].toUpperCase()}`
+    if (seen.has(label)) continue
+    seen.add(label)
+    out.push(label)
+  }
+  return out
+}
+
+/**
+ * Which of the sectors just named does this message point at?
+ *
+ * Requires at least two — a pointer into a list of one is not a pointer, and
+ * resolving it would let "the second one" silently mean the only sector on
+ * screen.
+ */
+export function resolveSectorReference(
+  message: string,
+  shown: readonly string[],
+): { sector: string; index: number } | null {
+  if (shown.length < 2) return null
+  const text = (message ?? '').trim()
+  if (!text) return null
+  // A message that names a sector outright is not pointing at a position.
+  if (/\bSector\s+\d/i.test(text)) return null
+
+  for (const [re, idx] of SECTOR_ORDINALS) {
+    if (!re.test(text)) continue
+    const index = idx === -1 ? shown.length - 1 : idx
+    const sector = shown[index]
+    if (!sector) return null
+    return { sector, index }
+  }
+  return null
+}
