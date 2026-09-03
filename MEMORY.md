@@ -1717,3 +1717,69 @@ model call on the critical path.
   through official builder channels" was said about a booking we have no record
   of. The over-promise softener does not cover it.
 * **Discovery latency 8-18s locally**, unevenly spread.
+
+---
+
+## Session 2026-09-04 (cont.) — the four open items
+
+All four closed. The first two turned out to be the same bug with different
+authors, and both were found by **measuring the column rather than reading the
+code**.
+
+### Measure the distribution before trusting a field
+
+| Field | Distribution | Verdict |
+|---|---|---|
+| `recommendation_profile.tier` | STRONG_BUY on **280 of 280** | constant, withheld |
+| `Project.buyer_satisfaction_rating` | **92 of 94** are exactly 4.7 | template, withheld |
+| `Project.ceiling_height_ft` | **190 of 280** are exactly 10.2 | schema default, withheld per row |
+| `Project.mobile_network_rating` | **219 of 280** are exactly 4 | same |
+| `Project.lifts_per_tower` | **166 of 280** are exactly 3 | same |
+| `Builder.projects_delivered_count` | **105 of 105 NULL** | default never fired; landmine |
+| `Builder.delivery_score` etc. | spread 80–93 | **real — kept** |
+
+**The last row is the point.** The builder scores look exactly as suspicious as
+the others and are genuinely researched. Suppressing a field because it *sounds*
+like a synthetic score would have deleted the one honest scorecard in the
+product. `SELECT column, count(*) GROUP BY column` is the whole method.
+
+**Two distinct mechanisms, because the failures differ.** A field with ONE value
+carries no information at all — withhold the column (`SYNTHETIC_FIELDS`). A
+field where a third of rows are real cannot be dropped, because the real third
+is useful; withhold the individual value when it equals the old default
+(`SCHEMA_DEFAULT_SENTINELS`). The second case is the more dangerous of the two:
+for one project the default is indistinguishable from a measurement.
+
+### Softening a verb is not enough when the clause is the claim
+
+"Please rest assured that your funds are securely processed through official
+builder channels" — said to a buyer alleging their token had been taken, about a
+booking we have no record of. No verb swap fixes that sentence, so it is removed
+whole and replaced with one honest line, the same shape as the off-platform
+referral rewrite.
+
+`guarantees` was only ever the most obvious verb. `confirms`, `ensures`,
+`reflects` and `protects` carry the same promise. Known cosmetic cost: replacing
+a mid-sentence verb phrase can leave a slightly awkward tail
+("…is on record as filed with the authority tracking while construction
+progresses"). Honest and clumsy beats fluent and false; not worth a smarter
+rewriter.
+
+### A guard cannot fix a problem that spans a buffer boundary
+
+The referral rewrite's sentence-boundary lookbehind fixed the trimmed-terminator
+splice and could not fix the streaming one: the referral sentence is longer than
+the 180-char tail hold, so part of it has already reached the buyer before the
+rest is rewritten, and `^` in the lookbehind is exactly the start of that
+fragment. The fix is a character check on what precedes the insertion point, and
+refusing the rewrite — a stray referral breaks a prompt rule, a spliced word
+makes the whole reply look broken.
+
+### Migration written, deliberately not applied
+
+`prisma/migrations/drop_fabricated_defaults/migration.sql` — four
+`ALTER COLUMN … DROP DEFAULT`. DDL only, no row touched, reversible. Left for a
+human to run per CLAUDE.md's rule on migrations. **Until it runs, the schema and
+the database disagree**: Prisma omits the column and Postgres still supplies the
+default, so a new insert can still inherit 18 delivered projects. Buyer-facing
+output is protected either way by the sentinel guard.
