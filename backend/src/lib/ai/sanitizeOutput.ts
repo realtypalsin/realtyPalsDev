@@ -35,8 +35,26 @@ const PLATFORMS =
  * character classes. The cost of being wrong here is silent deletion of real
  * content, which is worse than leaving a referral in.
  */
+/**
+ * Anchored to a sentence boundary, so the replacement can never land mid-word.
+ *
+ * Measured live, in an answer about 2 BHK options in Sector 168:
+ *
+ *   "For under-construction propertYou can follow this project's verified RERA
+ *    standing and construction timeline on its project page."
+ *
+ * `[^.!?\n]*` starts wherever the engine can first reach the keyword, and when
+ * an upstream trim had already removed the terminator that began the sentence,
+ * that position was inside a word. The reader sees a typo in the middle of our
+ * own reassurance sentence, which undermines the sentence.
+ *
+ * The lookbehind requires the match to begin at the start of the text or just
+ * after a sentence terminator or newline. A referral we therefore fail to
+ * rewrite is left intact, which is the safe direction — a stray referral is a
+ * rule violation, a spliced word is visible corruption.
+ */
 const OFFPLATFORM_REFERRAL =
-  /[^.!?\n]*\b(?:up-?rera\.in|rera\.up\.gov\.in|the\s+(?:state\s+)?rera\s+(?:portal|website)|builder'?s?\s+(?:own\s+)?website|google)\b[^.!?\n]*[.!?]?\s*/gi
+  /(?<=^|[.!?\n]\s{0,3})[^.!?\n]*\b(?:up-?rera\.in|rera\.up\.gov\.in|the\s+(?:state\s+)?rera\s+(?:portal|website)|builder'?s?\s+(?:own\s+)?website|google)\b[^.!?\n]*[.!?]?\s*/gi
 
 /**
  * What replaces it: the same reassurance, pointed at our own page.

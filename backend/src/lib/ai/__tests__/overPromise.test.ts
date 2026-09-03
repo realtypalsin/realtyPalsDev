@@ -32,3 +32,20 @@ describe('guarantees we cannot make', () => {
     assert.equal(r.text, text)
   })
 })
+
+describe('the off-platform referral rewrite', () => {
+  it('never splices into the middle of a word', () => {
+    // Measured live: "For under-construction propertYou can follow this
+    // project's verified RERA standing…" — the match began inside a word
+    // because an upstream trim had removed the sentence terminator.
+    const truncated = 'For under-construction propert, verify the RERA portal listing first'
+    const out = sanitizeOutput(truncated).text
+    assert.ok(!/propertYou/.test(out), out)
+  })
+
+  it('still rewrites a referral that opens a sentence', () => {
+    const out = sanitizeOutput('Prices are firm. Always verify current status on the RERA portal before booking.').text
+    assert.ok(!/rera\s+portal/i.test(out), out)
+    assert.ok(/project page/.test(out), out)
+  })
+})

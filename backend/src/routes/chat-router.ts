@@ -1044,9 +1044,38 @@ router.post('/', async (req: Request, res: Response) => {
        * there is no `last_projects` equivalent to point into — the list lives
        * only in the text the buyer just read. Read it back from there.
        */
-      const shownSectors = sectorsShownIn(
+      /**
+       * The list the buyer is counting is the one they wrote, not the one we
+       * rendered.
+       *
+       * This read the last assistant message, and on a sector comparison that
+       * message contains a micro-market rate table listing every sector in the
+       * corridor: "Sector 50, Sector 93A, Sector 70, Sector 74, Sector 93B,
+       * Sector 94, Sector 45, Sector 62…". So after "Sector 62 Gurgaon vs
+       * Sector 79 Noida", "the second one" resolved to Sector 93A — table
+       * order, not the order of the question.
+       *
+       * A buyer who names two sectors and then says "the second one" means the
+       * second one THEY named. Their own message is the ordered list, and it is
+       * also immune to whatever we happened to render underneath it. The
+       * assistant text stays as the fallback for the case where we named the
+       * options and they did not.
+       */
+      const lastUserSectors = (() => {
+        for (const m of [...chatHistory].reverse()) {
+          if (m.role !== 'user') continue
+          const named = sectorsShownIn(m.content)
+          if (named.length >= 2) return { sectors: named, source: m.content }
+        }
+        return null
+      })()
+      const shownSectors = lastUserSectors?.sectors ?? sectorsShownIn(
         [...chatHistory].reverse().find(m => m.role === 'assistant')?.content ?? '',
       )
+      const shownSectorSource =
+        lastUserSectors?.source ??
+        [...chatHistory].reverse().find(m => m.role === 'assistant')?.content ??
+        ''
 
       const ref = resolveOrdinalReference(message, shownProjects)
       const sup = ref ? null : resolveSuperlativeReference(message, shownProjects)
@@ -1085,6 +1114,47 @@ router.post('/', async (req: Request, res: Response) => {
       if (!resolved) {
         const secRef = resolveSectorReference(message, shownSectors)
         if (secRef) {
+          /**
+           * A pointer can land on the half we already said we cannot cover.
+           *
+           * "Sector 62 Gurgaon vs Sector 79 Noida" then "what about the first
+           * one though?" points at GURGAON's Sector 62. Noida has a Sector 62
+           * too, and answering with ours — "we hold one project in Sector 62,
+           * Stellar Park" — is the wrong-city answer arriving by a different
+           * route than the one already guarded.
+           *
+           * The city is still there in the text the list came from, so it can
+           * be re-read rather than persisted.
+           */
+          const num = /(\d+[A-Za-z]?)/.exec(secRef.sector)?.[1]
+          const at = num
+            ? new RegExp(`sector\\s*${num}\\b`, 'i').exec(shownSectorSource)
+            : null
+          const foreign = at
+            ? outOfScopeCity(shownSectorSource.slice(at.index + at[0].length, at.index + at[0].length + 24))
+            : null
+
+          if (foreign) {
+            console.log('[CHAT:REFERENT_SECTOR_FOREIGN]', { sector: secRef.sector, city: foreign })
+            send('token', {
+              token:
+                `That one's ${secRef.sector} in ${foreign} — outside ${PILOT_SCOPE_LABEL}, so I still can't put real numbers against it. ` +
+                `${foreign} has a Sector ${num} and so does Noida, and answering with ours would be a different place entirely.\n\n` +
+                `Say the word and I'll take the ${shownSectors.filter(s => s !== secRef.sector).join(' or ')} side properly instead.`,
+            })
+            emitUiState({
+              stage: 'GATHERING',
+              thinking: `${secRef.sector} is in ${foreign}.`,
+              chips: [],
+              missingFields: [],
+              confidence: 'HIGH',
+            }, { skipDedup: true })
+            send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
+            persistEarlyTurn('referent-foreign', lastAnswerText)
+            res.end()
+            return
+          }
+
           resolvedSector = secRef.sector
           intent.sector = secRef.sector
           intent.spatialScope = undefined
@@ -1721,9 +1791,25 @@ router.post('/', async (req: Request, res: Response) => {
        * must not decide what a turn is about. So the sector has to be named in
        * THIS message, or the message has to be asking about an area.
        */
+      /**
+       * A sector a pointer resolved to on THIS turn was named on this turn.
+       *
+       * The gate below exists to stop a *sticky* sector hijacking a turn, and
+       * it could not tell sticky from just-resolved. Measured: "Sector 62 vs
+       * Sector 79", then "The second one." — the referent resolved Sector 79
+       * correctly and logged it, and this gate then declined the sector lane
+       * because the words "sector 79" are not in the message. The turn fell
+       * through to a coverage block listing Sectors 78, 75 and 77, which is the
+       * failure the referent was built to remove.
+       *
+       * The same shape as `isReraCheckQuery` reading zero project names before
+       * the focus was carried: a guard that runs on the raw message cannot see
+       * what an earlier stage resolved. It has to be told.
+       */
       // `sectorMatches` is computed further down the handler, so this reads the
       // message directly rather than reordering the pipeline for one gate.
       const sectorNamedNow =
+        Boolean(resolvedSector) ||
         /\bsector\b|\bexpressway\b|\bextension\b|\bgreater\s+noida\b/i.test(message)
       const asksAboutTheArea =
         /\b(area|locality|neighbou?rhood|micro[- ]?market|what.*like|liveab|livab|worth|good for|compare|vs\b)\b/i.test(message)
@@ -2272,7 +2358,48 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
       return Array.from(sectorsFound)
     }
 
-    const sectorMatches = extractSectorsFromMessage(message)
+    /**
+     * A sector attached to a city we do not cover is not one of our sectors.
+     *
+     * Measured: "Find me apartments in Sector 62 Gurgaon vs Sector 79 Noida"
+     * rendered a two-column comparison of Sector 62 against Sector 79 — using
+     * NOIDA's Sector 62 (one project, Stellar Park) for the Gurgaon column.
+     * Both cities have a Sector 62, and the buyer was shown one city's stock
+     * under another city's name, which is the exact rule in CLAUDE.md about
+     * never presenting an unsupported city as available inventory.
+     *
+     * `outOfScopeCity` already caught this and dropped `intent.sector`; the
+     * comparison path reads `sectorMatches`, which is extracted straight from
+     * the message and was never filtered. So the guard fired and the wrong
+     * answer went out anyway.
+     *
+     * Only the sector actually attached to the foreign city is dropped —
+     * "Sector 79 Noida" in the same sentence survives, and the buyer gets the
+     * half we can answer plus a plain note about the half we cannot.
+     */
+    const droppedForeignSectors: string[] = []
+    const sectorMatches = extractSectorsFromMessage(message).filter(s => {
+      const num = /(\d+[A-Za-z]?)/.exec(s)?.[1]
+      if (!num) return true
+      // The 24 characters after the sector number — enough for ", Gurgaon" or
+      // " Gurgaon vs" and short enough not to reach the next sector.
+      const at = new RegExp(`sector\\s*${num}\\b`, 'i').exec(message)
+      if (!at) return true
+      const after = message.slice(at.index + at[0].length, at.index + at[0].length + 24)
+      if (outOfScopeCity(after)) {
+        droppedForeignSectors.push(`${s} ${outOfScopeCity(after)}`)
+        return false
+      }
+      return true
+    })
+    if (droppedForeignSectors.length > 0) {
+      console.log('[CHAT:FOREIGN_SECTOR_DROPPED]', droppedForeignSectors)
+      send('token', {
+        token:
+          `${droppedForeignSectors.join(' and ')} — that's outside ${PILOT_SCOPE_LABEL}, so I can't put real numbers against it. ` +
+          `Here's what I do hold.\n\n`,
+      })
+    }
 
     /**
      * The message as the topic patterns below expect to see it.
@@ -3561,9 +3688,27 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
      * systemPromptCache; this is the half that makes the answer useful.
      */
     const asksToSeeInventoryHere =
-      Boolean(intent.sector) &&
-      /\b(societ(y|ies)|projects?|flats?|apartments?|properties|options?|builders?)\b/i.test(message ?? '') &&
-      /\b(best|top|which|show|list|find|recommend|suggest|good|any|what)\b/i.test(message ?? '')
+      /**
+       * A pointer that resolved to a sector IS a request to see that sector.
+       *
+       * "Sector 62 Gurgaon vs Sector 79 Noida", then "The second one." The
+       * referent resolved Sector 79 and the sector lane accepted it, and then
+       * retrieval never ran — this gate needs an inventory noun and a request
+       * verb, and "The second one." has neither. So `projects` was empty, the
+       * facts block was empty, and the model filled the hole with a coverage
+       * story: "we do not track verified inventory directly inside Sector 79",
+       * about a sector holding seventeen projects, one turn after our own table
+       * had shown its price band.
+       *
+       * That is the worst class of answer this product can produce — not a
+       * refusal, not a guess, but a confident denial of inventory we hold. The
+       * referent's whole purpose is to say which sector the buyer means; once
+       * it has, the shelf is what they asked for.
+       */
+      Boolean(resolvedSector) ||
+      (Boolean(intent.sector) &&
+        /\b(societ(y|ies)|projects?|flats?|apartments?|properties|options?|builders?)\b/i.test(message ?? '') &&
+        /\b(best|top|which|show|list|find|recommend|suggest|good|any|what)\b/i.test(message ?? ''))
 
     /**
      * The same question with no place attached: "which is the best project in
