@@ -2400,7 +2400,32 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
           builders: dbBuilders,
           activeProjectName: activeProjectName ? String(activeProjectName) : undefined,
           sectorMatches,
-          setCachedResponse,
+          /**
+           * Handlers were handed the raw cache writer, with none of the guards
+           * the main path applies to itself: no scope, no intent fingerprint,
+           * and no check that the answer is project-free.
+           *
+           * So a builder scorecard written for ACE Parkway was stored under the
+           * bare text "and the builder score?" and would be replayed to the
+           * next buyer who typed those words about a different project. The
+           * three handlers that cache — builder reputation, payment plans,
+           * newcomer orientation — all became able to answer about the wrong
+           * building.
+           *
+           * It also cached the answers this session was in the middle of
+           * fixing, which is how a redeployed league table kept coming back at
+           * 1.6 seconds.
+           */
+          setCachedResponse: (key, payload) => {
+            if ((intent.projectNames?.length ?? 0) > 0) return
+            setCachedResponse(
+              key,
+              payload,
+              undefined,
+              GLOBAL_SCOPE,
+              intentFingerprint(intent as Record<string, unknown>),
+            )
+          },
           catalog: allDbProjects,
           intentState,
           flags: {
