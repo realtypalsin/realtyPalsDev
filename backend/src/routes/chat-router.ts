@@ -1124,31 +1124,34 @@ router.post('/', async (req: Request, res: Response) => {
      * below.
      */
     {
-      const stated = (intent as { targetProjectId?: string }).targetProjectId
-      if (stated) {
-        focusProjectId = stated
-      } else if (intent.projectNames?.length === 1) {
+      focusProjectId = (intent as { targetProjectId?: string }).targetProjectId ?? null
+
+      if (!focusProjectId && intent.projectNames?.length === 1) {
         const focusRow = await prisma.project.findFirst({
           where: { name: { contains: String(intent.projectNames[0]), mode: 'insensitive' } },
           select: { id: true },
         })
         if (focusRow) focusProjectId = focusRow.id
-      } else {
-        /**
-         * Read the project out of the message itself.
-         *
-         * `intent.projectNames` cannot be relied on here. Measured: "Is Godrej
-         * Woods RERA registered?" was answered from Godrej Woods' own row and
-         * the extracted intent carried no project name at all — the project
-         * was resolved further down the pipeline, by a lane that then returned.
-         * So the focus stayed empty on precisely the turns where a project was
-         * clearly the subject.
-         *
-         * The catalogue is already loaded and cached for this turn. Longest
-         * match wins, so "Godrej Woods Phase 2" is not read as "Godrej Woods",
-         * and a single match is required — two projects named in one message is
-         * a comparison, which has no single focus.
-         */
+      }
+
+      /**
+       * Still nothing: read the project out of the message itself.
+       *
+       * Tried after the name lookup rather than instead of it, and that
+       * ordering is the whole point. The first version made this an `else`
+       * branch, so a turn where extraction produced a name that matches no row
+       * — a variant, a phase suffix, a misspelling — took the lookup branch,
+       * missed, and fell out with no focus, never reaching the fallback.
+       * Measured: "Is Godrej Woods RERA registered?" was answered from Godrej
+       * Woods' own row and still recorded no focus, so the next three turns
+       * answered about Sector 43 in general.
+       *
+       * The catalogue is already cached for this turn. Longest match wins, so
+       * "Godrej Woods Phase 2" is not read as "Godrej Woods", and every other
+       * match must be contained in it — two distinct projects in one message is
+       * a comparison, which has no single focus.
+       */
+      if (!focusProjectId) {
         const lower = message.toLowerCase()
         const hits = (await projectCatalog())
           .filter(p => p.name.length >= 6 && lower.includes(p.name.toLowerCase()))
