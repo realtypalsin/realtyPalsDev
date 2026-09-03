@@ -24,7 +24,7 @@
  */
 
 import { airportDistances } from './discovery/airports'
-import { redactProject, isPublicField, stripRelationInternals } from './projectExposure'
+import { redactProject, isPublicField, stripRelationInternals, isSchemaDefault } from './projectExposure'
 
 /** Columns rendered as "yes"/"no" rather than true/false. */
 const BOOLEAN_LABELS: Record<string, [string, string]> = {
@@ -247,6 +247,19 @@ export function projectScalarFacts(
   for (const [key, value] of Object.entries(safe)) {
     if (!isPublicField(key)) continue // relations are handled separately
     if (PROMPT_EXCLUDED_FIELDS.has(key)) continue
+    /**
+     * A value whose only provenance is a schema default is not a fact.
+     *
+     * Measured 4 Sep 2026: 190 of 280 projects carried ceiling_height_ft
+     * exactly 10.2, 219 carried mobile_network_rating exactly 4, and 166
+     * carried lifts_per_tower exactly 3 — the literals Postgres wrote because
+     * nobody filled the column in. A third of each column is real, which is
+     * what makes rendering them worse rather than better: for one project the
+     * default is indistinguishable from a measurement, and a buyer plans around
+     * a ceiling height. Withheld here rather than at the select, because the
+     * column is genuinely useful on the rows where it was researched.
+     */
+    if (isSchemaDefault(key, value)) continue
     if (options.shortlist && !SHORTLIST_FIELDS.has(key)) continue
     let formatted = formatValue(key, value)
     if (formatted === null) continue

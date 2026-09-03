@@ -4442,7 +4442,24 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
           // this, "which is better for a family: 74, 75, 76 or 78" got the full
           // city table — six micro-markets, none of them containing 75, 76 or
           // 78 — above prose that quoted different rates for the same sectors.
-          focusSectors: findSectorsAsked(message),
+          /**
+           * …and when they named none this turn, the sector already in scope.
+           *
+           * Measured: "Sector 62 Gurgaon vs Sector 79 Noida", then "The second
+           * one." (resolves Sector 79), then "Price?" — which returned the full
+           * city table, six micro-markets and twenty sectors, none of it an
+           * answer about Sector 79. A bare "Price?" is the most common
+           * follow-up there is and it carries no sector by design; the sector
+           * is what the previous two turns established.
+           *
+           * The appreciation branch above already does exactly this. This one
+           * read only the message, so a follow-up lost the subject.
+           */
+          focusSectors: (() => {
+            const asked = findSectorsAsked(message)
+            if (asked.length > 0) return asked
+            return intent.sector ? [String(intent.sector)] : []
+          })(),
         })
         // Without this the chips never learned a market table went on screen,
         // so the branch that follows one up has never run.

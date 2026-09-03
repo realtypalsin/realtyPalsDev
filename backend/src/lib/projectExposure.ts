@@ -46,6 +46,9 @@ export const INTERNAL_ONLY_FIELDS: Record<string, string> = {
   appreciation_potential_5yr: 'forward-looking estimate — the prompt forbids presenting projections as fact',
   rental_yield_annual_percent: 'forward-looking estimate — same rule',
   competing_projects_nearby: 'internal ranking input',
+  buyer_satisfaction_rating:
+    'batch-templated default, not a survey — 92 of the 94 populated rows are exactly 4.7 ' +
+    '(measured 4 Sep 2026). Presenting it implies buyer research we never did. See SYNTHETIC_FIELDS.',
 }
 
 /**
@@ -189,8 +192,8 @@ export const PROJECT_PUBLIC_SELECT = {
 
   // Build quality
   construction_quality_rating: true,
-  buyer_satisfaction_rating: true,
   handover_defect_rate: true,
+  // buyer_satisfaction_rating is deliberately absent — see SYNTHETIC_FIELDS.
 
   // Vastu & orientation
   vastu_compliant: true,
@@ -301,7 +304,7 @@ const UNIVERSAL_INTERNAL = ['id', 'project_id', 'unit_type_id', 'channel_partner
  */
 export const RELATION_INTERNAL_FIELDS: Record<string, readonly string[]> = {
   decision_profile: ['advisor_notes', 'recommendation_notes', 'confidence_sources', 'verified_by', 'last_verified_at', 'status'],
-  recommendation_profile: ['internal_confidence', 'admin_notes', 'verified_by', 'last_verified_at', 'status'],
+  recommendation_profile: ['internal_confidence', 'admin_notes', 'verified_by', 'last_verified_at', 'status', 'tier'],
   persona_profile: ['verified_by', 'last_verified_at'],
   cost_sheet: ['verified_by', 'verified_at'],
   payment_plans: ['verified_by', 'verified_at', 'notes'],
@@ -357,4 +360,83 @@ export function stripRelationInternals<T extends Record<string, unknown>>(
     out[key] = value
   }
   return out as Partial<T>
+}
+
+/**
+ * Fields that exist, are populated, are marked PUBLISHED — and still carry no
+ * information, because every row holds the same value.
+ *
+ * This is a different failure from a missing field, and more dangerous. A gap
+ * is visible: the answer says we do not hold it. A batch-templated default is
+ * invisible: it renders as a confident, specific figure, it passes the publish
+ * gate, and nothing downstream can tell it from a researched one.
+ *
+ * Measured against the live database on 4 Sep 2026, both after a buyer was
+ * shown them verbatim in one answer — "the project holds a STRONG_BUY
+ * recommendation tier with a buyer satisfaction rating of 4.7 out of 5":
+ *
+ *   recommendation_profile.tier      280 rows, 280 of them STRONG_BUY
+ *   Project.buyer_satisfaction_rating 94 populated, 92 of them exactly 4.7
+ *
+ * A tier that is STRONG_BUY for every project we hold is not a recommendation,
+ * it is a constant. A satisfaction rating identical to two significant figures
+ * across ninety-two projects was not collected from ninety-two sets of buyers.
+ * Presenting either is the fake confidence score CLAUDE.md forbids, and the
+ * second one additionally implies a survey we never ran.
+ *
+ * Both are withheld at the exposure layer rather than patched out of one
+ * renderer, because the leak was in the generic facts block — which projects
+ * the whole allowlist and would have found them again through any new path.
+ *
+ * TO REVERSE THIS: re-measure. If a field has become genuinely differentiated,
+ * remove it from this list in the same commit that shows the new distribution.
+ * `projectExposure.test.ts` pins the reasoning, not the values, so a real
+ * spread of tiers is a deliberate re-exposure and not an accident.
+ */
+export const SYNTHETIC_FIELDS = [
+  'recommendation_profile.tier',
+  'Project.buyer_satisfaction_rating',
+] as const
+
+/**
+ * Columns whose schema default is a specific, checkable, invented figure — and
+ * the value that means "nobody filled this in".
+ *
+ * Found while removing `Builder.projects_delivered_count @default(18)`. That
+ * one had never fired. These three had:
+ *
+ *   Project.ceiling_height_ft      190 of 280 rows are exactly 10.2
+ *   Project.mobile_network_rating  219 of 280 rows are exactly 4
+ *   Project.lifts_per_tower        166 of 280 rows are exactly 3
+ *
+ * Unlike `SYNTHETIC_FIELDS` these are not constants — around a third of each
+ * column is real, researched data. That is what makes them worse to render
+ * rather than better: for any single project the default is indistinguishable
+ * from a measurement, so "10.2 ft ceilings" reads as a verified spec on two
+ * projects out of three where nobody ever measured. A buyer plans around a
+ * ceiling height and discovers it on the site visit.
+ *
+ * The defaults are removed from `schema.prisma` so no future row inherits one.
+ * For rows that already have one, the value is withheld — a fact whose only
+ * provenance is a schema line is the `missing` tier, not the `verified` one.
+ *
+ * The cost is real and accepted: a project genuinely built to 10.2 ft loses a
+ * true fact. Saying "not recorded" about something true is recoverable on the
+ * site visit; asserting a specific wrong measurement is not.
+ */
+export const SCHEMA_DEFAULT_SENTINELS: Record<string, number> = {
+  ceiling_height_ft: 10.2,
+  mobile_network_rating: 4,
+  lifts_per_tower: 3,
+}
+
+/**
+ * True when this value carries no provenance beyond a schema default.
+ *
+ * Float comparison is deliberate and safe here: the sentinel is the literal
+ * that Postgres wrote, so an untouched row holds exactly it.
+ */
+export function isSchemaDefault(field: string, value: unknown): boolean {
+  const sentinel = SCHEMA_DEFAULT_SENTINELS[field]
+  return sentinel !== undefined && typeof value === 'number' && value === sentinel
 }

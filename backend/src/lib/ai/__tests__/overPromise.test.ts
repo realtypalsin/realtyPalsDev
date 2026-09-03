@@ -49,3 +49,54 @@ describe('the off-platform referral rewrite', () => {
     assert.ok(/project page/.test(out), out)
   })
 })
+
+describe('claims about the buyer\'s own money', () => {
+  it('removes an assurance we cannot possibly make', () => {
+    // Measured on the grievance drill, to a buyer who said a rep had taken
+    // their booking token and stopped answering. We have no record of that
+    // booking and no visibility into the builder's account.
+    const r = sanitizeOutput(
+      'I completely understand your frustration. Please rest assured that your funds are securely processed through official builder channels. A manager will call you today.',
+    )
+    assert.ok(r.softenedOverPromises >= 1)
+    assert.ok(!/securely processed/i.test(r.text), r.text)
+    assert.ok(/can't see the status of your payment/i.test(r.text), r.text)
+    // The surrounding sentences survive.
+    assert.ok(/understand your frustration/i.test(r.text), r.text)
+    assert.ok(/manager will call you today/i.test(r.text), r.text)
+  })
+
+  it('softens confirms and protects, not just guarantees', () => {
+    const a = sanitizeOutput('This confirms full legal compliance and regulatory transparency for your investment.')
+    assert.equal(a.softenedOverPromises, 1)
+    assert.ok(!/confirms full legal compliance/i.test(a.text), a.text)
+
+    const b = sanitizeOutput('This minimizes legal risks and protects your capital from title disputes.')
+    assert.equal(b.softenedOverPromises, 1)
+    assert.ok(!/protects your capital/i.test(b.text), b.text)
+  })
+
+  it('leaves an honest statement about a refund process alone', () => {
+    const text = 'Token refunds follow the builder\'s cancellation policy, and a relationship manager can walk you through it.'
+    const r = sanitizeOutput(text)
+    assert.equal(r.softenedOverPromises, 0)
+    assert.equal(r.text, text)
+  })
+})
+
+describe('the referral rewrite never welds onto a word', () => {
+  it('leaves the referral alone rather than splicing mid-word', () => {
+    // The stream tail hold is 180 chars and the referral sentence is longer, so
+    // part of it reaches the buyer before the rest is rewritten. Measured live:
+    // "…always verify current staYou can follow this project's…"
+    const fragment = 'sta, always verify current status on the RERA portal before booking'
+    const out = sanitizeOutput(fragment).text
+    assert.ok(!/[a-z]You can follow/.test(out), out)
+  })
+
+  it('still rewrites when the preceding character is whitespace', () => {
+    const out = sanitizeOutput('Prices are firm.\nAlways verify on the RERA portal first.').text
+    assert.ok(/project page/.test(out), out)
+    assert.ok(!/rera\s+portal/i.test(out), out)
+  })
+})

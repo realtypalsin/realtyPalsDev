@@ -187,7 +187,7 @@ export function trimPropertyForPrompt(project: any): TrimmedProperty {
       : null,
     recommendation_profile: project.recommendation_profile
       ? {
-          tier: project.recommendation_profile.tier ?? null,
+          // tier omitted — 280/280 rows are STRONG_BUY. See SYNTHETIC_FIELDS.
           primary_thesis: project.recommendation_profile.primary_thesis ?? null,
           walk_away_conditions: project.recommendation_profile.walk_away_conditions ?? null,
         }

@@ -32,7 +32,12 @@ describe('master data coverage', { skip: !available && 'newProj/75 master JSON n
 
     const recommendation = facts.recommendation_profile as Record<string, string> | undefined
     assert.ok(recommendation, 'recommendation_profile missing from the facts block')
-    assert.ok(recommendation.tier, 'tier missing')
+    // `tier` is deliberately NOT here any more. Measured 4 Sep 2026: 280 of
+    // 280 rows read STRONG_BUY, so the field is a constant rather than a
+    // recommendation — and a buyer was shown it as one, alongside a
+    // "satisfaction rating" that was 4.7 on 92 of the 94 projects that had one.
+    // See SYNTHETIC_FIELDS in projectExposure.ts. This asserts it stays out.
+    assert.ok(!('tier' in recommendation), 'tier reached the buyer facts block')
     assert.ok(recommendation.walk_away_conditions, 'walk_away_conditions missing')
   })
 
@@ -203,8 +208,12 @@ describe('publish gate', () => {
       project_id: 'p1',
     })
     assert.ok(cleaned)
-    assert.equal(cleaned!.tier, 'BUY')
-    for (const banned of ['internal_confidence', 'admin_notes', 'verified_by', 'id', 'project_id', 'status']) {
+    // Stripped from PUBLISHED content too. The publish gate is about review
+    // status; this field is withheld for a different reason — it has no spread
+    // across the table at all — so being reviewed does not restore it.
+    assert.ok(!('tier' in cleaned!), 'tier survived the strip')
+    assert.equal(cleaned!.primary_thesis, 'solid')
+    for (const banned of ['internal_confidence', 'admin_notes', 'verified_by', 'id', 'project_id', 'status', 'tier']) {
       assert.ok(!(banned in cleaned!), `${banned} survived the strip`)
     }
   })

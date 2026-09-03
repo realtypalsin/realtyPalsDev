@@ -28,7 +28,15 @@ model Builder {
 
   // Track Record
   experience_years          String?
-  projects_delivered_count  Int?      @default(18)
+  // No default. `@default(18)` sat here and would have credited every builder
+  // inserted without a real figure with eighteen delivered projects — a
+  // specific, checkable claim about a developer's track record, invented by a
+  // schema line. Measured 4 Sep 2026 before removing it: all 105 builder rows
+  // are NULL, so it had never fired and no data needs repair. It was a landmine
+  // rather than a live fabrication, and the next bulk insert would have tripped
+  // it. A missing count must read as missing — builderReputation already prints
+  // a dash and says in words that a dash is a gap, not a low score.
+  projects_delivered_count  Int?
   total_projects_count      Int?
   delivered_units           Int?
   delivered_projects        String[]
@@ -243,9 +251,9 @@ model Project {
   dg_power_rate_per_unit          Float?
   maintenance_per_sqft_monthly    Float?
   has_png_gas_pipeline            Boolean?               @default(true)
-  mobile_network_rating           Int?                   @default(4)
-  ceiling_height_ft               Float?                 @default(10.2)
-  lifts_per_tower                 Int?                   @default(3)
+  mobile_network_rating           Int?                   // no default — see SCHEMA_DEFAULT_SENTINELS
+  ceiling_height_ft               Float?                 // no default — see SCHEMA_DEFAULT_SENTINELS
+  lifts_per_tower                 Int?                   // no default — see SCHEMA_DEFAULT_SENTINELS
   has_service_lift                Boolean?               @default(true)
   shared_walls_type               String?
   authority_dues_cleared          Boolean?               @default(true)

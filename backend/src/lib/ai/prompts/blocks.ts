@@ -217,7 +217,10 @@ function serializeProjects(projects: ScoredProject[]): string {
       match_reason: sanitizeForPrompt(p.matchReason || ''),
       match_score: p.matchScore,
       ...(p.recommendation_profile ? {
-        recommendation_tier:    p.recommendation_profile.tier,
+        // recommendation_tier is deliberately omitted. Measured 4 Sep 2026:
+        // 280 of 280 rows read STRONG_BUY. A tier every project we hold shares
+        // is a constant, not a recommendation — and a buyer was shown it as
+        // one. See SYNTHETIC_FIELDS in projectExposure.ts.
         recommendation_thesis:  p.recommendation_profile.primary_thesis,
         walk_away_conditions:   p.recommendation_profile.walk_away_conditions,
       } : {}),

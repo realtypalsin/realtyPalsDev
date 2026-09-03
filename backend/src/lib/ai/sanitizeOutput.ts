@@ -174,14 +174,58 @@ const OVER_PROMISE: Array<[RegExp, string]> = [
   [/\bfully\s+(?:safe|secure|protected)\b/gi, 'covered by the statutory protections'],
   [/\bwill\s+(?:definitely|certainly|surely)\s+(?:appreciate|deliver|be\s+delivered)/gi,
     'is expected to, though we cannot promise it,'],
+  /**
+   * `guarantees` was only ever the most obvious verb.
+   *
+   * Measured on the grievance suite, one turn after the softener shipped: "This
+   * confirms full legal compliance and regulatory transparency for your
+   * investment" and "This minimizes legal risks and protects your capital from
+   * title disputes" — both from the existence of a RERA number. `confirms` and
+   * `protects` carry the same promise as `guarantees` and neither matched.
+   */
+  [/\b(?:confirms?|confirmed|reflects?|demonstrates?|proves?|ensures?)\s+(?:full\s+|complete\s+|total\s+)?(?:legal\s+|regulatory\s+)?(?:compliance|transparency|protection|accountability|oversight)/gi,
+    'is on record as filed with the authority'],
+  [/\bprotects?\s+(?:your|the\s+buyer'?s?)\s+(?:capital|money|investment|funds?)(?:\s+from\s+[^.,]{0,40})?/gi,
+    'reduces the risk to your money without removing it'],
 ]
+
+/**
+ * A whole sentence asserting the state of the buyer's own money.
+ *
+ * Measured on the grievance drill. A buyer said a sales rep had taken their
+ * booking token and stopped answering calls, and the reply said: "Please rest
+ * assured that your funds are securely processed through official builder
+ * channels." We have no record of that booking, no visibility into the
+ * builder's account, and no way to know whether the money is anywhere at all.
+ * It is the single worst sentence in the corpus — reassurance about the exact
+ * thing the buyer is frightened about, invented on the spot.
+ *
+ * Softening a verb is not enough here, because the whole clause is the claim.
+ * The sentence goes and one honest line replaces it — the same shape as the
+ * off-platform referral rewrite, and anchored the same way so the replacement
+ * cannot land mid-word.
+ */
+const MONEY_ASSURANCE =
+  /(?<=^|[.!?\n]\s{0,3})[^.!?\n]*\b(?:your|the)\s+(?:funds?|money|token|deposit|payment|booking\s+amount)\b[^.!?\n]*\b(?:secure(?:ly)?|safe(?:ly)?|protected|intact|processed|refundable|will\s+be\s+(?:returned|refunded))\b[^.!?\n]*[.!?]?\s*/gi
+
+const MONEY_HONEST =
+  "I can't see the status of your payment from here — a relationship manager can pull the record and tell you exactly where it sits."
 
 /** Softens any guarantee we cannot make, and counts what it softened. */
 function softenOverPromises(input: string): { text: string; count: number } {
   let count = 0
+
+  // The money-assurance sentence goes whole, before the word-level passes —
+  // otherwise a softener rewrites a verb inside a sentence that is about to be
+  // removed anyway, and the counts double-report one problem.
+  const withoutMoneyClaims = input.replace(MONEY_ASSURANCE, () => {
+    count += 1
+    return `${MONEY_HONEST} `
+  })
+
   const text = OVER_PROMISE.reduce(
     (acc, [re, replacement]) => acc.replace(re, () => { count += 1; return replacement }),
-    input,
+    withoutMoneyClaims,
   )
   return { text, count }
 }
@@ -258,6 +302,26 @@ export function sanitizeOutput(input: string): SanitizeResult {
     text = text.replace(OFFPLATFORM_REFERRAL, (match, ...rest) => {
       const offset = rest[rest.length - 2] as number
       const before = text.slice(0, offset)
+      /**
+       * Refuse the rewrite when it would weld onto the end of a word.
+       *
+       * The sentence-boundary lookbehind fixed the case where the terminator
+       * had been trimmed away. It cannot fix this one: the referral sentence is
+       * longer than the 180-character stream tail hold, so part of it has
+       * already reached the buyer before the rest is rewritten, and the
+       * replacement lands against whatever the last chunk ended on. Measured
+       * live: "…always verify current staYou can follow this project's…"
+       *
+       * `^` in the lookbehind is exactly the start of such a fragment, so the
+       * anchor matches and the splice happens anyway. A character check on the
+       * preceding text is the thing that actually distinguishes them.
+       *
+       * Leaving the referral in place is the deliberate lesser evil, and it is
+       * the trade this file already states: a stray referral breaks a prompt
+       * rule, a spliced word is visible corruption that makes the whole reply
+       * look broken.
+       */
+      if (/[A-Za-z0-9]$/.test(before)) return match
       const sep = /\n\s*$/.test(before) ? '' : before && !/\s$/.test(before) ? ' ' : ''
       return `${sep}${ONPLATFORM_REFERRAL} `
     })

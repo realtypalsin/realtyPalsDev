@@ -47,8 +47,12 @@ describe('projectScalarFacts', () => {
     assert.equal(facts.maintenance_per_sqft_monthly, '4.5 per sq.ft per month')
     assert.equal(facts.airport_distance_km, '28.4 km')
     assert.equal(facts.top_school_distance_km, '1.2 km')
+    // 4 is a real figure — not the schema default of 3 — so it survives.
     assert.equal(facts.lifts_per_tower, '4')
-    assert.equal(facts.ceiling_height_ft, '10.2 ft')
+    // The fixture's 10.2 IS the old schema default, and 190 of 280 live rows
+    // carried exactly it. A value whose only provenance is a schema line is
+    // withheld — see SCHEMA_DEFAULT_SENTINELS.
+    assert.ok(!('ceiling_height_ft' in facts), 'a schema-default ceiling height reached the prompt')
     assert.equal(facts.water_source, 'Ganga jal + borewell')
     assert.equal(facts.land_tenure, '99-Year Authority Leasehold')
     assert.equal(facts.resale_lock_in_months, '24 months')
@@ -153,5 +157,34 @@ describe('buildProjectFacts — relations', () => {
 
     const chars = JSON.stringify(full).length
     assert.ok(chars < 6000, `facts block is ${chars} chars (~${Math.round(chars / 4)} tokens) — too heavy for a per-turn prompt`)
+  })
+})
+
+describe('schema-default sentinels', () => {
+  it('withholds a value that is only there because Postgres wrote it', () => {
+    // Measured 4 Sep 2026 across 280 live projects: ceiling_height_ft was
+    // exactly 10.2 on 190 of them, mobile_network_rating exactly 4 on 219, and
+    // lifts_per_tower exactly 3 on 166 — the schema defaults. Roughly a third
+    // of each column is real, which is why they are withheld per-row rather
+    // than dropped from the select.
+    const facts = projectScalarFacts(row({
+      ceiling_height_ft: 10.2,
+      mobile_network_rating: 4,
+      lifts_per_tower: 3,
+    }) as never)
+    for (const f of ['ceiling_height_ft', 'mobile_network_rating', 'lifts_per_tower']) {
+      assert.ok(!(f in facts), `${f} reached the prompt carrying only a schema default`)
+    }
+  })
+
+  it('keeps a researched value that differs from the default', () => {
+    const facts = projectScalarFacts(row({
+      ceiling_height_ft: 11.5,
+      mobile_network_rating: 5,
+      lifts_per_tower: 2,
+    }) as never)
+    assert.equal(facts.ceiling_height_ft, '11.5 ft')
+    assert.equal(facts.mobile_network_rating, '5/5')
+    assert.equal(facts.lifts_per_tower, '2')
   })
 })
