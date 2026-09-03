@@ -106,3 +106,29 @@ describe('chip actionability', () => {
     }
   })
 })
+
+describe('chipIsRelevant: entity vocabulary', () => {
+  it('an ordinary UI verb is not an entity claim', () => {
+  const entities = ['ACE Parkway', 'Godrej Woods', 'Mahagun Meadows']
+  const answer = '### All Configurations — ACE Parkway'
+  // "View" and "Taxes" appear nowhere in the answer, and both chips were
+  // discarded for it before entity matching replaced the stop-word list.
+  assert.equal(chipIsRelevant('View Floor Plans', 'what configurations', answer, entities), true)
+  assert.equal(chipIsRelevant('View Cost Sheet & Taxes', 'what configurations', answer, entities), true)
+})
+  it('a chip naming a different project is still discarded', () => {
+  const entities = ['ACE Parkway', 'Godrej Woods', 'Mahagun Meadows']
+  const answer = '### All Configurations — ACE Parkway'
+  assert.equal(chipIsRelevant('Payment plan for Godrej Woods', 'what configurations', answer, entities), false)
+  assert.equal(chipIsRelevant('Payment plan for ACE Parkway', 'what configurations', answer, entities), true)
+})
+  it('a word shared by many project names gates nothing', () => {
+  // "Parkway" and "Heights" belong to a dozen names each; a chip is not a
+  // claim about one project for containing one.
+  const entities = ['ACE Parkway', 'Gaur Heights', 'Nirala Heights']
+  assert.equal(chipIsRelevant('Explore nearby Heights', 'anything', 'about Godrej Woods', entities), true)
+})
+  it('with no vocabulary loaded every chip passes', () => {
+  assert.equal(chipIsRelevant('Payment plan for Godrej Woods', 'q', 'a', []), true)
+})
+})

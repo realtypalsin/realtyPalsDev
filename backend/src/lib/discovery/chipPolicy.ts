@@ -73,7 +73,12 @@ export function chipsAreWelcome(message: string, answerText = ''): ChipDecision 
  * trade-offs?", "Compare these 3" — is generic by design and always passes,
  * because those read as controls rather than claims.
  */
-export function chipIsRelevant(label: string, message: string, answerText: string): boolean {
+export function chipIsRelevant(
+  label: string,
+  message: string,
+  answerText: string,
+  entities: readonly string[] = [],
+): boolean {
   const text = label ?? ''
   const haystack = `${message} ${answerText}`.toLowerCase()
 
@@ -85,23 +90,49 @@ export function chipIsRelevant(label: string, message: string, answerText: strin
   }
 
   /**
-   * Otherwise: the chip's proper nouns, word by word.
+   * Otherwise: does the chip name a PROJECT the turn never mentioned?
    *
-   * Matched per word rather than as a phrase — a greedy multi-word capture
-   * turned "Check RERA status" into the single token "Check RERA", which no
-   * stop-word list can recognise, so a generic control was judged irrelevant.
+   * The previous version tested every word of four letters or more against a
+   * stop-word list, and the stop-word list could not be finished. Measured on a
+   * project drilldown: "View Floor Plans" and "View Cost Sheet & Taxes" were
+   * both discarded because "View" is not in the answer text — a chip taking the
+   * buyer to a table we had already built, hidden for containing an ordinary
+   * verb. Only "Schedule Site Visit" survived, and only because all three of
+   * its words happened to be listed.
+   *
+   * This is the same shape as the fabrication guard's own history: a blocklist
+   * of words that must not appear is unfinishable, and every gap in it discards
+   * something honest. Ask what a name IS instead. `entities` is the project
+   * vocabulary we actually hold, so a token is only treated as a claim when it
+   * is genuinely part of a project name. Everything else — verbs, UI nouns,
+   * whatever a future chip says — passes untouched.
+   *
+   * With no vocabulary loaded the chip passes. Showing a chip is recoverable;
+   * hiding a good one is invisible.
    */
-  const STOPWORDS = /^(show|full|check|compare|which|what|explore|calculate|ready|tell|help|project|projects|flat|flats|payment|payments|plan|plans|cost|costs|alternatives|about|schedule|book|site|visit|top|popular|budget|home|homes|monthly|loan|legal|rera|emi|gst|are|does|is|do|these|those|the|and|for|get|now|safest|bet|more|options|option|nearby|sectors|sector|noida|greater|india|delhi|ncr|trade|offs|status|price|pricing|rates|all|inclusive|other|configurations|me|my|of|in|a|an|see)$/i
-  // Hyphens split rather than join: "trade-offs" has to reach the stop-word
-  // list as "trade" and "offs", not as one unrecognisable compound.
-  const words = (text.match(/[A-Za-z][A-Za-z']+/g) ?? [])
-    .filter(w => w.length >= 4 && !STOPWORDS.test(w))
-  if (!words.length) return true // a generic control carries no claim
+  const entityWords = new Set<string>()
+  for (const name of entities) {
+    for (const w of name.match(/[A-Za-z][A-Za-z']{3,}/g) ?? []) {
+      // "Heights", "Greens" and "Estate" belong to a dozen project names each,
+      // so they identify no particular one and must not gate a chip.
+      if (!GENERIC_PROJECT_WORD.test(w)) entityWords.add(w.toLowerCase())
+    }
+  }
+  if (entityWords.size === 0) return true
+
+  const claimed = (text.match(/[A-Za-z][A-Za-z']{3,}/g) ?? [])
+    .map(w => w.toLowerCase())
+    .filter(w => entityWords.has(w))
+  if (!claimed.length) return true // no entity claim to check
 
   // One word in common is enough: "Mahagun Meadows" against "Mahagun" is the
   // same subject, and chip labels are too short to demand more.
-  return words.some(w => haystack.includes(w.toLowerCase()))
+  return claimed.some(w => haystack.includes(w))
 }
+
+/** Words shared across many project names, so they identify none of them. */
+const GENERIC_PROJECT_WORD =
+  /^(heights?|greens?|estate|vista|park|parkway|city|towers?|residency|residences?|homes?|garden|gardens|county|enclave|apartments?|society|villas?|court|grand|royal|palm|palms|the|and|group|projects?|infra|buildwell|builders?|developers?|limited|private|corp|corporation)$/i
 
 /**
  * Can this chip actually do anything right now?

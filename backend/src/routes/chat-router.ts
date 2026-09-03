@@ -69,7 +69,7 @@ import { buildComponentResponse } from '../lib/discovery/componentSpec'
 import { loadMentionedProjectCards } from '../lib/chat/mentionedProjectCards'
 import { buildUnknownProjectReply } from '../lib/chat/unknownProject'
 import { runTopicHandlers } from '../lib/chat/handlerContext'
-import { projectCatalog } from '../lib/projectCatalog'
+import { projectCatalog, catalogNamesSync } from '../lib/projectCatalog'
 import { applyCommuteAnchor, beltFor } from '../lib/discovery/commuteAnchor'
 import { resolveOrdinalReference, resolveOrdinalPair, resolveSuperlativeReference, needsShownContext, resolveSectorReference, sectorsShownIn } from '../lib/discovery/reference'
 import { cardBudgetFor, capCards, MAX_CARDS } from '../lib/discovery/cardBudget'
@@ -718,7 +718,7 @@ router.post('/', async (req: Request, res: Response) => {
           hasLocation: Boolean(intent?.sector || intent?.workplace),
         }
         const usable = (c: C) =>
-          chipIsRelevant(String(c.label ?? ''), message, lastAnswerText) &&
+          chipIsRelevant(String(c.label ?? ''), message, lastAnswerText, catalogNamesSync()) &&
           chipIsActionable(String(c.label ?? ''), chipCtx)
 
         chips = chips.filter(usable)

@@ -35,7 +35,7 @@ export interface DbCatalogEntry {
 
 export async function projectCatalog(): Promise<DbCatalogEntry[]> {
   const hit = await getCached<DbCatalogEntry[]>(CACHE_KEY)
-  if (hit) return hit
+  if (hit) { rememberCatalogNames(hit.map((p) => p.name)); return hit }
   try {
     const raw = await prisma.project.findMany({
       select: {
@@ -46,9 +46,30 @@ export async function projectCatalog(): Promise<DbCatalogEntry[]> {
     // The duplicate IITL Nimbus row is filtered out permanently.
     const catalog = raw.filter((p) => !p.name.toLowerCase().includes('iitl nimbus')) as DbCatalogEntry[]
     await setCached(CACHE_KEY, catalog, 300)
+    rememberCatalogNames(catalog.map((p) => p.name))
     return catalog
   } catch (e) {
     console.warn('[PROJECT_CATALOG:DB_ERROR]', (e as Error).message)
     return []
   }
+}
+
+/**
+ * The names from the last successful load, without awaiting.
+ *
+ * `chipIsRelevant` needs to know whether a word in a chip label is a project
+ * name or an ordinary English word, and it runs inside a synchronous emit. The
+ * router loads the catalogue every turn regardless, so by the time any chip is
+ * emitted this list is warm. Empty before the first load, which the caller
+ * treats as "no entity vocabulary" and lets chips through — the safe direction:
+ * showing a chip is recoverable, hiding a good one is invisible.
+ */
+let lastLoadedNames: string[] = []
+
+export function catalogNamesSync(): readonly string[] {
+  return lastLoadedNames
+}
+
+export function rememberCatalogNames(names: readonly string[]): void {
+  lastLoadedNames = [...names]
 }
