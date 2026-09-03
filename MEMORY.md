@@ -1606,3 +1606,38 @@ with its basis is not.
   rupees. Rendered as a rate below ₹1,000 rather than resolving the ambiguity in
   the data.
 * Discovery latency 11–15s, spread evenly across three stages.
+
+### Focus carry — works, with one shape still failing
+
+Verified working end to end: a first turn answered by a **table-rendering lane**
+(cost sheet, amenities, payment plan, configurations) records
+`focus_project_id`, and every attribute follow-up then answers about that
+project — "what is the payment plan?", "and the builder score?", "when is
+possession?", "what is the full cost sheet?", "what are the configurations?" all
+confirmed against ACE Parkway.
+
+**Still failing:** a first turn answered by the RERA prose lane. "Is Godrej
+Woods RERA registered?" answers correctly from the project's own row, and
+`focus_project_id` is **NULL** afterwards, so the next three turns answer about
+Sector 43 in general.
+
+Narrowed, not closed. Established by measurement, so the next person does not
+repeat it:
+
+* The focus block at `chat-router.ts:1127` is reached — only five `res.end()`
+  sites precede it (240, 430, 530, 605, 1102) and none is on this path.
+* The computation has three fallbacks now (`targetProjectId`, name lookup,
+  catalogue match on the message) and the catalogue match returns Godrej Woods
+  for this exact string when run locally.
+* So the value is computed and **not persisted on this lane**. All four write
+  sites carry the spread (`persistEarlyTurn` create/update at 691/713, main
+  path at 4750/4787), and the same code writes ACE Parkway's focus correctly.
+
+The remaining suspect is which persistence path that lane actually takes, and
+whether its write is failing silently — the main path's session update shares a
+`Promise.all` with the message write, so the session update can fail while the
+messages still land, which matches the observed row exactly. Check that first.
+
+Four hypotheses were wrong before this one (gate too strict, block placed too
+late, `else` branch swallowing the fallback, deploy timing). **Read the database
+row before forming the fifth.**
