@@ -1977,3 +1977,20 @@ and welded replacements.
   `amenities`, `connectivity`, `unit_types`, `payment_plans`, `cost_sheet`,
   `price_history` and the profile tables should be a reviewed migration, not a
   script run unsupervised.
+
+### The harness caught its own bad assertion first
+
+`verify:chat` went red on the first run after a change, and the bug was the
+test. The sector-pointer case asserted `/79/` against the answer text and failed
+on a run where the resolution was perfect — the reply opened "Sector 79 positions
+investors…", quoted a real price band and named two real projects in the sector.
+A differently-worded run just omitted the digits.
+
+Testing wording is what the file's own header says it will not do. The `done`
+event carries the resolved intent, so the case now asserts `intent.sector`
+contains 79 and does NOT contain 62 or Gurgaon; the model cannot phrase either
+away. Focus-carry checks `intent.projectNames` first.
+
+**That is the "assert on resolved_entity_id, not answer text" advice I had quoted
+approvingly and then ignored in two of thirteen cases.** When adding a case,
+reach for the `done` payload before the prose.
