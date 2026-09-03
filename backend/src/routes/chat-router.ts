@@ -2251,10 +2251,21 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
      * subject — no sector, no inventory search. Anything else is a new subject
      * and gets no inherited project.
      */
+    /**
+     * Tested on the wording, not on the derived flags.
+     *
+     * Every one of those flags is itself gated on `!isInventorySearch`, and
+     * "what are the configurations?" trips the inventory heuristic — so
+     * `isConfigurationQuery` was false, `asksProjectAttribute` was false, and
+     * the follow-up answered about Sector 150's typical layouts instead of the
+     * project the buyer had just been shown a cost sheet for. A question with
+     * no project and no sector in it is not a search whatever the heuristic
+     * thinks; the attribute noun is the signal.
+     */
     const asksProjectAttribute =
       isPaymentPlanRequest || isCostSheetRequest || isAmenityQuery || isConfigurationQuery ||
       isConnectivityQuery || isTotalOutflowQuery || isBuilderReputationQuery ||
-      /\b(possession|handover|rera|builder score|delivery score|track record)\b/i.test(topicText)
+      /\b(possession|handover|rera|builder score|delivery score|track record|configurations?|unit types?|floor plans?|carpet area|super area|payment plan|cost sheet|amenit\w*|price|pricing|rate)\b/i.test(topicText)
 
     /**
      * A sector NAMED IN THIS MESSAGE blocks the inheritance; a sticky one does
@@ -2265,7 +2276,6 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
      */
     if (
       !intent.projectNames?.length &&
-      !isInventorySearch &&
       sectorMatches.length === 0 &&
       asksProjectAttribute &&
       sessionData?.focus_project_id
