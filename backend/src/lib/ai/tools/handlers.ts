@@ -185,9 +185,40 @@ export function createToolHandler(ctx: ToolContext) {
             ? `https://www.up-rera.in/projects?project_search=${encodeURIComponent(args.rera_number)}`
             : 'https://www.up-rera.in');
           const content = await readPage(url, 2000);
-          return content
+          /**
+           * A page that loaded is not a record that was found.
+           *
+           * up-rera.in is an ASP.NET application whose project search is a form
+           * postback, so a GET with `?project_search=UPRERAPRJ1504` returns the
+           * site chrome and nothing else — navigation, the logo, the font-size
+           * controls, the current date. Measured: 10,311 characters, and not one
+           * mention of either project registered under that number.
+           *
+           * The old check was `content ? …`, and chrome is truthy. So this tool
+           * reported success and handed the model ten kilobytes of navigation
+           * links under the key `rera_page`, having told it in the catalogue
+           * that this is "live RERA registration details from the UP-RERA
+           * portal". The model then had to either invent a status or contradict
+           * its own tool result.
+           *
+           * The honest branch already existed below; it was simply unreachable.
+           * A real record names the project or the promoter, so that is the
+           * test — not whether bytes came back.
+           */
+          const looksLikeARecord =
+            typeof content === 'string' &&
+            /\b(promoter|project\s+name|registration\s+(?:no|number)|registered\s+on|proposed\s+completion)\b/i.test(content);
+
+          if (!looksLikeARecord) {
+            console.warn('[TOOL:rera_check] portal returned no record', {
+              url,
+              chars: typeof content === 'string' ? content.length : 0,
+            });
+          }
+
+          return looksLikeARecord
             ? { rera_page: content, source: url }
-            : { rera_page: null, message: 'Could not fetch live RERA details. Advise the user that verified RERA status is available on the RealtyPals project card or through our advisor team.' };
+            : { rera_page: null, message: 'Could not fetch live RERA details — the UP-RERA portal does not answer a direct lookup. Use the registration number we hold on the project row, and say plainly that it has not been re-checked against the portal today.' };
         }
 
         if (name === 'commute') {

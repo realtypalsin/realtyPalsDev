@@ -38,7 +38,8 @@
     "fix:track-record": "tsx scripts/fix-builder-track-record.ts",
     "audit:rera": "tsx scripts/audit-rera.ts",
     "verify:chat": "tsx scripts/verify-chat.ts",
-    "audit:plans": "tsx scripts/audit-payment-plans.ts"
+    "audit:plans": "tsx scripts/audit-payment-plans.ts",
+    "reconcile:rera": "tsx scripts/reconcile-rera.ts"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"
