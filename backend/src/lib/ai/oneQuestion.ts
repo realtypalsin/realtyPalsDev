@@ -29,6 +29,38 @@
 const SECOND_ASK =
   /,\s+(?:and|plus|also)\s+(?=(?:what|which|how|when|where|do|does|did|are|is|would|will|can|could|have|has|any)\b)/i
 
+/**
+ * `, or do you have a budget in mind` — a second ask wearing the first's
+ * question mark.
+ *
+ * The either/or exemption below is right for two options of the SAME slot:
+ * "expressway connectivity, or closer to the metro?" is one decision with two
+ * answers, and cutting it leaves a worse question. It was too broad for two
+ * DIFFERENT slots. Measured live:
+ *
+ *   "Are you looking in a specific area like Sector 137, 150, or 168, or do you
+ *    have a budget in mind?"
+ *
+ * Area and budget are separate slots, so that is two questions and one question
+ * mark — which is exactly the form the mark-counting check cannot see.
+ *
+ * The signal is a second finite verb with its own subject after the "or".
+ * "…, or the metro?" has none and survives; "…, or DO YOU HAVE…" starts a new
+ * predicate and is cut.
+ *
+ * Narrowed once already, and the ceiling is worth stating. "or would you
+ * RATHER be near the metro?" tripped the first version, and it should not have:
+ * "rather" and "prefer" mark a restatement of the same choice, so that is still
+ * one decision with two options. They are excluded.
+ *
+ * What remains is a heuristic, not a parser. A same-slot alternative phrased
+ * with some other verb ("…, or is the metro more important?") will still be
+ * cut, and the cost of that is a slightly shorter question rather than a wrong
+ * one — which is the direction this file always errs in.
+ */
+const SECOND_ASK_AFTER_OR =
+  /,\s+or\s+(?!(?:would|do|did|could)\s+you\s+(?:rather|prefer|instead))(?=(?:do|does|did|are|is|was|were|would|will|can|could|have|has|had|shall|should)\s+(?:you|your)\b)/i
+
 export interface OneQuestionResult {
   text: string
   /** How many extra asks were removed. Zero means the reply was already fine. */
@@ -71,12 +103,17 @@ export function oneQuestion(input: string): OneQuestionResult {
   let out = rest.includes('?') ? text.slice(0, first + 1) : text
   if (out !== text) trimmed += rest.split('?').length - 1
 
-  // 2. Cut a second ask hung off the first with ", and …".
+  // 2. Cut a second ask hung off the first with ", and …" or ", or do you …".
   const q = out.lastIndexOf('?')
   if (q > -1) {
     const question = out.slice(0, q)
-    const join = SECOND_ASK.exec(question)
-    if (join && join.index > 12) {
+    // Earliest join wins: cutting at the later one would leave the earlier
+    // second ask standing, which is the whole problem.
+    const joins = [SECOND_ASK.exec(question), SECOND_ASK_AFTER_OR.exec(question)]
+      .filter((m): m is RegExpExecArray => m !== null && m.index > 12)
+      .sort((a, b) => a.index - b.index)
+    const join = joins[0]
+    if (join) {
       out = `${question.slice(0, join.index).trimEnd()}?${out.slice(q + 1)}`
       trimmed += 1
     }

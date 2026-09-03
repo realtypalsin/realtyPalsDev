@@ -192,3 +192,38 @@ describe('capital protection, active and passive', () => {
     assert.equal(r.text, text)
   })
 })
+
+describe('a second ask hidden behind "or"', () => {
+  it('trims an either/or across two different slots', () => {
+    // Measured live. Area and budget are separate slots, so this is two
+    // questions wearing one question mark — the form a mark count cannot see.
+    const r = sanitizeOutput('Are you looking in a specific area like Sector 137, or do you have a budget in mind?')
+    assert.equal(r.trimmedQuestions, 1, r.text)
+    assert.ok(!/budget in mind/i.test(r.text), r.text)
+    assert.ok(/specific area/i.test(r.text), r.text)
+    assert.ok(r.text.trim().endsWith('?'), r.text)
+  })
+
+  it('leaves an either/or between two options of the same slot', () => {
+    // One decision, two answers. Cutting this leaves a worse question.
+    const text = 'Do you want expressway connectivity, or closer to the metro?'
+    const r = sanitizeOutput(text)
+    assert.equal(r.trimmedQuestions, 0, r.text)
+    assert.equal(r.text, text)
+  })
+})
+
+describe('filler openers', () => {
+  it('removes the interjection and keeps the answer', () => {
+    const r = sanitizeOutput('Great! Noida offers a mix of ready-to-move and upcoming projects.')
+    assert.equal(r.strippedFiller, 1)
+    assert.equal(r.text.trim(), 'Noida offers a mix of ready-to-move and upcoming projects.')
+  })
+
+  it('leaves "great" alone inside a sentence', () => {
+    const text = 'Sector 150 is a great location for families.'
+    const r = sanitizeOutput(text)
+    assert.equal(r.strippedFiller, 0)
+    assert.equal(r.text, text)
+  })
+})

@@ -130,6 +130,22 @@ const DANGLING_ATTRIBUTION = [
   /\(\s*\)/g,
 ]
 
+
+/**
+ * A filler opener, removed from the front of a reply.
+ *
+ * CLAUDE.md asks for the tone of a capable peer and names this explicitly:
+ * no exclamation-mark enthusiasm, no "Great choice!" filler. The prompt says
+ * so too, and a reply still opened "Great! Noida offers a mix of ready-to-move
+ * and upcoming projects..." — measured live.
+ *
+ * Only at the very start, and only the interjection itself. A "Great" inside a
+ * sentence is an ordinary adjective ("a great location"), and the words after
+ * the opener are the answer and must survive intact.
+ */
+const FILLER_OPENER =
+  /^\s*(?:great|perfect|excellent|absolutely|certainly|sure|of course|wonderful|fantastic|awesome|good news|happy to help|no problem|glad you asked|that'?s a great question|great question)\s*[!.,:—-]+\s*/i
+
 export interface SanitizeResult {
   text: string
   strippedEmoji: number
@@ -144,6 +160,8 @@ export interface SanitizeResult {
   softenedOverPromises: number
   /** Extra asks removed so the reply closes with exactly one question. */
   trimmedQuestions: number
+  /** 1 when a filler opener was removed from the front of the reply. */
+  strippedFiller: number
 }
 
 /**
@@ -366,7 +384,7 @@ function normalizeCitations(input: string): { text: string; count: number } {
 /** Strips emoji, third-party platform names, and off-platform referrals. */
 export function sanitizeOutput(input: string): SanitizeResult {
   if (!input) {
-    return { text: input, strippedEmoji: 0, strippedPlatforms: 0, redirectedOffPlatform: 0, normalizedCitations: 0, strippedProvenance: 0, softenedOverPromises: 0, trimmedQuestions: 0 }
+    return { text: input, strippedEmoji: 0, strippedPlatforms: 0, redirectedOffPlatform: 0, normalizedCitations: 0, strippedProvenance: 0, softenedOverPromises: 0, trimmedQuestions: 0, strippedFiller: 0 }
   }
 
   const strippedEmoji = (input.match(EMOJI) ?? []).length
@@ -378,18 +396,35 @@ export function sanitizeOutput(input: string): SanitizeResult {
   const strippedProvenance = (input.match(PROVENANCE_NARRATION) ?? []).length
   const softened = softenOverPromises(input)
   const asks = oneQuestion(input)
+  const filler = FILLER_OPENER.test(input) ? 1 : 0
   if (
     strippedEmoji === 0 &&
     strippedPlatforms === 0 &&
     redirectedOffPlatform === 0 &&
     citations.count === 0 &&
     strippedProvenance === 0 &&
-    softened.count === 0
+    softened.count === 0 &&
+    /**
+     * These two belong in the guard, and their absence was a live bug.
+     *
+     * The early return is the fast path for a clean reply, so every pass below
+     * has to be represented in the condition. `asks.trimmed` and `filler` were
+     * not, so a reply whose ONLY problem was a stacked question — or a "Great!"
+     * opener — matched "nothing to do" and returned untouched.
+     *
+     * That is why the one-question case in `verify:chat` failed
+     * intermittently: when the reply happened to carry another issue the guard
+     * fell through and the trim ran, and when it did not the trim never
+     * executed. A flaky test was reporting a real bug, and the flakiness was
+     * the bug's signature.
+     */
+    asks.trimmed === 0 &&
+    filler === 0
   ) {
-    return { text: input, strippedEmoji: 0, strippedPlatforms: 0, redirectedOffPlatform: 0, normalizedCitations: 0, strippedProvenance: 0, softenedOverPromises: 0, trimmedQuestions: 0 }
+    return { text: input, strippedEmoji: 0, strippedPlatforms: 0, redirectedOffPlatform: 0, normalizedCitations: 0, strippedProvenance: 0, softenedOverPromises: 0, trimmedQuestions: 0, strippedFiller: 0 }
   }
 
-  let text = citations.text.replace(EMOJI, '')
+  let text = citations.text.replace(EMOJI, '').replace(FILLER_OPENER, '')
   if (strippedProvenance > 0) text = text.replace(PROVENANCE_NARRATION, '')
   // Before the platform pass: the referral sentence may name a portal too, and
   // replacing the name first would leave "market listings" inside a sentence
@@ -452,6 +487,7 @@ export function sanitizeOutput(input: string): SanitizeResult {
     redirectedOffPlatform,
     softenedOverPromises: softened.count,
     trimmedQuestions: asks.trimmed,
+    strippedFiller: filler,
     normalizedCitations: citations.count + secondPass.count,
     strippedProvenance,
   }
