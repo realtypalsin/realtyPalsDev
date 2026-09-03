@@ -4546,25 +4546,27 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       persistPromises.push(upsertMemory(userId, guestToken, intent, slugsToMemorize))
     }
 
+    // These are independent writes and were run one after the other, so the
+    // buyer waited for the sum of two Supabase round-trips rather than the
+    // slower of them. Instrumented: the stage after the model call cost
+    // 3.3-4.6s on a discovery turn.
     console.log('[CHAT] BEFORE persist', Date.now())
     if (currentSessionId) {
-      await persistToDb(currentSessionId).catch((e) => {
-        console.error('[chat] chipDedup persist failed:', e)
-        send('warning', { message: 'Failed to save interaction history; please refresh' })
-      })
+      persistPromises.push(
+        persistToDb(currentSessionId).catch((e) => {
+          console.error('[chat] chipDedup persist failed:', e)
+          send('warning', { message: 'Failed to save interaction history; please refresh' })
+        }),
+      )
     }
     await Promise.all(persistPromises).catch((e) => console.error('[chat] persist error:', e))
     console.log('[CHAT] AFTER persist', Date.now())
 
-    // Phase 1: Capture latest assistant message ID for grading
-    if (currentSessionId) {
-      const latestMessage = await prisma.chatMessage.findFirst({
-        where: { session_id: currentSessionId, role: 'assistant' },
-        orderBy: { created_at: 'desc' },
-        select: { id: true },
-      })
-      if (latestMessage) messageId = latestMessage.id
-    }
+    // The message id is looked up inside the grading promise below, not here.
+    //
+    // Grading is already fire-and-forget; only this lookup was blocking, and it
+    // is a Supabase round-trip the buyer waits through so that an asynchronous
+    // quality job can start a moment sooner.
 
     // Observability: Langfuse & PostHog
     if (currentSessionId) {
@@ -4667,19 +4669,24 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     }
 
     // Phase 1: Grade response async (fire-and-forget, don't block)
-    if (sessionId && messageId && responseText) {
-      gradeResponseAsync(
-        sessionId,
-        messageId,
-        message || '',
-        responseText,
-        {
-          propertiesShown: projects?.length ?? 0,
-          propertyNames: projects?.map((p) => p.name) ?? [],
-        }
-      ).catch((err) => {
-        console.error('[PHASE1:GRADE] Error grading response:', err.message)
-      })
+    if (sessionId && responseText) {
+      void prisma.chatMessage
+        .findFirst({
+          where: { session_id: sessionId, role: 'assistant' },
+          orderBy: { created_at: 'desc' },
+          select: { id: true },
+        })
+        .then(latest => {
+          if (!latest) return
+          messageId = latest.id
+          return gradeResponseAsync(sessionId, latest.id, message || '', responseText, {
+            propertiesShown: projects?.length ?? 0,
+            propertyNames: projects?.map((p) => p.name) ?? [],
+          })
+        })
+        .catch((err) => {
+          console.error('[PHASE1:GRADE] Error grading response:', (err as Error).message)
+        })
     }
 
     res.end()
