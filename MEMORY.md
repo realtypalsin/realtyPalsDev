@@ -1783,3 +1783,69 @@ human to run per CLAUDE.md's rule on migrations. **Until it runs, the schema and
 the database disagree**: Prisma omits the column and Postgres still supplies the
 default, so a new insert can still inherit 18 delivered projects. Buyer-facing
 output is protected either way by the sentinel guard.
+
+---
+
+## Session 2026-09-04 (cont.) — claudeResponse.md was right about the data
+
+`claudeResponse.md` was 0 bytes on two previous reads and had 67 KB on the
+third. **Re-check that file; it is not reliably saved.** Its architectural
+advice is mostly re-architecture, but its *data* claims were checkable and two
+of them were correct and serious.
+
+### The findings, measured
+
+| Claim in the doc | Measured | Verdict |
+|---|---|---|
+| "19 duplicate RERA clusters" | **18 shared numbers, 39 projects, 13.9%** | **RIGHT** |
+| Payment plans batch-templated | 620 rows, 13 milestone shapes, `verified_at` NULL on **all 620** | **RIGHT** |
+| `LIMIT 1` with no `ORDER BY` in the resolver | `resolveProject` is `findFirst` + `contains` in an `OR`, no `orderBy` | **RIGHT, still open** |
+| Two ATS Pristine rows are duplicates with contradictory fields | Two **distinct** projects, different RERA/slug/possession | **WRONG** |
+| 83% of price history templated | 0 of 280 projects have a flat history | **WRONG** |
+
+### The RERA collisions are the worst bug found in this codebase
+
+Not duplicate rows — **different projects from different builders sharing one
+registration number.** `UPRERAPRJ1504` is on Godrej Palm Retreat *and* Apex Golf
+Avenue. `UPRERAPRJ1001` is on three projects.
+
+Why it outranks everything else: the registration number is **the one fact we
+tell buyers to verify independently.** A buyer looks it up, finds a different
+development, and correctly concludes we invent data — and every other figure in
+that answer becomes suspect in the same instant. We had been printing them all
+session, including in my own verification runs.
+
+Withheld, never guessed: we cannot tell which project owns which number, and
+the authority's record is the arbiter. `npm run audit:rera` prints the work
+list, labelled COLLISION vs DUPLICATE ROW because the fixes differ.
+
+### Two patterns worth carrying forward
+
+**Measure the column before trusting the field, and measure it before believing
+a critique.** Two of five claims in that doc were wrong. Reading it as gospel
+would have produced a pointless ATS Pristine merge and a price-history rewrite.
+`GROUP BY column` settled all five in ten minutes.
+
+**A guard written from one bad example matches a category, and the category
+contains honest content.** The money-assurance pattern was built from "your
+funds are securely processed" and then fired inside a *payment-plan* answer,
+appending the grievance line to a paragraph about cash flow. Narrowed to `your`
+(never `the`) and stripped of `processed`/`refundable`. Third time this shape
+has bitten: the fabrication guard's blocklist, `chipIsRelevant`'s stop-words,
+now this.
+
+### Still open
+
+* **`resolveProject` is nondeterministic.** `findFirst` with `name: { contains }`
+  inside an `OR` and no `orderBy` — Postgres returns whichever row the plan
+  reaches first. **11 project names are a prefix of another's** (ATS Pristine /
+  ATS Pristine & Golf Meadows, Maxblis White House / II, Lotus Greens Arena /
+  II, Nirala Estate Phase 1 / 1 & 2 …), so the more specific project can lose
+  its own name. Not fixed — it needs an ordered specificity cascade and a
+  regression test per pair, which is a contained piece of work but not a
+  one-liner.
+* **`isInventorySearch` swallows "Show me the payment plans for X"** — the whole
+  ground-truth pipeline is skipped and the model answers from the facts block,
+  so the deterministic table and its new provenance line never render. The
+  follow-up phrasing ("what is the payment plan?") routes correctly.
+* Migration `drop_fabricated_defaults` still unapplied by choice.
