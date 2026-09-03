@@ -649,6 +649,68 @@ router.post('/', async (req: Request, res: Response) => {
     const isNewSession = !sessionId || !sessionData
     const currentSessionId = sessionId || randomUUID()
 
+    /**
+     * Write down a turn that returns before the main persistence block.
+     *
+     * Two lanes end the response themselves and return: the fourteen topic
+     * handlers, and the general/open lane. Neither reached the persistence at
+     * the bottom of this function, so nothing about those turns was recorded —
+     * not the buyer's message, not our answer, and on a first turn not even the
+     * ChatSession row.
+     *
+     * Measured end to end. Turn 1 "Compare Sector 150 and Sector 79" was
+     * answered by `sectorComparison`. Turn 2, on the same session id, opened
+     * with "This is the start of our conversation, so this is your first
+     * question." Turn 3's "The second one." then had no sectors to point into
+     * and fell to the clarification — the sector referent was reading an empty
+     * history, correctly.
+     *
+     * So this was never a referent bug. Fourteen of the most common question
+     * types in the product left no trace, and everything that reads history —
+     * referents, "what have I told you so far", summaries, the model's own
+     * sense of what has been said — was blind on exactly those turns.
+     *
+     * The open lane did write its two messages, but never created the session
+     * row, so on a first turn the insert failed the foreign key and was
+     * swallowed by its own catch. One helper for both, session row included.
+     */
+    const persistEarlyTurn = (lane: string, answer: string): void => {
+      void (async () => {
+        if (isNewSession) {
+          await prisma.chatSession.create({
+            data: {
+              id: currentSessionId,
+              ...(userId ? { user_id: userId } : { guest_token: guestToken }),
+              title: message.slice(0, 60),
+              chat_phase: intentState,
+              message_count: 2,
+            },
+          })
+          if (userId) invalidateSessionList(userId).catch(() => {})
+        }
+        await prisma.chatMessage.createMany({
+          data: [
+            {
+              session_id: currentSessionId,
+              role: 'user',
+              content: message,
+              intent_snapshot: intent as unknown as Prisma.InputJsonValue,
+            },
+            { session_id: currentSessionId, role: 'assistant', content: answer || '[streamed]' },
+          ],
+        })
+        if (!isNewSession) {
+          await prisma.chatSession.update({
+            where: { id: currentSessionId },
+            data: { chat_phase: intentState, message_count: { increment: 2 } },
+          })
+        }
+      })().catch(e =>
+        // The turn is already answered and the stream closed. Never fail it here.
+        console.warn('[CHAT:EARLY_PERSIST]', lane, (e as Error).message),
+      )
+    }
+
     /** Single exit for every ui_state this handler emits. */
     const emitUiState = <C extends { id: string; label?: string; payload?: unknown }>(state: {
       stage: string
@@ -1027,6 +1089,7 @@ router.post('/', async (req: Request, res: Response) => {
           confidence: 'LOW',
         }, { skipDedup: true })
         send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
+        persistEarlyTurn('early-return', lastAnswerText)
         res.end()
         return
       }
@@ -1126,6 +1189,7 @@ router.post('/', async (req: Request, res: Response) => {
           confidence: 'HIGH',
         })
         send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
+        persistEarlyTurn('early-return', lastAnswerText)
         res.end()
         return
       }
@@ -1172,6 +1236,7 @@ router.post('/', async (req: Request, res: Response) => {
         confidence: 'HIGH',
       })
       send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
+      persistEarlyTurn('early-return', lastAnswerText)
       res.end()
       return
     }
@@ -1240,6 +1305,7 @@ router.post('/', async (req: Request, res: Response) => {
         confidence: 'HIGH',
       })
       send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
+      persistEarlyTurn('early-return', lastAnswerText)
       res.end()
       return
     }
@@ -1435,6 +1501,7 @@ router.post('/', async (req: Request, res: Response) => {
           intent,
           responseMode: 'chat',
         })
+        persistEarlyTurn('early-return', lastAnswerText)
         res.end()
         return
       }
@@ -1620,33 +1687,12 @@ router.post('/', async (req: Request, res: Response) => {
       // print the whole reply twice.
       if (!grounded?.streamed) send('token', { token: openText })
 
-      // This lane returns before the main pipeline's persistence, so it writes its
-      // own turn. Without this the next message has no record the exchange happened
-      // and the assistant re-asks what it just answered.
-      try {
-        await prisma.chatMessage.createMany({
-          data: [
-            {
-              session_id: currentSessionId,
-              role: 'user',
-              content: message,
-              intent_snapshot: intent as unknown as Prisma.InputJsonValue,
-            },
-            {
-              session_id: currentSessionId,
-              role: 'assistant',
-              content: openText,
-            },
-          ],
-        })
-        await prisma.chatSession.update({
-          where: { id: currentSessionId },
-          data: { message_count: { increment: 2 } },
-        })
-        if (userId) await invalidateSessionList(userId).catch(() => {})
-      } catch (e) {
-        console.warn('[CHAT:OPEN_LANE:PERSIST_ERROR]', e)
-      }
+      // This lane returns before the main pipeline's persistence, so it writes
+      // its own turn. Without this the next message has no record the exchange
+      // happened and the assistant re-asks what it just answered. It used to
+      // write the two messages directly and never create the ChatSession row,
+      // so on a first turn the insert failed the foreign key silently.
+      persistEarlyTurn(lane, openText)
 
       emitUiState({
         stage: 'RESEARCH',
@@ -1797,6 +1843,7 @@ For legal statutory schedules (UP Stamp Duty, GST, TDS) or verified property che
         intent,
         responseMode: 'chat',
       })
+      persistEarlyTurn('early-return', lastAnswerText)
       res.end()
       return
     }
@@ -1856,6 +1903,7 @@ I can help you with:
         intent,
         responseMode: 'chat',
       });
+      persistEarlyTurn('early-return', lastAnswerText)
       res.end();
       return;
     }
@@ -1882,6 +1930,7 @@ I can help you with:
         intent,
         responseMode: 'chat',
       });
+      persistEarlyTurn('early-return', lastAnswerText)
       res.end();
       return;
     }
@@ -1918,6 +1967,7 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
         intent,
         responseMode: 'chat',
       })
+      persistEarlyTurn('early-return', lastAnswerText)
       res.end()
       return
     }
@@ -2174,6 +2224,30 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
         }
 
         // ─── TOPIC HANDLER REGISTRY ────────────────────────────────────────────────
+        /**
+         * A handler-answered turn has to be written down too.
+         *
+         * Every one of the fourteen topic handlers ends the response itself and
+         * returns, which skips the entire persistence block at the bottom of
+         * this function. Nothing was recorded: not the buyer's message, not our
+         * answer, and on a first turn not even the ChatSession row.
+         *
+         * Measured end to end. Turn 1 "Compare Sector 150 and Sector 79" was
+         * answered by `sectorComparison`. Turn 2, on the same session id, was
+         * told "This is the start of our conversation, so this is your first
+         * question." Turn 3's "The second one." then had no sectors to point
+         * into and fell to the clarification — the sector referent had been
+         * built correctly and was reading an empty history.
+         *
+         * So this is not a referent bug or a memory-hydration bug. Fourteen of
+         * the most common question types in the product were leaving no trace,
+         * and every downstream feature that reads history — referents, "what
+         * have I told you so far", summaries — was blind on exactly those
+         * turns.
+         *
+         * `lastAnswerText` already accumulates everything `send('token')`
+         * emitted, handlers included, so the answer needs no new plumbing.
+         */
         if (await runTopicHandlers(CHAT_TOPIC_HANDLERS, {
           message,
           intent,
@@ -2213,7 +2287,10 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
             // handler cannot claim every later turn off a sticky field.
             commuteAnchorJustStated,
           },
-        })) return
+        })) {
+          persistEarlyTurn('topic-handler', lastAnswerText)
+          return
+        }
 
 
 
