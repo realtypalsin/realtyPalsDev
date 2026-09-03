@@ -1123,13 +1123,41 @@ router.post('/', async (req: Request, res: Response) => {
      * overwrites it, and one naming none inherits it under the narrow gate
      * below.
      */
-    if (intent.projectNames?.length === 1) {
-      const focusName = String(intent.projectNames[0])
-      const focusRow = await prisma.project.findFirst({
-        where: { name: { contains: focusName, mode: 'insensitive' } },
-        select: { id: true },
-      })
-      if (focusRow) focusProjectId = focusRow.id
+    {
+      const stated = (intent as { targetProjectId?: string }).targetProjectId
+      if (stated) {
+        focusProjectId = stated
+      } else if (intent.projectNames?.length === 1) {
+        const focusRow = await prisma.project.findFirst({
+          where: { name: { contains: String(intent.projectNames[0]), mode: 'insensitive' } },
+          select: { id: true },
+        })
+        if (focusRow) focusProjectId = focusRow.id
+      } else {
+        /**
+         * Read the project out of the message itself.
+         *
+         * `intent.projectNames` cannot be relied on here. Measured: "Is Godrej
+         * Woods RERA registered?" was answered from Godrej Woods' own row and
+         * the extracted intent carried no project name at all — the project
+         * was resolved further down the pipeline, by a lane that then returned.
+         * So the focus stayed empty on precisely the turns where a project was
+         * clearly the subject.
+         *
+         * The catalogue is already loaded and cached for this turn. Longest
+         * match wins, so "Godrej Woods Phase 2" is not read as "Godrej Woods",
+         * and a single match is required — two projects named in one message is
+         * a comparison, which has no single focus.
+         */
+        const lower = message.toLowerCase()
+        const hits = (await projectCatalog())
+          .filter(p => p.name.length >= 6 && lower.includes(p.name.toLowerCase()))
+          .sort((a, b) => b.name.length - a.name.length)
+        if (hits.length > 0 && !hits.slice(1).some(h => !hits[0].name.toLowerCase().includes(h.name.toLowerCase()))) {
+          focusProjectId = hits[0].id
+          console.log('[CHAT:FOCUS_FROM_MESSAGE]', hits[0].name)
+        }
+      }
     }
 
     /**
