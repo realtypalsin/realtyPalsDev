@@ -40,6 +40,8 @@ export interface ConversationState {
   summaryLocation?: string | null
   summaryFinancial?: string | null
   summaryTimeline?: string | null
+  /** One line from renderEnvelope() naming the real price band and configurations. */
+  inventoryEnvelope?: string | null
 }
 
 const crore = (n: number) => (n >= 1 ? `₹${n} Cr` : `₹${Math.round(n * 100)} L`)
@@ -53,6 +55,30 @@ const crore = (n: number) => (n >= 1 ? `₹${n} Cr` : `₹${Math.round(n * 100)}
  */
 export function buildStateBrief(state: ConversationState): string {
   const facts: string[] = []
+
+  /**
+   * What we actually hold, as numbers, ahead of this buyer's own facts.
+   *
+   * Measured on a cold funnel run: "I might be interested in Noida properties"
+   * came back as "Noida has evolved into one of the most desirable residential
+   * hubs in the NCR, offering world-class infrastructure, wide expressways and
+   * abundant green spaces" — three sentences of adjectives, not one figure, and
+   * nothing a buyer could act on. The model had no idea what our inventory
+   * looks like, so it described the city instead of the shortlist.
+   *
+   * One line of real aggregates fixes that, and it cannot drift from the
+   * inventory the next turn shows because both come from the same rows.
+   *
+   * Kept OUT of `facts` on purpose. `facts.length === 0` is what makes the
+   * buyer block disappear on a cold turn, and that is deliberate — see the
+   * comment above the function. The envelope is inventory, not something we
+   * know about the buyer, so putting it in `facts` would both mislabel it and
+   * print a "what you already know about this buyer" heading on turn one with
+   * nothing about the buyer under it.
+   */
+  const envelopeBlock = state.inventoryEnvelope
+    ? `## WHAT WE HAVE TO OFFER\n- ${state.inventoryEnvelope}\n- Quote these as our coverage when a buyer asks what is available. Do not describe the city in adjectives when you can name the band, the configurations and the count.\n\n`
+    : ''
 
   if (state.budgetMaxCr != null && state.budgetMinCr != null) {
     facts.push(`Budget: ${crore(state.budgetMinCr)} to ${crore(state.budgetMaxCr)}`)
@@ -97,9 +123,11 @@ export function buildStateBrief(state: ConversationState): string {
     if (value && value.trim()) facts.push(`${label}: ${value.trim().slice(0, 220)}`)
   }
 
-  if (facts.length === 0) return ''
+  if (facts.length === 0) return envelopeBlock.trimEnd()
 
   return [
+    envelopeBlock.trimEnd(),
+    envelopeBlock ? '' : null,
     '## WHAT YOU ALREADY KNOW ABOUT THIS BUYER',
     ...facts.map((f) => `- ${f}`),
     '',

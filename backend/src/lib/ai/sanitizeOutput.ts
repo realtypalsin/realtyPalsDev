@@ -1,5 +1,7 @@
 // backend/src/lib/ai/sanitizeOutput.ts
 
+import { oneQuestion } from './oneQuestion'
+
 /** Emoji, pictographs, dingbats, and the variation selector that follows them. */
 const EMOJI =
   /[\u{1F000}-\u{1FAFF}\u{2190}-\u{21FF}\u{2300}-\u{23FF}\u{2460}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE00}-\u{FE0F}\u{1F1E6}-\u{1F1FF}\u{200D}]/gu
@@ -122,6 +124,8 @@ export interface SanitizeResult {
   strippedProvenance: number
   /** Guarantees we are not in a position to make, softened to what is true. */
   softenedOverPromises: number
+  /** Extra asks removed so the reply closes with exactly one question. */
+  trimmedQuestions: number
 }
 
 /**
@@ -201,7 +205,7 @@ function normalizeCitations(input: string): { text: string; count: number } {
 /** Strips emoji, third-party platform names, and off-platform referrals. */
 export function sanitizeOutput(input: string): SanitizeResult {
   if (!input) {
-    return { text: input, strippedEmoji: 0, strippedPlatforms: 0, redirectedOffPlatform: 0, normalizedCitations: 0, strippedProvenance: 0, softenedOverPromises: 0 }
+    return { text: input, strippedEmoji: 0, strippedPlatforms: 0, redirectedOffPlatform: 0, normalizedCitations: 0, strippedProvenance: 0, softenedOverPromises: 0, trimmedQuestions: 0 }
   }
 
   const strippedEmoji = (input.match(EMOJI) ?? []).length
@@ -212,6 +216,7 @@ export function sanitizeOutput(input: string): SanitizeResult {
   const citations = normalizeCitations(input)
   const strippedProvenance = (input.match(PROVENANCE_NARRATION) ?? []).length
   const softened = softenOverPromises(input)
+  const asks = oneQuestion(input)
   if (
     strippedEmoji === 0 &&
     strippedPlatforms === 0 &&
@@ -220,7 +225,7 @@ export function sanitizeOutput(input: string): SanitizeResult {
     strippedProvenance === 0 &&
     softened.count === 0
   ) {
-    return { text: input, strippedEmoji: 0, strippedPlatforms: 0, redirectedOffPlatform: 0, normalizedCitations: 0, strippedProvenance: 0, softenedOverPromises: 0 }
+    return { text: input, strippedEmoji: 0, strippedPlatforms: 0, redirectedOffPlatform: 0, normalizedCitations: 0, strippedProvenance: 0, softenedOverPromises: 0, trimmedQuestions: 0 }
   }
 
   let text = citations.text.replace(EMOJI, '')
@@ -247,6 +252,8 @@ export function sanitizeOutput(input: string): SanitizeResult {
   // "(market listings)" here. That was the fourth leak in the audit, and it is
   // ours. One re-run is cheaper than teaching the first sweep every portal name.
   if (softened.count > 0) text = softenOverPromises(text).text
+  // Last, so it sees the text every other pass has finished with.
+  if (asks.trimmed > 0) text = oneQuestion(text).text
   const secondPass = normalizeCitations(text)
   text = secondPass.text
   for (const re of DANGLING_ATTRIBUTION) text = text.replace(re, '')
@@ -263,6 +270,7 @@ export function sanitizeOutput(input: string): SanitizeResult {
     strippedPlatforms,
     redirectedOffPlatform,
     softenedOverPromises: softened.count,
+    trimmedQuestions: asks.trimmed,
     normalizedCitations: citations.count + secondPass.count,
     strippedProvenance,
   }

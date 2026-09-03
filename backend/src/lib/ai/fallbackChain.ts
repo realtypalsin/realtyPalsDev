@@ -81,6 +81,7 @@ import { checkToolBlindAnswer } from './toolBlindGuard'
 import { endCleanly } from './endCleanly'
 import { wouldExceed, recordAttempt, recordRateLimited, limitFor } from './rateBudget'
 import { sanitizeOutput } from './sanitizeOutput'
+import { oneQuestion } from './oneQuestion'
 
 /** Remove the prefix sentinel — it must never reach a provider. */
 function stripMarker(prompt: string): string {

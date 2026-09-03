@@ -57,6 +57,8 @@ import { executeWithFallbackChain } from '../lib/ai/fallbackChain'
 import { classifyIntent, routeToModel } from '../lib/ai/intentClassifier'
 import { trimPropertiesForPrompt } from '../lib/ai/propertyTrim'
 import { DEFAULT_CITY, PILOT_SCOPE_LABEL, SUPPORTED_CITIES, outOfScopeCity } from '../lib/config/cities'
+import { buyingTargetOutOfScope } from '../lib/discovery/coverage'
+import { inventoryEnvelope, renderEnvelope } from '../lib/ai/inventoryEnvelope'
 import { verifyUser } from '../lib/auth'
 import { clientIp } from '../lib/request'
 import { getChipInventory } from '../lib/discovery/chipInventory'
@@ -1245,7 +1247,9 @@ router.post('/', async (req: Request, res: Response) => {
      * were the first — re-asking a sector six turns after it was given, and
      * treating "the first one" as a name to look up.
      */
+    const envelopeLine = renderEnvelope(await inventoryEnvelope())
     const stateBrief = buildStateBrief({
+      inventoryEnvelope: envelopeLine || null,
       budgetMinCr: intent.budgetMin ?? null,
       budgetMaxCr: intent.budgetMax ?? null,
       bhk: intent.bhk ?? null,
@@ -1449,6 +1453,61 @@ router.post('/', async (req: Request, res: Response) => {
       persistEarlyTurn('early-return', lastAnswerText)
       res.end()
       return
+    }
+
+    /**
+     * A city we do not cover, named as the place they want to buy.
+     *
+     * Measured on a cold funnel run: "I have Gurgaon in mind" was answered with
+     * a confident tour of Gurgaon's market — luxury high-rises, the Golf Course
+     * Extension and Dwarka Expressway axes — and never once said we do not
+     * cover the city. Nothing in it came from a row we hold, about a city we
+     * have no inventory in, phrased exactly like something we had checked.
+     *
+     * `outOfScopeCity` already named the city and only dropped the sector
+     * filter, which is right but silent: with no sector the turn reached the
+     * general lane, which then free-associated.
+     *
+     * Deterministic, because the whole value is in saying the same true thing
+     * every time. And it pivots with the real envelope rather than a pitch: the
+     * price floor, the ceiling, the configurations and the ready-to-move count,
+     * all aggregates over our own rows, so the next turn's inventory cannot
+     * contradict this turn's promise.
+     *
+     * `buyingTargetOutOfScope` returns null for a commute anchor. "I have a
+     * daily commute to Gurgaon" is the single most useful thing a Noida buyer
+     * can tell us — it picks the corridor — and declining it would be worse
+     * than the bug this fixes.
+     */
+    {
+      const coverage = buyingTargetOutOfScope(message)
+      if (coverage.city) {
+        console.log('[CHAT:COVERAGE_DECLINED]', { city: coverage.city, reason: coverage.reason })
+        const envelope = renderEnvelope(await inventoryEnvelope())
+        send('token', {
+          token:
+            `We're only serviceable in ${PILOT_SCOPE_LABEL} right now, so I can't shortlist anything in ${coverage.city} — ` +
+            `I'd be guessing, and you'd find out on the site visit. ${coverage.city} is on the roadmap.\n\n` +
+            (envelope ? `${envelope}\n\n` : '') +
+            `If Noida is at all open to you, I can do this properly: what's genuinely available in a sector, ` +
+            `what a project costs all-in after stamp duty and GST, and how each builder has actually delivered. ` +
+            `Is Noida worth a look for you?`,
+        })
+        emitUiState({
+          stage: 'GATHERING',
+          thinking: `Outside our coverage: ${coverage.city}.`,
+          chips: [
+            { id: `chip_cov_a_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Show me what Noida has', icon: 'building', analyticsId: 'chip_cov_browse', priority: 1, payload: { text: 'What do you have available in Noida?' } },
+            { id: `chip_cov_b_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: `I commute to ${coverage.city}`, icon: 'route', analyticsId: 'chip_cov_commute', priority: 2, payload: { text: `I have a daily commute to ${coverage.city} — which Noida sectors suit that?` } },
+          ],
+          missingFields: ['city'],
+          confidence: 'HIGH',
+        }, { skipDedup: true })
+        send('done', { sessionId: currentSessionId, intentState: 'GATHERING', intent, responseMode: 'chat' })
+        persistEarlyTurn('coverage', lastAnswerText)
+        res.end()
+        return
+      }
     }
 
     /**

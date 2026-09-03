@@ -4,6 +4,7 @@ import { commuteShortlistHandler } from './commuteShortlist'
 import { builderReputationHandler } from './builderReputation'
 import { newcomerOrientationHandler } from './newcomerOrientation'
 import { amenityLifestyleHandler } from './amenityLifestyle'
+import { vicinityLookupHandler } from './vicinityLookup'
 import { sectorComparisonHandler } from './sectorComparison'
 import { paymentPlansHandler } from './paymentPlans'
 import { costSheetHandler } from './costSheet'
@@ -52,6 +53,7 @@ export const CHAT_TOPIC_HANDLERS: readonly ChatTopicHandler[] = [
   citywideQueryHandler,
   builderReputationHandler,
   newcomerOrientationHandler,
+  vicinityLookupHandler,
   amenityLifestyleHandler,
   sectorComparisonHandler,
   paymentPlansHandler,
@@ -65,6 +67,7 @@ export const CHAT_TOPIC_HANDLERS: readonly ChatTopicHandler[] = [
 ]
 
 export {
+  vicinityLookupHandler,
   commuteShortlistHandler,
   citywideQueryHandler,
   reraVerificationHandler,
