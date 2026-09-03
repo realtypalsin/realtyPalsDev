@@ -37,7 +37,8 @@
     "audit:master-json": "tsx scripts/audit-master-json.ts",
     "fix:track-record": "tsx scripts/fix-builder-track-record.ts",
     "audit:rera": "tsx scripts/audit-rera.ts",
-    "verify:chat": "tsx scripts/verify-chat.ts"
+    "verify:chat": "tsx scripts/verify-chat.ts",
+    "audit:plans": "tsx scripts/audit-payment-plans.ts"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"

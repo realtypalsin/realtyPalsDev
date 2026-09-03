@@ -160,33 +160,66 @@ export interface SanitizeResult {
  * claim and reads as broken without it, and the honest version of the claim is
  * genuinely useful to a buyer.
  */
+/**
+ * Claims about what a registration, an approval or a purchase guarantees.
+ *
+ * These replace the WHOLE SENTENCE, and that is a bug fix rather than a style
+ * preference. The first version swapped the verb phrase and left its object
+ * behind, which produced text nobody would write:
+ *
+ *   "This ensures regulatory oversight tracking while construction progresses."
+ *     -> "This is on record as filed with the authority tracking while
+ *         construction progresses."                    (dangling "tracking")
+ *   "This confirms full legal compliance and regulatory transparency..."
+ *     -> "...the authority and regulatory transparency for your investment."
+ *   "...and ensures full compliance for your investment."
+ *     -> "This is on record and is on record as filed with..."      (doubled)
+ *   "This assures a 12% rental yield over five years."
+ *     -> "This is no guarantee of a over five years."         (ungrammatical)
+ *
+ * The last one is the one that matters. It is not clumsy, it is broken — and
+ * the test that shipped alongside it only asserted the banned word was gone,
+ * so it passed while emitting that. A softened claim still has to be a
+ * sentence, and a test on a rewriter has to assert what it produces, not only
+ * what it removes.
+ *
+ * A verb phrase cannot be swapped safely when its object is a list —
+ * "compliance AND transparency", "oversight tracking WHILE progressing" —
+ * because the replacement has no way to consume the rest of the claim. These
+ * sentences are always one shape, "This <verb> <what it supposedly means>", so
+ * replacing the sentence is both simpler and grammatical by construction. Same
+ * approach as MONEY_ASSURANCE and OFFPLATFORM_REFERRAL.
+ */
+const SENTENCE_CLAIMS: Array<[RegExp, string]> = [
+  // What a registration or approval is asserted to guarantee.
+  [
+    /(?<=^|[.!?\n]\s{0,3})[^.!?\n]*\b(?:guarantee(?:s|d|ing)?|ensur(?:es?|ed|ing)|confirms?|confirmed|proves?|demonstrates?|reflects?)\b[^.!?\n]*\b(?:compliance|transparency|accountability|oversight|legal\s+security|title\s+security|regulatory\s+protection|delivery|possession|handover|completion)\b[^.!?\n]*[.!?]?\s*/gi,
+    'Registration puts the project on record with the authority and gives you a route to complain; it is not a warranty on delivery, title or build quality.',
+  ],
+  // A promised return, yield or appreciation.
+  [
+    /(?<=^|[.!?\n]\s{0,3})[^.!?\n]*\b(?:guarantee(?:s|d|ing)?|assur(?:es?|ed)|ensur(?:es?|ed)|promis(?:es?|ed))\b[^.!?\n]*\b(?:returns?|appreciation|rental\s+yield|profits?|capital\s+gains?)\b[^.!?\n]*[.!?]?\s*/gi,
+    'Past prices and rents are on record; nobody can promise a future return, and we do not.',
+  ],
+  // Protecting the buyer's capital.
+  [
+    /(?<=^|[.!?\n]\s{0,3})[^.!?\n]*\b(?:protects?|safeguards?|shields?)\s+(?:your|the\s+buyer'?s?)\s+(?:capital|money|investment|funds?)\b[^.!?\n]*[.!?]?\s*/gi,
+    'That lowers the risk without removing it.',
+  ],
+]
+
+/**
+ * Local swaps, safe because the phrase strands no object.
+ *
+ * "zero risk" and "fully safe" are adjective phrases: replacing them in place
+ * leaves a grammatical sentence, which is why these stay word-level instead of
+ * taking a whole sentence with them.
+ */
 const OVER_PROMISE: Array<[RegExp, string]> = [
-  [/\bguarantee(?:s|d|ing)?\s+(?:the\s+)?(?:adherence\s+to\s+)?(?:on[- ]time\s+)?(?:delivery|possession|handover|completion)(?:\s+timelines?)?/gi,
-    'creates a disclosure obligation on delivery timelines'],
-  // Registration is a disclosure regime, not a warranty. Observed live:
-  // "guarantees regulatory compliance and legal transparency" — a claim about
-  // the builder's future conduct, made from the existence of a number.
-  [/\bguarantee(?:s|d|ing)?\s+(?:you\s+)?(?:full\s+|complete\s+|total\s+)?(?:regulatory\s+)?(?:compliance|transparency|protection|accountability|oversight|security)/gi,
-    'brings statutory disclosure and a complaint route'],
-  [/\b(?:guarantees?|guaranteed|assures?|assured|ensures?|ensured)\s+(?:you\s+)?(?:a\s+|an\s+)?(?:\d+%\s+)?(?:returns?|appreciation|capital\s+appreciation|rental\s+yield|profits?)/gi,
-    'is no guarantee of a'],
   [/\b(?:zero|no)\s+risk\b/gi, 'lower risk'],
   [/\bfully\s+(?:safe|secure|protected)\b/gi, 'covered by the statutory protections'],
   [/\bwill\s+(?:definitely|certainly|surely)\s+(?:appreciate|deliver|be\s+delivered)/gi,
     'is expected to, though we cannot promise it,'],
-  /**
-   * `guarantees` was only ever the most obvious verb.
-   *
-   * Measured on the grievance suite, one turn after the softener shipped: "This
-   * confirms full legal compliance and regulatory transparency for your
-   * investment" and "This minimizes legal risks and protects your capital from
-   * title disputes" — both from the existence of a RERA number. `confirms` and
-   * `protects` carry the same promise as `guarantees` and neither matched.
-   */
-  [/\b(?:confirms?|confirmed|reflects?|demonstrates?|proves?|ensures?)\s+(?:full\s+|complete\s+|total\s+)?(?:legal\s+|regulatory\s+)?(?:compliance|transparency|protection|accountability|oversight)/gi,
-    'is on record as filed with the authority'],
-  [/\bprotects?\s+(?:your|the\s+buyer'?s?)\s+(?:capital|money|investment|funds?)(?:\s+from\s+[^.,]{0,40})?/gi,
-    'reduces the risk to your money without removing it'],
 ]
 
 /**
@@ -253,9 +286,32 @@ function softenOverPromises(input: string): { text: string; count: number } {
     return `${sep}${MONEY_HONEST} `
   })
 
+  /**
+   * Sentence-level claims next, and before the word-level swaps for the same
+   * reason: a word-level swap inside a sentence that is about to be replaced
+   * both mangles the replacement and counts one problem twice.
+   *
+   * The separator logic is shared with the two passes above. It exists because
+   * each of them has, at some point, welded its replacement onto the end of the
+   * previous sentence.
+   */
+  const withoutSentenceClaims = SENTENCE_CLAIMS.reduce(
+    (acc, [re, replacement]) =>
+      acc.replace(re, (match, ...rest) => {
+        count += 1
+        const offset = rest[rest.length - 2] as number
+        const before = acc.slice(0, offset)
+        const sep = /\n\s*$/.test(before) ? '' : before && !/\s$/.test(before) ? ' ' : ''
+        // Keep the trailing space the matched sentence had, so the next
+        // sentence does not run into this one.
+        return `${sep}${replacement} `
+      }),
+    withoutMoneyClaims,
+  )
+
   const text = OVER_PROMISE.reduce(
     (acc, [re, replacement]) => acc.replace(re, () => { count += 1; return replacement }),
-    withoutMoneyClaims,
+    withoutSentenceClaims,
   )
   return { text, count }
 }

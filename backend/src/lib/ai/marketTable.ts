@@ -262,6 +262,21 @@ export interface PaymentPlanRow {
  * The gate is per-row, so the moment an analyst stamps `verified_at` on a plan
  * the qualifier disappears for that project without anyone editing this file.
  */
+
+/** Source strings that mean "we filled this in ourselves", not a real source. */
+const OUR_OWN_DEFAULT = /inferred|default|template|seed|placeholder/i
+
+/**
+ * True when a payment plan carries provenance a buyer could rely on.
+ *
+ * Deliberately positive. Absence of a source is not evidence of one, and a
+ * label recording that a row IS a template must not read as provenance.
+ */
+function hasRealProvenance(p: PaymentPlanRow): boolean {
+  if (p.verified_at) return true
+  return Boolean(p.source && !OUR_OWN_DEFAULT.test(p.source))
+}
+
 export const PAYMENT_PLAN_PROVENANCE =
   '_These are the standard schemes on file for this project and have not been ' +
   'confirmed against the developer\'s current terms. Treat the stage percentages ' +
@@ -352,9 +367,22 @@ export function renderPaymentPlanTable(plans: PaymentPlanRow[], limit = 5): stri
     return `#### ${name}\n\n${header}\n${body.join('\n')}`
   })
 
-  // Per-row, so one analyst stamping verified_at removes the qualifier for that
-  // project without anyone editing this file.
-  const unverified = rows.every((p) => !p.verified_at && !p.source)
+  /**
+   * Real provenance, not merely a non-empty column.
+   *
+   * The gate was `!verified_at && !source`, which breaks the moment the
+   * templated rows are labelled: setting `source = 'inferred_default'` — a
+   * statement that we know these are templates — would have SILENCED the
+   * qualifier, which is the opposite of what labelling them is for.
+   *
+   * So the test is positive: a plan has provenance when someone verified it, or
+   * when its source names something other than our own defaulting. Measured
+   * 4 Sep 2026, 608 of 620 plans are mass-duplicated (identical name AND
+   * identical milestone detail across ten or more projects), and `watch_out`
+   * and `best_for` are null on all 620 — so today every plan takes the
+   * qualifier, and one researched plan will drop it for its own project.
+   */
+  const unverified = rows.every((p) => !hasRealProvenance(p))
   const provenance = unverified ? `\n\n${PAYMENT_PLAN_PROVENANCE}` : ''
   return `### Available Payment Schemes\n\n${summaryHeader}\n${summaryBody.join('\n')}\n\n${detailBlocks.join('\n\n')}${provenance}`
 }

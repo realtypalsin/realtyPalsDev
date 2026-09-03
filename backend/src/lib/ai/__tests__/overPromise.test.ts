@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { sanitizeOutput } from '../sanitizeOutput'
+import { assertReadsAsProse } from './readsAsProse'
 
 describe('guarantees we cannot make', () => {
   it('softens the RERA delivery guarantee', () => {
@@ -12,13 +13,19 @@ describe('guarantees we cannot make', () => {
     )
     assert.equal(r.softenedOverPromises, 1)
     assert.ok(!/guarantee/i.test(r.text), r.text)
-    assert.ok(/disclosure obligation/i.test(r.text), r.text)
+    assert.ok(/on record with the authority/i.test(r.text), r.text)
+    assertReadsAsProse(r.text)
   })
 
   it('softens a promised return and a zero-risk claim', () => {
     const a = sanitizeOutput('This assures a 12% rental yield over five years.')
     assert.equal(a.softenedOverPromises, 1)
     assert.ok(!/assures/i.test(a.text), a.text)
+    // This is the assertion that was missing. The verb-phrase version produced
+    // 'This is no guarantee of a over five years.' and the test passed, because
+    // it only checked that the banned word was gone.
+    assert.ok(!/of a over/i.test(a.text), a.text)
+    assertReadsAsProse(a.text)
 
     const b = sanitizeOutput('A ready-to-move flat with OC is a zero risk purchase.')
     assert.equal(b.softenedOverPromises, 1)
@@ -74,6 +81,8 @@ describe('claims about the buyer\'s own money', () => {
     const b = sanitizeOutput('This minimizes legal risks and protects your capital from title disputes.')
     assert.equal(b.softenedOverPromises, 1)
     assert.ok(!/protects your capital/i.test(b.text), b.text)
+    assertReadsAsProse(a.text)
+    assertReadsAsProse(b.text)
   })
 
   it('leaves an honest statement about a refund process alone', () => {
@@ -123,5 +132,39 @@ describe('the money guard does not eat honest payment prose', () => {
     const r = sanitizeOutput('You are still saving. Your funds are secure with us. Anything else matters less.')
     assert.ok(!/saving\.I can't/.test(r.text), r.text)
     assert.ok(!/[a-z]\.I can't/.test(r.text), r.text)
+  })
+})
+
+describe('the sentence-level rewriter produces sentences', () => {
+  // Each input here produced broken or clumsy output from the verb-phrase
+  // version. The assertion is on the whole result, not on a missing word.
+  const CASES = [
+    'This ensures regulatory oversight tracking while construction progresses.',
+    'The RERA number is UPRERAPRJ4510. This is on record and ensures full compliance for your investment.',
+    'This confirms full legal compliance and regulatory transparency for your investment.',
+    'This minimizes legal risks and protects your capital from title disputes.',
+    'This assures a 12% rental yield over five years.',
+    'Registration guarantees on-time delivery and protects your investment from delay.',
+  ]
+
+  for (const input of CASES) {
+    it(`rewrites cleanly: "${input.slice(0, 46)}…"`, () => {
+      const r = sanitizeOutput(input)
+      assert.ok(r.softenedOverPromises >= 1, `nothing softened: ${r.text}`)
+      assertReadsAsProse(r.text)
+      // Every sentence in the result ends in a terminator.
+      for (const sentence of r.text.split(/(?<=[.!?])\s+/).filter(s => s.trim())) {
+        assert.ok(/[.!?]$/.test(sentence.trim()), `unterminated sentence: "${sentence}" in ${r.text}`)
+      }
+    })
+  }
+
+  it('leaves an honest possession statement alone', () => {
+    // `possession` is in the claim pattern, so this guards the over-correction:
+    // a possession DATE is a fact, only a possession GUARANTEE is a claim.
+    const text = 'The project is RERA registered under UPRERAPRJ4510 and possession is targeted for Q4 2026.'
+    const r = sanitizeOutput(text)
+    assert.equal(r.softenedOverPromises, 0, r.text)
+    assert.equal(r.text, text)
   })
 })

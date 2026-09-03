@@ -2446,9 +2446,34 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
     const isSummaryRequest = /summarize|summary|entire session|weightage/i.test(topicText)
     const isCompareRequest = (intent as any)?.is_comparison_query || (intent.projectNames && intent.projectNames.length >= 2) || /\bcompare\b/i.test(topicText) || isSectorCompare
     const isAdvisoryPhrasing = /\b(how\s+to|best\s+way|tips\s+(for|on|to)|advice|guide|save\s+money|saving|negotiat|hidden|mistakes?|checklist|process\s+of|rules?|steps?)\b/i.test(topicText)
+    /**
+     * "Show me the payment plans for Godrej Woods" is not an inventory search.
+     *
+     * `show\s+me` fires `isInventorySearch`, and `isInventorySearch` gates the
+     * ENTIRE ground-truth database block — the fourteen topic handlers included.
+     * So that phrasing skipped the deterministic payment-plan table, its
+     * milestone breakdown and its provenance qualifier, and was answered from
+     * the facts block instead. Measured: the model wrote its own table and
+     * called them "two verified payment structures", about rows whose
+     * `verified_at` is null on all 620.
+     *
+     * The follow-up phrasing — "what is the payment plan?" — routed correctly
+     * the whole time, which is why this survived: the feature looked fine on
+     * every test that arrived at it through a conversation.
+     *
+     * An inventory search asks for a LIST of properties. A request for a named
+     * artefact ABOUT a project asks for one document. The project is what
+     * separates them: "show me the payment plans for Godrej Woods" names one,
+     * "show me options in Sector 150" names none — so the artefact noun alone
+     * is not enough to disqualify a search.
+     */
+    const asksForProjectArtefact =
+      /\b(payment\s+plans?|cost\s+sheets?|price\s+breakdown|floor\s+plans?|layout\s+plans?|brochure|amenit\w+|payment\s+schedule|milestones?|specs?|specifications?)\b/i.test(topicText) &&
+      (intent.projectNames?.length ?? 0) > 0
+
     const isInventorySearch = (/\b(show\s+me|find\s+me|list\s+(all|the)?|options\s+in|available\s+in|looking\s+for|search\s+for)\b/i.test(topicText) ||
       (/\b(\d\s*bhk)\b/i.test(topicText) && /\b(sector|in|under|budget|crore|lakh)\b/i.test(topicText))) &&
-      !isCompareRequest && !isSectorCompare && !isAdvisoryPhrasing
+      !isCompareRequest && !isSectorCompare && !isAdvisoryPhrasing && !asksForProjectArtefact
     // Plurals matter: `\bpayment plan\b` does not match "payment plans", which
     // is how buyers and our own chips write it. "Show payment plans for Nirala
     // Diadem" reached no handler at all and was answered as ordinary prose,
