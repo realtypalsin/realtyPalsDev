@@ -1105,6 +1105,34 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     /**
+     * Remember the focus for the next turn.
+     *
+     * Placed this early deliberately. It first sat beside `activeProjectName`,
+     * a thousand lines down, and every turn that returns before that point —
+     * the RERA-fact lane, the coverage lane, the declines — recorded no focus
+     * at all. Measured: "Is Godrej Woods RERA registered?" answered correctly
+     * from the project's own row and then left nothing behind, so the next
+     * three turns answered about Sector 43 in general.
+     *
+     * Recorded here and written by whichever persistence path closes the turn,
+     * because on a first turn the ChatSession row does not exist yet — writing
+     * it directly here would fail the foreign key on exactly the case that
+     * matters, the opening project question.
+     *
+     * Cleared never at this point: a later turn naming a different project
+     * overwrites it, and one naming none inherits it under the narrow gate
+     * below.
+     */
+    if (intent.projectNames?.length === 1) {
+      const focusName = String(intent.projectNames[0])
+      const focusRow = await prisma.project.findFirst({
+        where: { name: { contains: focusName, mode: 'insensitive' } },
+        select: { id: true },
+      })
+      if (focusRow) focusProjectId = focusRow.id
+    }
+
+    /**
      * The buyer's state, for any prompt that needs it.
      *
      * The general lane had none of this and answered every turn as though it
@@ -2236,26 +2264,6 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
 
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
 
-    /**
-     * Remember the focus for the next turn.
-     *
-     * Recorded here and written by whichever persistence path closes the turn,
-     * because on a first turn the ChatSession row does not exist yet — writing
-     * it directly here would fail the foreign key on exactly the case that
-     * matters, the opening project question.
-     *
-     * Cleared never at this point: a later turn naming a different project
-     * overwrites it, and one naming none inherits it under the narrow gate
-     * above.
-     */
-    if (intent.projectNames?.length === 1) {
-      const focusName = String(intent.projectNames[0])
-      const focusRow = await prisma.project.findFirst({
-        where: { name: { contains: focusName, mode: 'insensitive' } },
-        select: { id: true },
-      })
-      if (focusRow) focusProjectId = focusRow.id
-    }
 
     // A project-specific RERA number question ("what is X's RERA number") is a
     const isReraFactQuery = /rera/i.test(message) && Boolean(activeProjectName)
