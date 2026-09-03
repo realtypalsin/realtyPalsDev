@@ -1641,3 +1641,79 @@ messages still land, which matches the observed row exactly. Check that first.
 Four hypotheses were wrong before this one (gate too strict, block placed too
 late, `else` branch swallowing the fallback, deploy timing). **Read the database
 row before forming the fifth.**
+
+---
+
+## Session 2026-09-04 — the funnel, coverage, vicinity, and four gates on one referent
+
+### Run the server locally and read the log
+
+Both bugs left open at the end of the previous session were closed within
+minutes of starting `npm run dev` and reading stdout. Both had survived four
+rounds of inference from production behaviour.
+
+**The focus carry** was a *fifth* persistence path — the ground-truth-DB branch
+carried its own create-and-insert, written before `persistEarlyTurn` existed and
+never folded into it, so it did not know about `focus_project_id`. The value was
+computed correctly all along and all four *known* write sites carried it.
+
+**Anyone debugging this pipeline: start the server locally.** Production
+behaviour tells you the symptom; the log tells you the lane.
+
+### One referent, four gates
+
+`resolveSectorReference` worked on the first try and was defeated four times
+downstream. Each fix is in the commit message; the pattern is what matters:
+
+**A guard that runs on the raw message cannot see what an earlier stage
+resolved.** It has to be told. This has now bitten `isReraCheckQuery`, the
+sector lane's anti-sticky gate, and `asksToSeeInventoryHere` — three times in
+two sessions, always the same shape.
+
+The worst of the four: retrieval never ran, so the facts block was empty, and
+the model wrote *"we do not track verified inventory directly inside Sector
+79"* — about a sector holding seventeen projects, one turn after our own table
+had printed its price band. **A confident denial of inventory we hold is worse
+than a refusal and worse than a guess.** An empty facts block invites it.
+
+### Prefix cache: stable bytes before variable bytes, again
+
+`outputContract` bundled 4.5 KB of static behaviour rules *after* the tool
+catalogue, which `filterToolsByIntent` varies per turn. Prefix caching stops at
+the first differing byte, so fixed rules were re-billed at full rate every turn
+for no reason but ordering. Split: static half above the catalogue, and only
+`## THIS ANSWER` stays last where position is salience. **74.8% -> 83.5%.**
+
+### What came from the claude1/claude2 specs
+
+Two ideas were adopted because measurement backed them; the rest was not.
+
+* **Zero-result relaxation must state what was relaxed.** Already behaving well:
+  "5 BHK penthouse with private terrace for ₹1.4 Cr is not available in Greater
+  Noida West… at ₹1.4 Cr your budget secures a spacious 3 BHK or a well-planned
+  4 BHK." That is the spec's ladder, unprompted.
+* **One question per turn, enforced in code.** The prompt has asked for this in
+  three places for weeks and it stayed the most reliably broken rule in the
+  product. `oneQuestion()` trims at the held stream tail so the buyer never sees
+  the second ask. An either/or is left alone — one decision, two options.
+
+**Not adopted: replacing regex routing with LLM tool-calling, and the
+facet-extraction rewrite.** Both are re-architectures of a pipeline that now
+passes the adversarial suite, and the measured failures this session were all
+*gates defeating a correct resolution*, not classification misses. A rewrite
+would have replaced four one-line fixes with a new lane graph and a second
+model call on the critical path.
+
+### Still open, honestly
+
+* **`RecommendationProfile.tier` is reaching buyers.** An answer showed
+  `STRONG_BUY` and "buyer satisfaction rating of 4.7 out of 5". CLAUDE.md
+  reserves that surface: only `PUBLISHED` profiles are buyer-facing and DNA
+  scores stay internal. This looks like the fake-confidence-score the doc
+  forbids. Not touched — needs a deliberate exposure decision.
+* **`Builder.projects_delivered_count` still defaults to 18.** Needs a
+  migration.
+* **Grievance replies still over-assure.** "Your funds are securely processed
+  through official builder channels" was said about a booking we have no record
+  of. The over-promise softener does not cover it.
+* **Discovery latency 8-18s locally**, unevenly spread.
