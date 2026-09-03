@@ -1443,3 +1443,74 @@ invented. If it was meant to carry a plan, it did not save.
 358 tests passing, typecheck / lint / build clean, all deployed. Behaviour on the
 verification suite is unchanged by the latency work — grievance turns silent,
 history exact, off-topic declined, referents resolved or asked about.
+
+---
+
+## Session 2026-09-03 (night) — instrumented, then fixed what the numbers said
+
+### The instrumentation was the point
+
+`lib/turnTimer.ts` marks every stage and reports it on the `done` event plus one
+log line. First reading of a production discovery turn, 26.3s:
+
+```
+cacheRead 66  intentExtract 3  projectCatalog 131  discoverProjects 3017
+preLlm 11568  llm 3301  postLlm 3717
+```
+
+**Every latency theory formed before this was wrong.** The prompt was blamed
+before it was profiled; retrieval was assumed slow and runs in 79-228ms; the
+model was assumed dominant and was 3.3s after the earlier prompt cuts. The
+biggest cost was a stage nobody had timed.
+
+### preLlm 11,568ms -> 3,112ms
+
+`getMultiDimensionalRecommendations` — **6,089ms measured in isolation** — ran on
+every DISCOVERY and RANKING turn, AFTER `discoverProjects` had already scored and
+ordered the same rows. What it adds is `_multidimensional_*` fields, which
+`stripInternalFields` then strips before the client sees them, plus prompt
+explanation text.
+
+Gated to RANKING only: "best 3 BHK under 2 Cr" is a ranking; "show me 3 BHK in
+Sector 150" is a filter whose results arrive ordered. That distinction is exactly
+what separates the two query kinds in the classifier and the gate ignored it.
+Bounded at 2.5s as well, because even where it belongs it must not hold an
+answer for six seconds — past the deadline the turn uses the ordering retrieval
+gave it. The enrichment adds explanation, not correctness.
+
+### postLlm 3,717ms -> 2,852ms
+
+`scorePropertyEngagement` was awaited after the reply and its result only
+logged. Two independent persist calls ran sequentially rather than in one
+`Promise.all`. A `chatMessage.findFirst` blocked purely so a fire-and-forget
+grading job could start sooner.
+
+### Net
+
+**26.3s -> 11.4s.** No single stage dominates now: 3.1s before the model, 4.0s
+in it, 2.9s after. Further gains need work on each rather than one fix.
+
+### Second full adversarial run
+
+Answers **6.2 -> 7.8**, chips **4.4 -> 7.7**. Every previously-bad turn now
+behaves: biryani and school-admission questions decline in one sentence with no
+chips; "what was my first budget" answers "₹1.8 Cr, and you moved it to ₹1.4
+Cr"; the rent figure is validated; the context snapback recalls the project and
+its pool from rows.
+
+The chip score moved mostly by **subtraction** — silence on grievance, refusal
+and off-topic turns, which used to be unreachable.
+
+### Still open, and honestly
+
+* A pronoun aimed at two compared **sectors** does not resolve; ordinals index a
+  list of shown projects. It now asks rather than inventing a project name, so
+  the cost is a wasted turn rather than a wrong answer.
+* Discovery at 11-15s.
+
+### Standing note
+
+Three regex bugs this week, all the same shape: `\brefund\b` misses "refunded",
+`\brelocat\b` misses "relocating", `\bprice\b` misses "prices". And now a fourth
+kind of measurement lesson: **instrument before optimising.** Both times a stage
+was blamed without a timer, the blame was misplaced.
