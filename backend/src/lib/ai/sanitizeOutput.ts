@@ -141,6 +141,11 @@ export interface SanitizeResult {
 const OVER_PROMISE: Array<[RegExp, string]> = [
   [/\bguarantee(?:s|d|ing)?\s+(?:the\s+)?(?:adherence\s+to\s+)?(?:on[- ]time\s+)?(?:delivery|possession|handover|completion)(?:\s+timelines?)?/gi,
     'creates a disclosure obligation on delivery timelines'],
+  // Registration is a disclosure regime, not a warranty. Observed live:
+  // "guarantees regulatory compliance and legal transparency" — a claim about
+  // the builder's future conduct, made from the existence of a number.
+  [/\bguarantee(?:s|d|ing)?\s+(?:you\s+)?(?:full\s+|complete\s+|total\s+)?(?:regulatory\s+)?(?:compliance|transparency|protection|accountability|oversight|security)/gi,
+    'brings statutory disclosure and a complaint route'],
   [/\b(?:guarantees?|guaranteed|assures?|assured|ensures?|ensured)\s+(?:you\s+)?(?:a\s+|an\s+)?(?:\d+%\s+)?(?:returns?|appreciation|capital\s+appreciation|rental\s+yield|profits?)/gi,
     'is no guarantee of a'],
   [/\b(?:zero|no)\s+risk\b/gi, 'lower risk'],

@@ -678,7 +678,12 @@ router.post('/', async (req: Request, res: Response) => {
     /** The project this turn is about, written by whichever path closes it. */
     let focusProjectId: string | null = null
 
-    const persistEarlyTurn = (lane: string, answer: string): void => {
+    const persistEarlyTurn = (
+      lane: string,
+      answer: string,
+      opts: { phase?: string; artifacts?: unknown } = {},
+    ): void => {
+      const phase = opts.phase ?? intentState
       void (async () => {
         if (isNewSession) {
           await prisma.chatSession.create({
@@ -686,7 +691,7 @@ router.post('/', async (req: Request, res: Response) => {
               id: currentSessionId,
               ...(userId ? { user_id: userId } : { guest_token: guestToken }),
               title: message.slice(0, 60),
-              chat_phase: intentState,
+              chat_phase: phase,
               message_count: 2,
               ...(focusProjectId ? { focus_project_id: focusProjectId, focus_set_at: new Date() } : {}),
             },
@@ -701,14 +706,20 @@ router.post('/', async (req: Request, res: Response) => {
               content: message,
               intent_snapshot: intent as unknown as Prisma.InputJsonValue,
             },
-            { session_id: currentSessionId, role: 'assistant', content: answer || '[streamed]' },
+            {
+              session_id: currentSessionId,
+              role: 'assistant',
+              content: answer || '[streamed]',
+              ...(opts.artifacts ? { artifacts: opts.artifacts as Prisma.InputJsonValue } : {}),
+            },
           ],
         })
         if (!isNewSession) {
           await prisma.chatSession.update({
             where: { id: currentSessionId },
             data: {
-              chat_phase: intentState,
+              last_active: new Date(),
+              chat_phase: phase,
               message_count: { increment: 2 },
               ...(focusProjectId ? { focus_project_id: focusProjectId, focus_set_at: new Date() } : {}),
             },
@@ -2989,50 +3000,26 @@ USING THE FACTS:
             confidence: 'HIGH'
           })
 
-          // Persist session & chat messages to PostgreSQL Database so sidebar logs it immediately
-          try {
-            if (isNewSession) {
-              await prisma.chatSession.create({
-                data: {
-                  id: currentSessionId,
-                  ...(userId ? { user_id: userId } : { guest_token: guestToken }),
-                  title: message.slice(0, 60),
-                  chat_phase: 'SHORTLISTED',
-                  message_count: 2,
-                }
-              })
-              if (userId) await invalidateSessionList(userId).catch(() => {})
-            } else {
-              await prisma.chatSession.update({
-                where: { id: currentSessionId },
-                data: {
-                  last_active: new Date(),
-                  chat_phase: 'SHORTLISTED',
-                  message_count: { increment: 2 },
-                }
-              })
-              if (userId) await invalidateSessionList(userId).catch(() => {})
-            }
-
-            await prisma.chatMessage.createMany({
-              data: [
-                {
-                  session_id: currentSessionId,
-                  role: 'user',
-                  content: message,
-                  intent_snapshot: intent as unknown as Prisma.InputJsonValue,
-                },
-                {
-                  session_id: currentSessionId,
-                  role: 'assistant',
-                  content: responseText || '[streamed]',
-                  artifacts: { property_results: detailedTargetProjects } as unknown as Prisma.InputJsonValue,
-                },
-              ]
-            })
-          } catch (dbErr) {
-            console.error('[CHAT:GROUND_TRUTH_DB_SAVE_ERROR]', dbErr)
-          }
+          /**
+           * One persistence helper, not a fifth copy of it.
+           *
+           * This branch carried its own create-and-insert, written before
+           * `persistEarlyTurn` existed and never folded into it. Because it was
+           * a copy it did not know about `focus_project_id`, so every turn that
+           * lands here — the RERA fact lookups, the project-detail answers —
+           * recorded no focus.
+           *
+           * That cost four wrong diagnoses. The focus was computed correctly at
+           * line 1127 (verified against a local run: `targetProjectId` was
+           * already set), all four known write sites carried it, and the row
+           * still came back NULL, because a fifth write nobody had counted was
+           * the one running. Found by starting the server locally and reading
+           * the log instead of inferring from production behaviour.
+           */
+          persistEarlyTurn('ground-truth-db', responseText || lastAnswerText, {
+            phase: 'SHORTLISTED',
+            artifacts: { property_results: detailedTargetProjects },
+          })
 
           const responseMode = isCompareRequest && targetProjects.length >= 2 ? 'comparison' : 'ground_truth_database'
           send('done', {

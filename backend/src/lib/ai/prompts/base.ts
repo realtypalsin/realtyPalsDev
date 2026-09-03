@@ -451,6 +451,8 @@ Answer process, NRI, and RERA questions from general knowledge. Advise checking 
 ${SYSTEM_PROMPT_BOUNDARY}
 
 
+${BEHAVIOUR_RULES}
+
 ${budgetRules}
 
 ---
@@ -534,7 +536,28 @@ No headings, no preamble. Around 80 words, then the one closing question.`
 
 ## THIS ANSWER
 
-${contract}
+${contract}`
+}
+
+/**
+ * The static half of what used to be the output contract.
+ *
+ * These blocks never vary, and they sat *after* the tool catalogue — which is
+ * filtered per turn by `filterToolsByIntent`, so it is the first byte that
+ * differs between two requests. Prefix caching matches up to that byte and
+ * stops, so 4.5 KB of fixed behaviour rules were re-billed at full rate on
+ * every single turn for no reason but ordering. The shared prefix had drifted
+ * to 74.8% and `promptPrefixCache.test.ts` was failing on it.
+ *
+ * Spliced above the catalogue instead. Only `## THIS ANSWER` — the per-question
+ * contract, which genuinely varies — stays at the very end, where position is
+ * salience and it belongs.
+ */
+const BEHAVIOUR_RULES = `
+
+---
+
+## HOW THIS ANSWER IS SHAPED
 
 Open with the answer, never with a heading. A heading earns its place only when
 the reply has three or more distinct sections beneath it.
@@ -542,6 +565,7 @@ A table is for holding things side by side. It is never a summary, never a
 wrapper for a single value, and never a substitute for a sentence.
 Bullets stay top-level; fold a sub-point into its line with a comma or a
 parenthesis rather than indenting it.
+
 ## TWO THINGS THAT MUST NOT HAPPEN
 
 **Do not state an unsourced fact in the register of a sourced one.** Measured:
@@ -586,7 +610,6 @@ Skip it only when the buyer has just asked for a human, or when you have asked
 the same question on the previous turn and they have not answered it.
 
 Length is a ceiling, never a target. A correct short answer is a complete answer.`
-}
 
 /**
  * Told to the model when a market table has already been rendered and shown.
