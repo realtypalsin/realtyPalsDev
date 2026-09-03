@@ -230,7 +230,42 @@ export interface PaymentPlanRow {
   best_for?: string | null
   watch_out?: string | null
   milestones?: unknown
+  /** Null on every one of the 620 rows we hold — see PAYMENT_PLAN_PROVENANCE. */
+  verified_at?: Date | string | null
+  source?: string | null
 }
+
+/**
+ * What a payment schedule we have not verified is allowed to claim.
+ *
+ * Measured against the live database on 4 Sep 2026, after `claudeResponse.md`
+ * asserted the plans were batch-templated:
+ *
+ *   620 PaymentPlan rows
+ *   14 distinct plan_name + description pairs — four templates, 95 rows each
+ *   13 distinct milestone shapes, six of which cover ~550 of the 620 rows
+ *   verified_at: NULL on all 620
+ *   source:      NULL on all 620
+ *
+ * The shapes themselves are plausible — 10:80:10 and 10:20:40:30 are real
+ * industry structures, and they do differ between projects, so this is not the
+ * degenerate-constant case that `SYNTHETIC_FIELDS` covers. But we render them
+ * under a project's own name, as a milestone table, with no qualifier — and a
+ * buyer takes that table to the developer. Nothing on the row says anyone
+ * checked it against this developer's actual terms, because nobody did.
+ *
+ * This is the `market` tier that CLAUDE.md already defines, being rendered as
+ * `verified`. The fix is the qualifier the tier requires, not deletion: a
+ * standard structure is genuinely useful for planning cash flow, and suppressing
+ * it would answer "what's the payment plan" with nothing.
+ *
+ * The gate is per-row, so the moment an analyst stamps `verified_at` on a plan
+ * the qualifier disappears for that project without anyone editing this file.
+ */
+export const PAYMENT_PLAN_PROVENANCE =
+  '_These are the standard schemes on file for this project and have not been ' +
+  'confirmed against the developer\'s current terms. Treat the stage percentages ' +
+  'as the shape to expect, and get the figures in writing before you pay._'
 
 /** "construction_linked" reads badly in a cell the buyer is scanning. */
 const humanPlanType = (t?: string | null) =>
@@ -317,7 +352,11 @@ export function renderPaymentPlanTable(plans: PaymentPlanRow[], limit = 5): stri
     return `#### ${name}\n\n${header}\n${body.join('\n')}`
   })
 
-  return `### Available Payment Schemes\n\n${summaryHeader}\n${summaryBody.join('\n')}\n\n${detailBlocks.join('\n\n')}`
+  // Per-row, so one analyst stamping verified_at removes the qualifier for that
+  // project without anyone editing this file.
+  const unverified = rows.every((p) => !p.verified_at && !p.source)
+  const provenance = unverified ? `\n\n${PAYMENT_PLAN_PROVENANCE}` : ''
+  return `### Available Payment Schemes\n\n${summaryHeader}\n${summaryBody.join('\n')}\n\n${detailBlocks.join('\n\n')}${provenance}`
 }
 
 // ── Cost sheet ───────────────────────────────────────────────────────────────

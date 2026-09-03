@@ -100,3 +100,28 @@ describe('the referral rewrite never welds onto a word', () => {
     assert.ok(!/rera\s+portal/i.test(out), out)
   })
 })
+
+describe('the money guard does not eat honest payment prose', () => {
+  it('leaves a payment-plan explanation alone', () => {
+    // Observed: the first version fired here and appended the grievance line to
+    // a paragraph about construction-linked versus down-payment cash flow.
+    const text =
+      'Take the down-payment plan if you have the cash idle; take construction-linked if you are still saving. ' +
+      'The payment is processed at each construction milestone, and the booking amount is refundable per the builder policy.'
+    const r = sanitizeOutput(text)
+    assert.equal(r.softenedOverPromises, 0, r.text)
+    assert.equal(r.text, text)
+  })
+
+  it('still catches a claim about this buyer\'s own money', () => {
+    const r = sanitizeOutput('I understand. Rest assured your token is safe with the developer. A manager will call.')
+    assert.ok(r.softenedOverPromises >= 1)
+    assert.ok(!/token is safe/i.test(r.text), r.text)
+  })
+
+  it('does not weld the replacement onto the previous sentence', () => {
+    const r = sanitizeOutput('You are still saving. Your funds are secure with us. Anything else matters less.')
+    assert.ok(!/saving\.I can't/.test(r.text), r.text)
+    assert.ok(!/[a-z]\.I can't/.test(r.text), r.text)
+  })
+})

@@ -35,7 +35,8 @@
     "audit:queries": "tsx scripts/audit-queries.ts",
     "verify:all": "npm run verify:services && npm run verify:chain",
     "audit:master-json": "tsx scripts/audit-master-json.ts",
-    "fix:track-record": "tsx scripts/fix-builder-track-record.ts"
+    "fix:track-record": "tsx scripts/fix-builder-track-record.ts",
+    "audit:rera": "tsx scripts/audit-rera.ts"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"

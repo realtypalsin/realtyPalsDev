@@ -25,6 +25,7 @@
 
 import { airportDistances } from './discovery/airports'
 import { redactProject, isPublicField, stripRelationInternals, isSchemaDefault } from './projectExposure'
+import { normalizeRera, RERA_AMBIGUOUS_NOTE } from './reraIntegrity'
 
 /** Columns rendered as "yes"/"no" rather than true/false. */
 const BOOLEAN_LABELS: Record<string, [string, string]> = {
@@ -164,6 +165,25 @@ export function detectFactTopics(message: string): Set<FactTopic> {
 }
 
 export interface ProjectFactsOptions {
+  /**
+   * Registration numbers claimed by more than one project.
+   *
+   * Measured 4 Sep 2026: 19 numbers are shared, across 43 projects — 15% of
+   * inventory. Mostly different projects from different builders, not duplicate
+   * rows: UPRERAPRJ1504 sits on both Godrej Palm Retreat and Apex Golf Avenue,
+   * UPRERAPRJ1001 on three projects.
+   *
+   * The registration number is the one fact we tell buyers to verify for
+   * themselves, so a wrong one does more damage than any other field: the buyer
+   * looks it up, finds a different development, and correctly concludes we
+   * invent data — which makes every other figure in the answer suspect too.
+   *
+   * We cannot tell which project owns which number, so the number is withheld
+   * rather than guessed. Pass the set from `ambiguousReraNumbers()`; omitting it
+   * renders every number as before, which is the right default for a caller
+   * that has not loaded it.
+   */
+  ambiguousRera?: ReadonlySet<string>
   /** Cap on the long prose columns, which dominate the token cost. */
   maxDescriptionChars?: number
   /** Cap on list relations such as amenities. */
@@ -260,6 +280,20 @@ export function projectScalarFacts(
      * column is genuinely useful on the rows where it was researched.
      */
     if (isSchemaDefault(key, value)) continue
+    /**
+     * A registration number two projects claim is not this project's number.
+     *
+     * Replaced with a note rather than silently dropped: an absent
+     * `rera_number` reads as "unregistered", which is a different and worse
+     * claim about a project than "we cannot confirm which number is yours".
+     */
+    if (key === 'rera_number' && options.ambiguousRera) {
+      const norm = normalizeRera(value)
+      if (norm && options.ambiguousRera.has(norm)) {
+        out.rera_number_status = RERA_AMBIGUOUS_NOTE
+        continue
+      }
+    }
     if (options.shortlist && !SHORTLIST_FIELDS.has(key)) continue
     let formatted = formatValue(key, value)
     if (formatted === null) continue

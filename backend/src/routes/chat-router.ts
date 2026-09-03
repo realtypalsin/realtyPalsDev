@@ -58,6 +58,7 @@ import { classifyIntent, routeToModel } from '../lib/ai/intentClassifier'
 import { trimPropertiesForPrompt } from '../lib/ai/propertyTrim'
 import { DEFAULT_CITY, PILOT_SCOPE_LABEL, SUPPORTED_CITIES, outOfScopeCity } from '../lib/config/cities'
 import { buyingTargetOutOfScope } from '../lib/discovery/coverage'
+import { ambiguousReraNumbers } from '../lib/reraIntegrity'
 import { inventoryEnvelope, renderEnvelope } from '../lib/ai/inventoryEnvelope'
 import { verifyUser } from '../lib/auth'
 import { clientIp } from '../lib/request'
@@ -2844,6 +2845,8 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
           // Detected before the query, not after it.
           const askedFactTopics = detectFactTopics(message)
 
+          // Loaded once per turn, cached for 15 minutes in the module.
+          const sharedReraNumbers = await ambiguousReraNumbers()
           const detailedTargetProjects = await prisma.project.findMany({
             where: { id: { in: targetIds } },
             include: {
@@ -2904,6 +2907,9 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
               ...buildProjectFacts(p as unknown as Record<string, unknown>, {
                 topics: askedFactTopics,
                 shortlist: detailedTargetProjects.length > 2,
+                // 19 registration numbers are claimed by two or three projects
+                // each. Withheld rather than guessed — see reraIntegrity.ts.
+                ambiguousRera: sharedReraNumbers,
               }),
               location: `${p.sector}, ${p.city}`,
               status: p.status === 'ready_to_move' ? 'Ready to Move' : p.status === 'new_launch' ? 'New Launch' : 'Under Construction',

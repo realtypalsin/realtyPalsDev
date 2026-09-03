@@ -205,8 +205,31 @@ const OVER_PROMISE: Array<[RegExp, string]> = [
  * off-platform referral rewrite, and anchored the same way so the replacement
  * cannot land mid-word.
  */
+/**
+ * Narrowed after it ate an honest sentence.
+ *
+ * The first version matched `(your|the) (funds|money|token|deposit|payment|
+ * booking amount)` near `(secure|safe|processed|refundable|…)`. On a payment-
+ * plan answer — where instalments and processing are the actual subject — it
+ * fired on ordinary prose and appended the grievance line to a paragraph about
+ * construction-linked versus down-payment cash flow.
+ *
+ * That is the failure this codebase keeps relearning: a pattern written from
+ * one bad example matches a category, and the category contains honest content.
+ * Two narrowings, both from that miss:
+ *
+ *   `your`, never `the` — "the payment is due at each milestone" is a fact
+ *   about a schedule; "your payment is safe" is a claim about this buyer.
+ *
+ *   `processed` and `refundable` dropped — both are ordinary vocabulary in a
+ *   payment-plan or cancellation-policy answer, and neither is the reassurance
+ *   that made this necessary.
+ *
+ * What is left is the actual failure mode: telling a specific buyer their own
+ * money is safe when we cannot see it.
+ */
 const MONEY_ASSURANCE =
-  /(?<=^|[.!?\n]\s{0,3})[^.!?\n]*\b(?:your|the)\s+(?:funds?|money|token|deposit|payment|booking\s+amount)\b[^.!?\n]*\b(?:secure(?:ly)?|safe(?:ly)?|protected|intact|processed|refundable|will\s+be\s+(?:returned|refunded))\b[^.!?\n]*[.!?]?\s*/gi
+  /(?<=^|[.!?\n]\s{0,3})[^.!?\n]*\byour\s+(?:funds?|money|token|deposit|payment|booking\s+amount)\b[^.!?\n]*\b(?:secure(?:ly)?|safe(?:ly)?|protected|intact|will\s+be\s+(?:returned|refunded))\b[^.!?\n]*[.!?]?\s*/gi
 
 const MONEY_HONEST =
   "I can't see the status of your payment from here — a relationship manager can pull the record and tell you exactly where it sits."
@@ -218,9 +241,16 @@ function softenOverPromises(input: string): { text: string; count: number } {
   // The money-assurance sentence goes whole, before the word-level passes —
   // otherwise a softener rewrites a verb inside a sentence that is about to be
   // removed anyway, and the counts double-report one problem.
-  const withoutMoneyClaims = input.replace(MONEY_ASSURANCE, () => {
+  const withoutMoneyClaims = input.replace(MONEY_ASSURANCE, (match, ...rest) => {
     count += 1
-    return `${MONEY_HONEST} `
+    // Same separator care as the referral rewrite, and for the same reason: the
+    // removed sentence usually began a paragraph, and without this the
+    // replacement welded onto the previous one — observed as
+    // "…if you are still saving.I can't see the status of your payment".
+    const offset = rest[rest.length - 2] as number
+    const before = input.slice(0, offset)
+    const sep = /\n\s*$/.test(before) ? '' : before && !/\s$/.test(before) ? ' ' : ''
+    return `${sep}${MONEY_HONEST} `
   })
 
   const text = OVER_PROMISE.reduce(
