@@ -1994,3 +1994,83 @@ away. Focus-carry checks `intent.projectNames` first.
 **That is the "assert on resolved_entity_id, not answer text" advice I had quoted
 approvingly and then ignored in two of thirteen cases.** When adding a case,
 reach for the `done` payload before the prose.
+
+---
+
+## Session 2026-09-04 (cont.) — "is everything fixed?" answered by measuring
+
+Checking instead of remembering found the worst answer in the product.
+
+### Sweep the columns; do not wait for a document to point at one
+
+Two synthetic fields were caught earlier because `claudeResponse.md` mentioned
+them. `npm run audit:synthetic` sweeps every field in `PROJECT_PUBLIC_SELECT`
+for degenerate distributions, and found **18 more**, including two that are
+false legal claims.
+
+**`nclt_status` read "Clean - No NCLT Moratorium" on 100% of its 94 populated
+rows — Amrapali projects included.** The Supreme Court cancelled Amrapali's RERA
+registrations in 2019 and handed the projects to NBCC. Measured live:
+
+> "Amrapali Crystal Homes has a clean legal standing with no active NCLT
+> insolvency proceedings… Your capital is protected from insolvency risks…
+> Existing litigation is limited to historical Supreme Court oversight."
+
+`approvals_status` is the same: "Fully RERA & Authority Approved" on 100% of 207
+rows.
+
+### The database already knew, and only the reassuring half was in the prompt
+
+```
+builder.insolvency_history   true
+builder.legal_flag           SUPREME_COURT_RECEIVER
+legal_flag                   "none"
+project_risk_flag            "low_risk"
+```
+
+`buildProjectFacts` projected `builder.name` and **nothing else** from the
+relation, so `SUPREME_COURT_RECEIVER` had never reached the model at any point.
+It had the templated project markers and no way to know they were wrong.
+
+Fix, and the order matters: **surface the insolvency, then suppress the markers
+that contradict it.** Leaving both in the prompt asks the model to arbitrate
+between two of our own facts, which is how the wrong one gets picked.
+
+### The distinction that stopped this becoming an over-correction
+
+| Field | Distribution | Verdict |
+|---|---|---|
+| `handover_defect_rate` | 1.2 × 91 — one value | withhold |
+| `women_safety_score` | two values across 280 | withhold |
+| nearby counts | 81 of 91 rows identical | withhold |
+| **`ongoing_litigation_count`** | **0×239, 3×19, 5×11, 6×8, 2×2** | **keep** |
+| **`average_builder_delay_months`** | **0×62, 3×29** | **keep** |
+
+Most projects genuinely have no litigation and most builders genuinely deliver
+on time. **Withholding those hides good news, which is the opposite error and
+just as real.** The audit separates FLAT (withhold) from CONCENTRATED (needs a
+person) rather than pretending the judgement is mechanical.
+
+### A flaky test was reporting a real bug
+
+`verify:chat`'s one-question case failed intermittently. `sanitizeOutput` has an
+early return for a clean reply, and **`asks.trimmed` and the filler check were
+missing from its condition** — so a reply whose only problem was a stacked
+question matched "nothing to do" and returned untouched, while one that happened
+to carry another issue fell through and got trimmed.
+
+**Same input class, two outcomes, depending on what else the model wrote. The
+flakiness was the signature, not noise.** Any pass added below that guard must
+be added to the guard.
+
+### Two over-reaches caught within minutes of writing them
+
+* The either/or exemption: `"or would you RATHER be near the metro?"` is one
+  decision restated, not two questions. `rather`/`prefer`/`instead` excluded.
+  The comment states the remaining ceiling rather than implying a parser.
+* The reconcile script scored keyword hits from passages that never mentioned
+  the registration number, and put a confident arrow on three clusters for no
+  reason.
+
+That is now four guards this session that initially ate honest content. **Write
+the over-correction test in the same commit as the guard.**
