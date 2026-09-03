@@ -55,15 +55,32 @@ export const connectivityHandler: ChatTopicHandler = {
     const sector = typeof ctx.intent.sector === 'string' ? ctx.intent.sector : null
     const cachedIds = ctx.cachedProjects.map(p => p.id)
 
-    if (!sector && cachedIds.length === 0) return false // let the generic path ask
+    /**
+     * "What is near ACE Parkway" is a question about one building.
+     *
+     * Without this the sector filter took over and the table came back with
+     * five projects in Sector 150, four of them carrying the same stored
+     * distances — a wall of near-identical rows in answer to a question about
+     * one of them. A named project narrows the table to that project.
+     */
+    const focusName = ctx.activeProjectName
+
+    if (!focusName && !sector && cachedIds.length === 0) return false // let the generic path ask
 
     const projects = await prisma.project.findMany({
-      where: {
-        OR: [
-          ...(sector ? [{ sector: { contains: sector.replace(/Sector\s*/i, ''), mode: 'insensitive' as const } }] : []),
-          ...(cachedIds.length ? [{ id: { in: cachedIds } }] : []),
-        ],
-      },
+      where: focusName
+        ? {
+            OR: [
+              { name: { contains: focusName, mode: 'insensitive' as const } },
+              { slug: { contains: focusName, mode: 'insensitive' as const } },
+            ],
+          }
+        : {
+            OR: [
+              ...(sector ? [{ sector: { contains: sector.replace(/Sector\s*/i, ''), mode: 'insensitive' as const } }] : []),
+              ...(cachedIds.length ? [{ id: { in: cachedIds } }] : []),
+            ],
+          },
       include: {
         connectivity: {
           where: { is_operational: true },
@@ -97,7 +114,7 @@ export const connectivityHandler: ChatTopicHandler = {
     }).join('\n')
 
     const anyRecorded = projects.some(p => p.connectivity.length > 0 || p.airport_distance_km != null)
-    const scope = sector ? ` — ${sector}` : ''
+    const scope = focusName && projects[0] ? ` — ${projects[0].name}` : sector ? ` — ${sector}` : ''
 
     const text = anyRecorded
       ? `### Connectivity${scope}

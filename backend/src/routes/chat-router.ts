@@ -896,6 +896,16 @@ router.post('/', async (req: Request, res: Response) => {
      */
     let commuteAnchorJustStated = false
 
+    /**
+     * A pointer that resolved to a SECTOR rather than a project.
+     *
+     * Declared out here because two later decisions need it: the open lane must
+     * not claim the turn, and the classifier has to see a question with a
+     * subject in it. Measured — "The second one." after a sector comparison
+     * classified OPEN and the stateless general lane returned an empty string.
+     */
+    let resolvedSector: string | null = null
+
     {
       const anchored = applyCommuteAnchor(message, intent as Record<string, unknown>)
       if (anchored.anchor) {
@@ -988,7 +998,6 @@ router.post('/', async (req: Request, res: Response) => {
        * referent, and "the second one" after five cards means the second card,
        * not the second sector mentioned somewhere in the prose above them.
        */
-      let resolvedSector: string | null = null
       if (!resolved) {
         const secRef = resolveSectorReference(message, shownSectors)
         if (secRef) {
@@ -1304,7 +1313,16 @@ router.post('/', async (req: Request, res: Response) => {
       })
     }
 
-    const queryClassification = classifyQuery(message, intent as Record<string, unknown>, {
+    /**
+     * A resolved sector pointer is classified as the question it stands for.
+     *
+     * "The second one." carries no subject, so it classified OPEN and the
+     * stateless general lane answered it with an empty string. The pointer has
+     * already been resolved into `intent.sector` above; the classifier just
+     * needs to see the question that pointer meant.
+     */
+    const classifierText = resolvedSector ? `tell me about ${resolvedSector}` : message
+    const queryClassification = classifyQuery(classifierText, intent as Record<string, unknown>, {
       hasVerifiedProjectNames,
     })
     intent.queryKind = queryClassification.queryKind
@@ -1659,7 +1677,8 @@ router.post('/', async (req: Request, res: Response) => {
      * the only place the answer exists.
      */
     const resolvedFromShownList =
-      needsShownContext(message) && Boolean((intent as { targetProjectId?: string }).targetProjectId)
+      Boolean(resolvedSector) ||
+      (needsShownContext(message) && Boolean((intent as { targetProjectId?: string }).targetProjectId))
     if (resolvedFromShownList) {
       console.log('[CHAT:OPEN_LANE_DECLINED]', {
         reason: 'ordinal resolved to a held project — routing to project detail',

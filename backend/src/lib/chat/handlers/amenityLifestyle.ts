@@ -95,8 +95,12 @@ export const amenityLifestyleHandler: ChatTopicHandler = {
         const wantsAll = /\b(all|full|complete|every|entire|list|what all)\b/i.test(ctx.message)
         const byCategory = new Map<string, string[]>()
         for (const a of targetProject.amenities) {
-          const key = String(a.category ?? 'OTHER').replace(/_/g, ' ')
-          const label = key.charAt(0) + key.slice(1).toLowerCase()
+          // Stored casing varies per row ("sports", "KIDS", "green_spaces") —
+          // title-case every word so the column does not read as a data dump.
+          const label = String(a.category ?? 'other')
+            .replace(/_/g, ' ')
+            .toLowerCase()
+            .replace(/\b\w/g, c => c.toUpperCase())
           if (!byCategory.has(label)) byCategory.set(label, [])
           byCategory.get(label)!.push(a.name)
         }

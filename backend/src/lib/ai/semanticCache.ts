@@ -187,7 +187,7 @@ function readLocal(key: string, countMiss = true): CachedEntry | null {
 // no longer resolve to a Noida sector; the general lane carries buyer state, so
 // an answer written for one buyer's budget and focus is no longer shareable at
 // all; and chips are suppressed on grievance and refusal turns.
-const REDIS_PREFIX = 'ac:v6:'
+const REDIS_PREFIX = 'ac:v7:' // v7: builder scores, amenity tables and connectivity are project-scoped now — v6 answers mean something different
 
 /** A read that takes longer than this is not worth waiting for — the LLM call it */
 const REDIS_READ_TIMEOUT_MS = Number(process.env.ANSWER_CACHE_READ_TIMEOUT_MS ?? 250)
