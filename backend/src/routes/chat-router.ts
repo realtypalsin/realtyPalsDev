@@ -1161,6 +1161,70 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     /**
+     * A follow-up about the project we were already discussing.
+     *
+     * `anchorResolution.ts` was written to do this — focus_project_id, setAnchor,
+     * resolveDrilldownAnchor, the whole SET/CHANGE/CLEAR/KEEP state machine — and
+     * has no caller anywhere in the product. The column exists, the FK exists,
+     * the tests exist, and nothing ever read or wrote it.
+     *
+     * Measured: "What all amenities are offered by Ace Parkway?" answered from
+     * ACE Parkway's rows. The next turn, "what is the payment plan?", answered
+     * with a generic explanation of CLP and PLP and then asked which project the
+     * buyer meant — one message after being told.
+     *
+     * The gate is deliberately narrow, because a sticky project deciding what a
+     * turn is about is the single most repeated defect in this file: a sticky
+     * `purpose` hijacked three turns, and so did a sticky `workplace`. The focus
+     * is adopted only when the turn is a question about a project's attributes
+     * (a topic flag is lit), names no project of its own, and names no other
+     * subject — no sector, no inventory search. Anything else is a new subject
+     * and gets no inherited project.
+     */
+    /**
+     * Tested on the wording, not on the derived flags.
+     *
+     * Every one of those flags is itself gated on `!isInventorySearch`, and
+     * "what are the configurations?" trips the inventory heuristic — so
+     * `isConfigurationQuery` was false, `asksProjectAttribute` was false, and
+     * the follow-up answered about Sector 150's typical layouts instead of the
+     * project the buyer had just been shown a cost sheet for. A question with
+     * no project and no sector in it is not a search whatever the heuristic
+     * thinks; the attribute noun is the signal.
+     */
+    const ATTRIBUTE_FOLLOWUP =
+      /\b(possession|handover|rera|builder\s+score|delivery\s+score|track\s+record|configurations?|unit\s+types?|floor\s+plans?|carpet\s+area|super\s+area|payment\s+plan|cost\s+sheet|amenit\w*|balcon\w*|bathrooms?|clubhouse|price|pricing|rate)\b/i
+
+    /**
+     * A sector NAMED IN THIS MESSAGE blocks the inheritance; a sticky one does
+     * not. The first version tested `intent.sector`, which memory hydration
+     * fills in with the focus project's own sector — so "what is the payment
+     * plan?" one turn after an ACE Parkway answer was blocked by Sector 150,
+     * ACE Parkway's sector, and answered generically anyway.
+     */
+    if (
+      !intent.projectNames?.length &&
+      !/sectors+d/i.test(message) &&
+      ATTRIBUTE_FOLLOWUP.test(message) &&
+      sessionData?.focus_project_id
+    ) {
+      const focus = await prisma.project.findUnique({
+        where: { id: sessionData.focus_project_id },
+        select: { id: true, name: true },
+      })
+      if (focus) {
+        intent.projectNames = [focus.name]
+        ;(intent as { targetProjectId?: string }).targetProjectId = focus.id
+        console.log('[CHAT:FOCUS_CARRIED]', { project: focus.name, q: message.slice(0, 50) })
+        // Every downstream flag now reads the carried project, including
+        // `isReraCheckQuery` — which is `matchesReraProcessQuestion(...) &&
+        // projectNames.length === 0`, so "is it RERA registered?" about a
+        // project we hold correctly stops being a question about our
+        // verification process and becomes the fact lookup it is.
+      }
+    }
+
+    /**
      * The buyer's state, for any prompt that needs it.
      *
      * The general lane had none of this and answered every turn as though it
@@ -2208,7 +2272,7 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
       /\b(?:beyond|on\s+top\s+of|over\s+and\s+above)\s+(?:the\s+)?(?:sticker|base|quoted|listed|ticket)?\s*price\b/i.test(topicText) ||
       /\bwhat\s+else\s+(?:do|will|would)\s+i\s+(?:pay|be\s+paying|spend)\b/i.test(topicText)
     const isStatutoryTaxQuery = /(stamp duty|registration (charges?|fees?)|gst on (flat|property|real estate)|tds on (property|sale)|circle rate|index 2|agreement value charges)/i.test(topicText)
-    let isReraCheckQuery = matchesReraProcessQuestion(topicText) && (intent.projectNames?.length ?? 0) === 0
+    const isReraCheckQuery = matchesReraProcessQuestion(topicText) && (intent.projectNames?.length ?? 0) === 0
     const isSubventionQuery = /\b(subvention|20[:\s]*80|10[:\s]*90|80[:\s]*20|builder\s+subvention)\b/i.test(topicText)
     const isBuilderReputationQuery =
       !isSubventionQuery &&
@@ -2230,75 +2294,6 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
       || /\b(what(?:'s| is| are)?\s+(?:all\s+)?(?:near|nearby|around|close to)|anything\s+near|nearby\s+(?:landmarks?|places?|amenities|schools?|hospitals?|malls?|metro)|what\s+surrounds)\b/i.test(topicText) && !isPaymentPlanRequest
     const isConfigurationQuery = !isInventorySearch && /(balcon|bedroom|bathroom|carpet area|super area|sqft|square feet|size of|how big|how many (balconies|rooms|bhk|bathrooms)|configuration|unit type|floor plan)/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest
     const isTotalOutflowQuery = /(total (price|cost|amount|outflow)|on.?road|all.?inclusive price|how much (in total|total will it cost)|with registry|final price)/i.test(topicText)
-    /**
-     * A follow-up about the project we were already discussing.
-     *
-     * `anchorResolution.ts` was written to do this — focus_project_id, setAnchor,
-     * resolveDrilldownAnchor, the whole SET/CHANGE/CLEAR/KEEP state machine — and
-     * has no caller anywhere in the product. The column exists, the FK exists,
-     * the tests exist, and nothing ever read or wrote it.
-     *
-     * Measured: "What all amenities are offered by Ace Parkway?" answered from
-     * ACE Parkway's rows. The next turn, "what is the payment plan?", answered
-     * with a generic explanation of CLP and PLP and then asked which project the
-     * buyer meant — one message after being told.
-     *
-     * The gate is deliberately narrow, because a sticky project deciding what a
-     * turn is about is the single most repeated defect in this file: a sticky
-     * `purpose` hijacked three turns, and so did a sticky `workplace`. The focus
-     * is adopted only when the turn is a question about a project's attributes
-     * (a topic flag is lit), names no project of its own, and names no other
-     * subject — no sector, no inventory search. Anything else is a new subject
-     * and gets no inherited project.
-     */
-    /**
-     * Tested on the wording, not on the derived flags.
-     *
-     * Every one of those flags is itself gated on `!isInventorySearch`, and
-     * "what are the configurations?" trips the inventory heuristic — so
-     * `isConfigurationQuery` was false, `asksProjectAttribute` was false, and
-     * the follow-up answered about Sector 150's typical layouts instead of the
-     * project the buyer had just been shown a cost sheet for. A question with
-     * no project and no sector in it is not a search whatever the heuristic
-     * thinks; the attribute noun is the signal.
-     */
-    const asksProjectAttribute =
-      isPaymentPlanRequest || isCostSheetRequest || isAmenityQuery || isConfigurationQuery ||
-      isConnectivityQuery || isTotalOutflowQuery || isBuilderReputationQuery ||
-      /\b(possession|handover|rera|builder score|delivery score|track record|configurations?|unit types?|floor plans?|carpet area|super area|payment plan|cost sheet|amenit\w*|price|pricing|rate)\b/i.test(topicText)
-
-    /**
-     * A sector NAMED IN THIS MESSAGE blocks the inheritance; a sticky one does
-     * not. The first version tested `intent.sector`, which memory hydration
-     * fills in with the focus project's own sector — so "what is the payment
-     * plan?" one turn after an ACE Parkway answer was blocked by Sector 150,
-     * ACE Parkway's sector, and answered generically anyway.
-     */
-    if (
-      !intent.projectNames?.length &&
-      sectorMatches.length === 0 &&
-      asksProjectAttribute &&
-      sessionData?.focus_project_id
-    ) {
-      const focus = await prisma.project.findUnique({
-        where: { id: sessionData.focus_project_id },
-        select: { id: true, name: true },
-      })
-      if (focus) {
-        intent.projectNames = [focus.name]
-        ;(intent as { targetProjectId?: string }).targetProjectId = focus.id
-        console.log('[CHAT:FOCUS_CARRIED]', { project: focus.name, q: message.slice(0, 50) })
-        /**
-         * "Is it RERA registered?" about a project we hold is a fact lookup,
-         * not a question about our verification process. `isReraCheckQuery`
-         * was computed above, before the focus was carried, so it read zero
-         * project names and stayed true — and the process explainer answered a
-         * question whose answer is a registration number in the project's own
-         * row.
-         */
-        isReraCheckQuery = false
-      }
-    }
 
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
 
