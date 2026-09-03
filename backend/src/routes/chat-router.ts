@@ -3301,20 +3301,45 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
         }
       }
 
-      // ─── MULTI-DIMENSIONAL RANKING ENHANCEMENT ────────────────────────────────
-      const wantsMultiDim =
-        queryClassification.queryKind === 'DISCOVERY' ||
-        queryClassification.queryKind === 'RANKING'
+      /**
+       * ─── MULTI-DIMENSIONAL RANKING ENHANCEMENT ──────────────────────────────
+       *
+       * A second full ranking pass, and it was the single largest cost in the
+       * turn. Instrumented in production: a discovery turn spent 11,568ms
+       * between retrieval finishing and the model starting, against 3,301ms in
+       * the model itself. Timed in isolation, this call is **6,089ms** — after
+       * `discoverProjects` has already scored and ordered the same rows.
+       *
+       * It now runs only when ordering IS the question. "Best 3 BHK under 2 Cr"
+       * is a ranking and deserves a ranking pass; "show me 3 BHK in Sector 150"
+       * is a filter, and the results arrive already ordered. That was the whole
+       * difference between DISCOVERY and RANKING in the classifier, and this
+       * gate ignored it.
+       *
+       * Bounded as well as gated: even on a RANKING turn a six-second
+       * enrichment must not be able to hold the answer indefinitely. Past the
+       * deadline the turn proceeds with the ordering `discoverProjects` gave
+       * it, which is a good ordering — the enrichment adds explanation, not
+       * correctness.
+       */
+      const MULTIDIM_DEADLINE_MS = 2_500
+      const wantsMultiDim = queryClassification.queryKind === 'RANKING'
 
       if ((projects.length > 0 || nearbyProjects.length > 0) && action.type === 'TEXT_MESSAGE' && wantsMultiDim) {
         try {
           console.log('[MULTI_DIM:ENHANCEMENT] Starting multi-dimensional ranking enhancement')
-          const multiDimResult = await getMultiDimensionalRecommendations(
-            message,
-            chatHistory,
-            undefined,
-            { limit: Math.min(5, projects.length + nearbyProjects.length) }
-          )
+          const multiDimResult = await Promise.race([
+            getMultiDimensionalRecommendations(
+              message,
+              chatHistory,
+              undefined,
+              { limit: Math.min(5, projects.length + nearbyProjects.length) }
+            ),
+            new Promise<null>(resolve => setTimeout(() => resolve(null), MULTIDIM_DEADLINE_MS)),
+          ]) ?? { recommendations: [], topRecommendation: null, confidence: null, dealBreakersDetected: [] } as never
+          if (!multiDimResult.topRecommendation) {
+            console.log('[MULTI_DIM:SKIPPED]', { reason: `no result within ${MULTIDIM_DEADLINE_MS}ms` })
+          }
 
           if (multiDimResult.recommendations.length > 0 && multiDimResult.topRecommendation) {
             console.log('[MULTI_DIM:ENHANCEMENT] Success', {
@@ -4303,8 +4328,21 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       },
       {}
     )
-    const engagementScores = await scorePropertyEngagement(currentSessionId, projectIdCount)
-    console.log('[CHAT] Engagement scores computed', { count: engagementScores.length })
+    /**
+     * Analytics, so it must not stand between the answer and the buyer.
+     *
+     * This was awaited after the reply had been generated, and the only thing
+     * done with the result is the log line below it. Instrumented in
+     * production, the stage after the model call cost 3.7-5.2s on a discovery
+     * turn — bookkeeping the buyer waits through and never sees. Its own test
+     * takes ten seconds against a warm database.
+     *
+     * Fire-and-forget: a failure here is already non-fatal by design, and the
+     * scores are read on a later turn, not this one.
+     */
+    void scorePropertyEngagement(currentSessionId, projectIdCount)
+      .then(scores => console.log('[CHAT] Engagement scores computed', { count: scores.length }))
+      .catch(e => console.warn('[CHAT:ENGAGEMENT_ERROR]', (e as Error).message))
 
     // Detect sentiment reactions on DRILLDOWN/COMPARISON queries
     const mentionedProjectIds = projects.map(p => p.id)
