@@ -120,6 +120,43 @@ export interface SanitizeResult {
   normalizedCitations: number
   /** Sentences narrating the model's own provenance, removed whole. */
   strippedProvenance: number
+  /** Guarantees we are not in a position to make, softened to what is true. */
+  softenedOverPromises: number
+}
+
+/**
+ * Promises no one at RealtyPals can keep.
+ *
+ * Measured, on a question about Godrej Woods' registration: "This provides
+ * buyers with complete regulatory transparency, statutory legal protections,
+ * and guaranteed adherence to delivery timelines under UP RERA." Registration
+ * guarantees no delivery timeline — it creates a disclosure obligation and a
+ * complaint route. Every delayed and litigated project in our own rows is RERA
+ * registered, which is the clearest possible refutation of the sentence.
+ *
+ * Softened rather than deleted: the surrounding sentence is built around the
+ * claim and reads as broken without it, and the honest version of the claim is
+ * genuinely useful to a buyer.
+ */
+const OVER_PROMISE: Array<[RegExp, string]> = [
+  [/\bguarantee(?:s|d|ing)?\s+(?:the\s+)?(?:adherence\s+to\s+)?(?:on[- ]time\s+)?(?:delivery|possession|handover|completion)(?:\s+timelines?)?/gi,
+    'creates a disclosure obligation on delivery timelines'],
+  [/\b(?:guarantees?|guaranteed|assures?|assured|ensures?|ensured)\s+(?:you\s+)?(?:a\s+|an\s+)?(?:\d+%\s+)?(?:returns?|appreciation|capital\s+appreciation|rental\s+yield|profits?)/gi,
+    'is no guarantee of a'],
+  [/\b(?:zero|no)\s+risk\b/gi, 'lower risk'],
+  [/\bfully\s+(?:safe|secure|protected)\b/gi, 'covered by the statutory protections'],
+  [/\bwill\s+(?:definitely|certainly|surely)\s+(?:appreciate|deliver|be\s+delivered)/gi,
+    'is expected to, though we cannot promise it,'],
+]
+
+/** Softens any guarantee we cannot make, and counts what it softened. */
+function softenOverPromises(input: string): { text: string; count: number } {
+  let count = 0
+  const text = OVER_PROMISE.reduce(
+    (acc, [re, replacement]) => acc.replace(re, () => { count += 1; return replacement }),
+    input,
+  )
+  return { text, count }
 }
 
 /**
@@ -159,7 +196,7 @@ function normalizeCitations(input: string): { text: string; count: number } {
 /** Strips emoji, third-party platform names, and off-platform referrals. */
 export function sanitizeOutput(input: string): SanitizeResult {
   if (!input) {
-    return { text: input, strippedEmoji: 0, strippedPlatforms: 0, redirectedOffPlatform: 0, normalizedCitations: 0, strippedProvenance: 0 }
+    return { text: input, strippedEmoji: 0, strippedPlatforms: 0, redirectedOffPlatform: 0, normalizedCitations: 0, strippedProvenance: 0, softenedOverPromises: 0 }
   }
 
   const strippedEmoji = (input.match(EMOJI) ?? []).length
@@ -169,14 +206,16 @@ export function sanitizeOutput(input: string): SanitizeResult {
   // too, and only the pass knows which of those it left alone.
   const citations = normalizeCitations(input)
   const strippedProvenance = (input.match(PROVENANCE_NARRATION) ?? []).length
+  const softened = softenOverPromises(input)
   if (
     strippedEmoji === 0 &&
     strippedPlatforms === 0 &&
     redirectedOffPlatform === 0 &&
     citations.count === 0 &&
-    strippedProvenance === 0
+    strippedProvenance === 0 &&
+    softened.count === 0
   ) {
-    return { text: input, strippedEmoji: 0, strippedPlatforms: 0, redirectedOffPlatform: 0, normalizedCitations: 0, strippedProvenance: 0 }
+    return { text: input, strippedEmoji: 0, strippedPlatforms: 0, redirectedOffPlatform: 0, normalizedCitations: 0, strippedProvenance: 0, softenedOverPromises: 0 }
   }
 
   let text = citations.text.replace(EMOJI, '')
@@ -202,6 +241,7 @@ export function sanitizeOutput(input: string): SanitizeResult {
   // source noun of its own and survives the first sweep, then becomes
   // "(market listings)" here. That was the fourth leak in the audit, and it is
   // ours. One re-run is cheaper than teaching the first sweep every portal name.
+  if (softened.count > 0) text = softenOverPromises(text).text
   const secondPass = normalizeCitations(text)
   text = secondPass.text
   for (const re of DANGLING_ATTRIBUTION) text = text.replace(re, '')
@@ -217,6 +257,7 @@ export function sanitizeOutput(input: string): SanitizeResult {
     strippedEmoji,
     strippedPlatforms,
     redirectedOffPlatform,
+    softenedOverPromises: softened.count,
     normalizedCitations: citations.count + secondPass.count,
     strippedProvenance,
   }

@@ -1,0 +1,34 @@
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { sanitizeOutput } from '../sanitizeOutput'
+
+describe('guarantees we cannot make', () => {
+  it('softens the RERA delivery guarantee', () => {
+    // Measured in production, on a question about Godrej Woods' registration.
+    // Every delayed and litigated project in our own rows is RERA registered,
+    // which refutes the sentence outright.
+    const r = sanitizeOutput(
+      'This provides buyers with complete regulatory transparency and guaranteed adherence to delivery timelines under UP RERA.',
+    )
+    assert.equal(r.softenedOverPromises, 1)
+    assert.ok(!/guarantee/i.test(r.text), r.text)
+    assert.ok(/disclosure obligation/i.test(r.text), r.text)
+  })
+
+  it('softens a promised return and a zero-risk claim', () => {
+    const a = sanitizeOutput('This assures a 12% rental yield over five years.')
+    assert.equal(a.softenedOverPromises, 1)
+    assert.ok(!/assures/i.test(a.text), a.text)
+
+    const b = sanitizeOutput('A ready-to-move flat with OC is a zero risk purchase.')
+    assert.equal(b.softenedOverPromises, 1)
+    assert.ok(/lower risk/i.test(b.text), b.text)
+  })
+
+  it('leaves an honest sentence untouched', () => {
+    const text = 'Possession is scheduled for June 2025, and the developer has slipped 8.5 months on average.'
+    const r = sanitizeOutput(text)
+    assert.equal(r.softenedOverPromises, 0)
+    assert.equal(r.text, text)
+  })
+})
