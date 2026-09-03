@@ -1168,6 +1168,64 @@ router.post('/', async (req: Request, res: Response) => {
       /\b(budget|sector|area)\b[^?.!]{0,20}\b(i (first|originally|initially) (said|gave|mentioned|wanted))\b/i.test(message) ||
       /\bwhat (was|were) my (first|original|initial)\b/i.test(message)
 
+    /**
+     * "What did I ask you first?" / "What have I told you so far?"
+     *
+     * A different question from the budget-history one above, and it was
+     * reaching the OPEN lane — which is stateless by design, so it answered
+     * "This is your first question to me in this conversation!" on turn six of
+     * a session whose twelve messages were sitting in the database. The history
+     * was there; the lane that answered had been given none of it.
+     *
+     * Answered from the transcript, verbatim, rather than by asking a model to
+     * summarise it. There is nothing to reason about and a paraphrase of what
+     * the buyer said is a chance to get it wrong — an earlier run turned this
+     * into "you started by selecting an option, leading us into reviewing
+     * adjacent sectors like Sector 78, 75 and 107", none of which had happened.
+     */
+    const asksWhatWasSaid =
+      /\bwhat (did|have) i (ask|asked|say|said|tell|told)\b/i.test(message) ||
+      /\bwhat (do|did) you (know|remember|assume) about me\b/i.test(message) ||
+      /\bwhat have i told you\b/i.test(message) ||
+      /\b(remind me|recap) what (i|we)\b/i.test(message)
+
+    if (asksWhatWasSaid) {
+      const userTurns = chatHistory.filter(m => m.role === 'user').map(m => m.content.trim()).filter(Boolean)
+      const held: string[] = []
+      if (intent.projectNames?.length) held.push(`project: **${intent.projectNames.join(', ')}**`)
+      if (intent.sector) held.push(`area: **${intent.sector}**`)
+      if (intent.bhk?.length) held.push(`configuration: **${intent.bhk.join('/')} BHK**`)
+      if (intent.budgetMax != null) held.push(`budget ceiling: **₹${intent.budgetMax} Cr**`)
+      if (intent.possession) held.push(`possession: **${intent.possession}**`)
+      if (intent.purpose) held.push(`purpose: **${intent.purpose}**`)
+
+      const lines: string[] = []
+      if (userTurns.length === 0) {
+        lines.push('Nothing yet — this is the first thing you have asked me in this session.')
+      } else {
+        lines.push(`You opened with: "${userTurns[0]}"`)
+        if (userTurns.length > 1) {
+          const rest = userTurns.slice(1, 6).map(t => `- "${t}"`).join('\n')
+          lines.push(`\nSince then:\n${rest}${userTurns.length > 6 ? `\n- …and ${userTurns.length - 6} more` : ''}`)
+        }
+      }
+      if (held.length) lines.push(`\nWhat I am working with: ${held.join(', ')}.`)
+
+      console.log('[CHAT:TRANSCRIPT_ANSWERED]', { userTurns: userTurns.length, held: held.length })
+      send('token', { token: lines.join('\n') })
+      emitUiState({
+        stage: 'RESEARCH',
+        thinking: 'Reading back the conversation.',
+        chips: [],
+        missingFields: [],
+        confidence: 'HIGH',
+      })
+      send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
+      persistEarlyTurn('transcript', lines.join('\n'))
+      res.end()
+      return
+    }
+
     if (asksAboutHistory) {
       const bh = intent.budgetHistory ?? []
       const sh = intent.sectorHistory ?? []
@@ -2133,10 +2191,16 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
       isConnectivityQuery || isTotalOutflowQuery || isBuilderReputationQuery ||
       /\b(possession|handover|rera|builder score|delivery score|track record)\b/i.test(topicText)
 
+    /**
+     * A sector NAMED IN THIS MESSAGE blocks the inheritance; a sticky one does
+     * not. The first version tested `intent.sector`, which memory hydration
+     * fills in with the focus project's own sector — so "what is the payment
+     * plan?" one turn after an ACE Parkway answer was blocked by Sector 150,
+     * ACE Parkway's sector, and answered generically anyway.
+     */
     if (
       !intent.projectNames?.length &&
       !isInventorySearch &&
-      !intent.sector &&
       sectorMatches.length === 0 &&
       asksProjectAttribute &&
       sessionData?.focus_project_id
