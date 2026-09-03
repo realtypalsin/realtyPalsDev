@@ -391,7 +391,7 @@ router.post('/', async (req: Request, res: Response) => {
       // try/catch is cheaper than depending on that ordering staying true.
       let budget = { limit: MAX_CARDS, reason: 'intent not resolved yet' }
       try {
-        budget = cardBudgetFor(intent ?? ({} as Intent))
+        budget = cardBudgetFor(intent ?? ({} as Intent), message)
       } catch {
         /* intent still in its temporal dead zone — fall back to the cap */
       }

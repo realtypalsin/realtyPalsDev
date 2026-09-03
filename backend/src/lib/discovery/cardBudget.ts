@@ -45,7 +45,23 @@ function statedConstraints(intent: Intent): number {
   return n
 }
 
-export function cardBudgetFor(intent: Intent): CardBudget {
+/**
+ * A question about the conversation, not about property.
+ *
+ * "What did I ask you first?" was answered correctly — and with six project
+ * cards under it, because by then two constraints were on the intent and the
+ * budget only reads the intent. A question about what has been said is not a
+ * request for inventory no matter how much the buyer has narrowed, and cards
+ * beneath the answer make it look like a search result.
+ */
+const META_QUESTION =
+  /\b(what (did|have) i (ask|say|tell|said|told)|what (do|did) you (know|remember|assume) about me|what have i told you|my (first|earlier|original|previous) (budget|question|sector|requirement)|summar(y|ise|ize)|recap|remind me what|so far)\b/i
+
+export function cardBudgetFor(intent: Intent, message = ''): CardBudget {
+  if (META_QUESTION.test(message)) {
+    return { limit: 0, reason: 'a question about the conversation, not about inventory' }
+  }
+
   // A project in focus: the cards are that project and at most a couple of
   // alternatives. A drilldown answered with six cards buries its own subject.
   if (intent.projectNames?.length) {

@@ -61,15 +61,26 @@ export const builderReputationHandler: ChatTopicHandler = {
        * With a project in focus, that developer leads and the league table
        * follows as context.
        */
+      /**
+       * A follow-up keeps the project. "and the builder score?" one turn after
+       * an ACE Parkway answer carries no project name of its own, so
+       * `activeProjectName` is empty and the answer reverted to the league
+       * table — the exact behaviour this block exists to replace, one turn
+       * later. The last single card shown is that project.
+       */
       const focusName = ctx.activeProjectName
-      const focusBuilder = focusName
+      const focusId =
+        !focusName && ctx.cachedProjects.length === 1 ? ctx.cachedProjects[0]?.id : undefined
+      const focusBuilder = focusName || focusId
         ? (await prisma.project.findFirst({
-            where: {
-              OR: [
-                { name: { contains: focusName, mode: 'insensitive' } },
-                { slug: { contains: focusName, mode: 'insensitive' } },
-              ],
-            },
+            where: focusId
+              ? { id: focusId }
+              : {
+                  OR: [
+                    { name: { contains: focusName as string, mode: 'insensitive' } },
+                    { slug: { contains: focusName as string, mode: 'insensitive' } },
+                  ],
+                },
             select: {
               name: true,
               builder: {
