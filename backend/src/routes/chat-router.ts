@@ -74,6 +74,7 @@ import { applyCommuteAnchor, beltFor } from '../lib/discovery/commuteAnchor'
 import { resolveOrdinalReference, resolveOrdinalPair, resolveSuperlativeReference, needsShownContext } from '../lib/discovery/reference'
 import { cardBudgetFor, capCards, MAX_CARDS } from '../lib/discovery/cardBudget'
 import { chipsAreWelcome, chipIsRelevant, chipIsActionable } from '../lib/discovery/chipPolicy'
+import { createTurnTimer } from '../lib/turnTimer'
 import { buildStateBrief } from '../lib/ai/stateBrief'
 import { isProximityQuestion, nearbyCoverage } from '../lib/discovery/nearby'
 import {
@@ -360,6 +361,9 @@ router.post('/', async (req: Request, res: Response) => {
   /** Cards actually rendered this turn — drives chip actionability. */
   let cardsShownThisTurn = 0
 
+  /** Where this turn's wall clock goes. See lib/turnTimer.ts. */
+  const timer = createTurnTimer()
+
   const send = (event: string, data: Record<string, unknown>) => {
     // Internal ranker artifacts never leave the server, whichever emit produced
     // the payload. Measured: 51% of every project object, 80KB of a 120KB
@@ -449,7 +453,7 @@ router.post('/', async (req: Request, res: Response) => {
       // Fingerprinted on the intent carried into this turn, so a cached answer
       // written for a buyer who had stated a budget or a sector cannot surface
       // for one who has stated nothing — and vice versa.
-      const cached = await getCachedResponse(message, GLOBAL_SCOPE, intentFingerprint(prevIntent))
+      const cached = await timer.time('cacheRead', () => getCachedResponse(message, GLOBAL_SCOPE, intentFingerprint(prevIntent)))
       if (cached) {
         console.log('[CHAT:CACHE_HIT] Serving verified advisory response from cache:', message.slice(0, 50))
         send('token', { token: cached.token })
@@ -576,7 +580,7 @@ router.post('/', async (req: Request, res: Response) => {
       rawIntentResult = { intent: newIntent as Intent, degraded: false }
     } else if (action.type === 'TEXT_MESSAGE' && message) {
       console.log('[CHAT] TEXT_MESSAGE — running LLM extraction')
-      rawIntentResult = await extractIntent(message, prevIntent)
+      rawIntentResult = await timer.time('intentExtract', () => extractIntent(message, prevIntent))
     }
 
     // Join point: the two reads above have been in flight for the whole duration
@@ -1711,7 +1715,7 @@ router.post('/', async (req: Request, res: Response) => {
     send('ui_state', preSearchUiState as unknown as Record<string, unknown>)
 
     // ─── GROUND TRUTH DATABASE PIPELINE (Lightweight Catalog Cache) ─────────────
-    const allDbProjects = await projectCatalog()
+    const allDbProjects = await timer.time('projectCatalog', () => projectCatalog())
 
     // 0. ADVERSARIAL & JAILBREAK SHIELD
     const isJailbreak = /ignore\s+(all\s+)?(previous\s+)?instructions|system\s+prompt|dan\s+mode|unrestricted\s+assistant|bypass\s+(paying\s+)?(taxes|laws)|jailbreak/i.test(message)
@@ -3264,7 +3268,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       const cacheKey = `search:${JSON.stringify({ ...intent, offset: searchOffset })}`
       let discoveryResult = await getCached(cacheKey) as Awaited<ReturnType<typeof discoverProjects>> | null
       if (!discoveryResult) {
-        discoveryResult = await discoverProjects(intent, searchOffset)
+        discoveryResult = await timer.time('discoverProjects', () => discoverProjects(intent, searchOffset))
         await setCached(cacheKey, discoveryResult, 600)
       }
       console.log('[CHAT] END discoverProjects', Date.now(), { exact: discoveryResult.exactResults.length, nearby: discoveryResult.nearbyResults.length, expansion: discoveryResult.expansion ?? null, notFound: discoveryResult.notFoundNames ?? [] })
@@ -4000,6 +4004,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     // Phase 2.2: Emit early "thinking" status before LLM inference to reduce perceived latency
     send('status', { status: 'thinking', message: 'Searching verified properties and analyzing your requirements...' })
 
+      timer.mark('preLlm')
       fallbackResult = await executeWithFallbackChain({
         systemPrompt,
         buildSystemPrompt: buildPromptForProvider,
@@ -4025,6 +4030,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       // carry price, builder, possession and area, and they can be tapped.
       suppressTables: Boolean(renderedTable) || cardsAreRendering,
       })
+      timer.mark('llm')
       fullText = fallbackResult.text
       usedProvider = { provider: fallbackResult.provider, envKey: fallbackResult.envKey }
 
@@ -4563,8 +4569,9 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       }
     }
 
-    console.log('[CHAT] BEFORE send(done)', Date.now())
-    send('done', { sessionId: currentSessionId, intentState, intent, responseMode })
+    timer.mark('postLlm')
+    console.log('[CHAT:TIMING]', timer.summary(), '|', message.slice(0, 50))
+    send('done', { sessionId: currentSessionId, intentState, intent, responseMode, timings: { ...timer.stages, total: timer.elapsed() } })
     res.end()
     console.log('[CHAT] AFTER send(done)', Date.now())
   } catch (err) {
