@@ -551,6 +551,7 @@ router.post('/', async (req: Request, res: Response) => {
             property_reactions: true,
             last_projects: true,
             chat_phase: true,
+            focus_project_id: true,
             messages: { orderBy: { created_at: 'desc' }, take: 50, select: { id: true, role: true, content: true, created_at: true } },
           },
         })
@@ -674,6 +675,9 @@ router.post('/', async (req: Request, res: Response) => {
      * row, so on a first turn the insert failed the foreign key and was
      * swallowed by its own catch. One helper for both, session row included.
      */
+    /** The project this turn is about, written by whichever path closes it. */
+    let focusProjectId: string | null = null
+
     const persistEarlyTurn = (lane: string, answer: string): void => {
       void (async () => {
         if (isNewSession) {
@@ -684,6 +688,7 @@ router.post('/', async (req: Request, res: Response) => {
               title: message.slice(0, 60),
               chat_phase: intentState,
               message_count: 2,
+              ...(focusProjectId ? { focus_project_id: focusProjectId, focus_set_at: new Date() } : {}),
             },
           })
           if (userId) invalidateSessionList(userId).catch(() => {})
@@ -702,7 +707,11 @@ router.post('/', async (req: Request, res: Response) => {
         if (!isNewSession) {
           await prisma.chatSession.update({
             where: { id: currentSessionId },
-            data: { chat_phase: intentState, message_count: { increment: 2 } },
+            data: {
+              chat_phase: intentState,
+              message_count: { increment: 2 },
+              ...(focusProjectId ? { focus_project_id: focusProjectId, focus_set_at: new Date() } : {}),
+            },
           })
         }
       })().catch(e =>
@@ -2098,7 +2107,73 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
       || /\b(what(?:'s| is| are)?\s+(?:all\s+)?(?:near|nearby|around|close to)|anything\s+near|nearby\s+(?:landmarks?|places?|amenities|schools?|hospitals?|malls?|metro)|what\s+surrounds)\b/i.test(topicText) && !isPaymentPlanRequest
     const isConfigurationQuery = !isInventorySearch && /(balcon|bedroom|bathroom|carpet area|super area|sqft|square feet|size of|how big|how many (balconies|rooms|bhk|bathrooms)|configuration|unit type|floor plan)/i.test(topicText) && !isPaymentPlanRequest && !isCostSheetRequest
     const isTotalOutflowQuery = /(total (price|cost|amount|outflow)|on.?road|all.?inclusive price|how much (in total|total will it cost)|with registry|final price)/i.test(topicText)
+    /**
+     * A follow-up about the project we were already discussing.
+     *
+     * `anchorResolution.ts` was written to do this — focus_project_id, setAnchor,
+     * resolveDrilldownAnchor, the whole SET/CHANGE/CLEAR/KEEP state machine — and
+     * has no caller anywhere in the product. The column exists, the FK exists,
+     * the tests exist, and nothing ever read or wrote it.
+     *
+     * Measured: "What all amenities are offered by Ace Parkway?" answered from
+     * ACE Parkway's rows. The next turn, "what is the payment plan?", answered
+     * with a generic explanation of CLP and PLP and then asked which project the
+     * buyer meant — one message after being told.
+     *
+     * The gate is deliberately narrow, because a sticky project deciding what a
+     * turn is about is the single most repeated defect in this file: a sticky
+     * `purpose` hijacked three turns, and so did a sticky `workplace`. The focus
+     * is adopted only when the turn is a question about a project's attributes
+     * (a topic flag is lit), names no project of its own, and names no other
+     * subject — no sector, no inventory search. Anything else is a new subject
+     * and gets no inherited project.
+     */
+    const asksProjectAttribute =
+      isPaymentPlanRequest || isCostSheetRequest || isAmenityQuery || isConfigurationQuery ||
+      isConnectivityQuery || isTotalOutflowQuery || isBuilderReputationQuery ||
+      /\b(possession|handover|rera|builder score|delivery score|track record)\b/i.test(topicText)
+
+    if (
+      !intent.projectNames?.length &&
+      !isInventorySearch &&
+      !intent.sector &&
+      sectorMatches.length === 0 &&
+      asksProjectAttribute &&
+      sessionData?.focus_project_id
+    ) {
+      const focus = await prisma.project.findUnique({
+        where: { id: sessionData.focus_project_id },
+        select: { id: true, name: true },
+      })
+      if (focus) {
+        intent.projectNames = [focus.name]
+        ;(intent as { targetProjectId?: string }).targetProjectId = focus.id
+        console.log('[CHAT:FOCUS_CARRIED]', { project: focus.name, q: message.slice(0, 50) })
+      }
+    }
+
     const activeProjectName = intent.projectNames?.[0] || (intent as any)?.targetProjectId
+
+    /**
+     * Remember the focus for the next turn.
+     *
+     * Recorded here and written by whichever persistence path closes the turn,
+     * because on a first turn the ChatSession row does not exist yet — writing
+     * it directly here would fail the foreign key on exactly the case that
+     * matters, the opening project question.
+     *
+     * Cleared never at this point: a later turn naming a different project
+     * overwrites it, and one naming none inherits it under the narrow gate
+     * above.
+     */
+    if (intent.projectNames?.length === 1) {
+      const focusName = String(intent.projectNames[0])
+      const focusRow = await prisma.project.findFirst({
+        where: { name: { contains: focusName, mode: 'insensitive' } },
+        select: { id: true },
+      })
+      if (focusRow) focusProjectId = focusRow.id
+    }
 
     // A project-specific RERA number question ("what is X's RERA number") is a
     const isReraFactQuery = /rera/i.test(message) && Boolean(activeProjectName)
@@ -4565,6 +4640,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
             title: message.slice(0, 60),
             chat_phase: intentState,
             message_count: 2,
+            ...(focusProjectId ? { focus_project_id: focusProjectId, focus_set_at: new Date() } : {}),
             ...(newSummaries?.location ? { summary_location: newSummaries.location } : {}),
             ...(newSummaries?.financial ? { summary_financial: newSummaries.financial } : {}),
             ...(newSummaries?.timeline ? { summary_timeline: newSummaries.timeline } : {}),
@@ -4601,6 +4677,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
             last_active: new Date(),
             chat_phase: intentState,
             message_count: { increment: 2 },
+            ...(focusProjectId ? { focus_project_id: focusProjectId, focus_set_at: new Date() } : {}),
             ...(newSummaries?.location ? { summary_location: newSummaries.location } : {}),
             ...(newSummaries?.financial ? { summary_financial: newSummaries.financial } : {}),
             ...(newSummaries?.timeline ? { summary_timeline: newSummaries.timeline } : {}),
