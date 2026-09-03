@@ -1868,3 +1868,29 @@ loop**; every one of the 11 collisions is pinned in a test in both orders.
 Note the router's *other* containment matcher already sorted by name length
 desc. One of four sites had been fixed by hand, which is why the bug survived —
 it looked handled.
+
+### The regression harness the review asked for
+
+`npm run verify:chat -- --endpoint=<url>` — 13 multi-turn behavioural cases,
+13/13 against production. Each case is a bug that reached a real buyer, with the
+original failure recorded on it and printed when it goes red, so nobody deletes
+a case without seeing why it exists.
+
+**Why it is separate from `src/lib/eval/`:** that harness is single-turn and
+asserts on answer prose. Half of what broke was multi-turn — focus carry,
+referents, transcript recall — and none of it was about wording. This one holds
+the session id and guest token across turns and asserts on observable signals
+only: which project was answered about, whether a figure appeared, how many
+question marks, whether chips were emitted.
+
+Two cases guard the **over-correction** rather than the bug: an unambiguous RERA
+number must still print, and a commute to Gurgaon must NOT be declined. Both
+directions matter — three separate guards this session initially ate honest
+content.
+
+Not in `npm test`: needs a live endpoint and a populated database, ~6 minutes.
+It is a deploy check.
+
+**The habit this replaces:** ad-hoc probe scripts in the scratchpad, thrown away
+after each fix. That is exactly what the review criticised, and it was still how
+this session ran until the end.
