@@ -55,9 +55,14 @@ describe('projectScalarFacts', () => {
     assert.ok(!('ceiling_height_ft' in facts), 'a schema-default ceiling height reached the prompt')
     assert.equal(facts.water_source, 'Ganga jal + borewell')
     assert.equal(facts.land_tenure, '99-Year Authority Leasehold')
-    assert.equal(facts.resale_lock_in_months, '24 months')
-    assert.equal(facts.women_safety_score, '82/100')
     assert.equal(facts.flood_waterlogging_risk, 'low')
+    // resale_lock_in_months and women_safety_score are withheld now, and the
+    // reason is the same one this block exists for. Measured across all 280
+    // projects: the lock-in is exactly 36 on every one of its 95 populated
+    // rows, and the "safety score" takes two values in the whole table. A
+    // column that does not vary is not a measurement. See INTERNAL_ONLY_FIELDS.
+    assert.ok(!('resale_lock_in_months' in facts), 'a one-value lock-in reached the prompt')
+    assert.ok(!('women_safety_score' in facts), 'a two-value safety score reached the prompt')
   })
 
   it('renders booleans as buyer-readable states, not true/false', () => {

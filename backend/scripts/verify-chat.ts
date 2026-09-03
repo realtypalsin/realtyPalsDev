@@ -165,6 +165,20 @@ const CASES: Case[] = [
     },
   },
   {
+    name: 'no clean-legal-standing claim for a builder under insolvency',
+    was:
+      'Asked whether Amrapali Crystal Homes was legally clean, the chat said it "has a clean legal ' +
+      'standing with no active NCLT insolvency proceedings" and that "your capital is protected from ' +
+      'insolvency risks". The Supreme Court cancelled Amrapali\'s RERA registrations in 2019 and handed ' +
+      'the projects to NBCC — our own builder record says "Amrapali Group (NBCC Supervised)". The source ' +
+      'was nclt_status, which read "Clean - No NCLT Moratorium" on 100% of its populated rows.',
+    run: async (ask) => {
+      const t = await ask('Is Amrapali Crystal Homes legally clean? Any NCLT or insolvency issues?')
+      const claim = /clean legal standing|no active NCLT|capital is protected|no NCLT moratorium/i.exec(t.text)
+      return claim ? `asserted "${claim[0]}" about an NBCC-supervised builder` : null
+    },
+  },
+  {
     name: 'no synthetic score reaches the buyer',
     was:
       'An answer showed "a STRONG_BUY recommendation tier with a buyer satisfaction rating of 4.7 out ' +

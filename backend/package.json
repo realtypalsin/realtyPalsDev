@@ -39,7 +39,8 @@
     "audit:rera": "tsx scripts/audit-rera.ts",
     "verify:chat": "tsx scripts/verify-chat.ts",
     "audit:plans": "tsx scripts/audit-payment-plans.ts",
-    "reconcile:rera": "tsx scripts/reconcile-rera.ts"
+    "reconcile:rera": "tsx scripts/reconcile-rera.ts",
+    "audit:synthetic": "tsx scripts/audit-synthetic-fields.ts"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"

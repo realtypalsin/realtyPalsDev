@@ -46,6 +46,57 @@ export const INTERNAL_ONLY_FIELDS: Record<string, string> = {
   appreciation_potential_5yr: 'forward-looking estimate — the prompt forbids presenting projections as fact',
   rental_yield_annual_percent: 'forward-looking estimate — same rule',
   competing_projects_nearby: 'internal ranking input',
+
+  // ─── Batch-templated columns, found by `npm run audit:synthetic` ─────────
+  //
+  // Every entry below carries one value across effectively every populated row.
+  // A column that does not vary is not a measurement, whatever its name says,
+  // and rendering one hands a buyer a specific figure nobody took.
+  //
+  // The first two are the reason this sweep exists at all, and they are legal
+  // claims rather than conveniences:
+  nclt_status:
+    'reads "Clean - No NCLT Moratorium" on 100% of the 94 populated rows — INCLUDING Amrapali projects, ' +
+    'whose own builder record in this database says "Amrapali Group (NBCC Supervised)". The Supreme Court ' +
+    'cancelled Amrapali\'s RERA registrations in 2019 and handed the projects to NBCC. Measured live before ' +
+    'withholding: the chat told a buyer Amrapali Crystal Homes "has a clean legal standing with no active ' +
+    'NCLT insolvency proceedings". `nclt_moratorium_active` is the real column and stays exposed.',
+  approvals_status:
+    'reads "Fully RERA & Authority Approved" on 100% of the 207 populated rows, Amrapali and Jaypee included. ' +
+    'A blanket approval claim across two thirds of inventory is not an approval record.',
+
+  // Physical and environmental measurements nobody took:
+  handover_defect_rate: 'exactly 1.2 on all 91 populated rows — one value, so not a measurement',
+  noise_level_db: '48 dB on 93 of 95 populated rows — a specific acoustic reading, taken once and copied',
+  construction_quality_rating: '4.6 on 92 of 94 populated rows — the same shape as buyer_satisfaction_rating',
+  college_distance_km: 'exactly 5 km on all 91 populated rows',
+  proximity_to_industrial: '"Clean Zone (3+ km from industrial belt)" on all 91 populated rows',
+  shared_walls_type: 'one layout claim on 91% of all 280 rows',
+  women_safety_score: 'two values across all 280 rows (85 and 90) — a score with two possible values is not a score',
+
+  // Contractual terms nobody checked:
+  resale_lock_in_months: 'exactly 36 on all 95 populated rows',
+  occupancy_restriction_months: 'exactly 0 on all 91 populated rows',
+  nri_approval_months: 'exactly 1 on all 91 populated rows',
+
+  // The nearby counts are one import repeated: 81 of the 91 populated rows
+  // carry the identical set — 8 schools, 5 hospitals, 20 restaurants, 10 IT
+  // parks, 12 banks, 4 shopping. The `connectivity` relation holds the real,
+  // per-project landmarks with distances and is unaffected.
+  schools_nearby_count: 'value 8 on 81 of 91 populated rows — one import repeated',
+  hospitals_nearby_count: 'value 5 on 81 of 91 populated rows — one import repeated',
+  restaurants_nearby_count: 'value 20 on 81 of 91 populated rows — one import repeated',
+  it_parks_nearby_count: 'value 10 on 81 of 91 populated rows — one import repeated',
+  banks_nearby_count: 'value 12 on 81 of 91 populated rows — one import repeated',
+  shopping_nearby_count: 'value 4 on 81 of 91 populated rows — one import repeated',
+  //
+  // DELIBERATELY NOT WITHHELD, and the distinction is the point:
+  //   ongoing_litigation_count  0×239, 3×19, 5×11, 6×8, 2×2, 4×1
+  //   litigation_count          same shape
+  //   average_builder_delay_months  0×62, 3×29
+  // Concentrated because most projects genuinely have no litigation and most
+  // builders genuinely deliver on time. Withholding those would hide good news
+  // a buyer is entitled to, which is the opposite error and just as real.
   buyer_satisfaction_rating:
     'batch-templated default, not a survey — 92 of the 94 populated rows are exactly 4.7 ' +
     '(measured 4 Sep 2026). Presenting it implies buyer research we never did. See SYNTHETIC_FIELDS.',
@@ -88,12 +139,6 @@ export const PROJECT_PUBLIC_SELECT = {
   marketing_claims: true,
 
   // Nearby counts
-  schools_nearby_count: true,
-  hospitals_nearby_count: true,
-  shopping_nearby_count: true,
-  it_parks_nearby_count: true,
-  banks_nearby_count: true,
-  restaurants_nearby_count: true,
 
   // Status & possession
   status: true,
@@ -134,7 +179,6 @@ export const PROJECT_PUBLIC_SELECT = {
   litigation_count: true,
   ongoing_litigation_count: true,
   litigation_types: true,
-  nclt_status: true,
   nclt_moratorium_active: true,
   project_risk_flag: true,
   escrow_verified: true,
@@ -143,7 +187,6 @@ export const PROJECT_PUBLIC_SELECT = {
   registry_embargo_reasons: true,
   land_title_clear: true,
   fir_against_project: true,
-  approvals_status: true,
   authority_dues_cleared: true,
   land_tenure: true,
   gst_pass_through: true,
@@ -155,7 +198,6 @@ export const PROJECT_PUBLIC_SELECT = {
   walkability_score: true,
   commute_matrix: true,
   top_school_distance_km: true,
-  college_distance_km: true,
   hospital_distance_km: true,
   airport_distance_km: true,
   police_station_distance_km: true,
@@ -165,10 +207,7 @@ export const PROJECT_PUBLIC_SELECT = {
   flood_zone: true,
   aqi_annual_avg: true,
   air_quality_index_avg: true,
-  noise_level_db: true,
-  proximity_to_industrial: true,
   green_cover_percent: true,
-  women_safety_score: true,
   has_security_24x7: true,
   has_cctv: true,
   street_lights: true,
@@ -181,18 +220,13 @@ export const PROJECT_PUBLIC_SELECT = {
   price_includes_taxes: true,
 
   // Ownership & eligibility terms
-  resale_lock_in_months: true,
   rental_income_allowed: true,
-  occupancy_restriction_months: true,
   nri_eligible: true,
-  nri_approval_months: true,
   foreign_currency_payment_allowed: true,
   pet_friendly: true,
   bachelor_tenants_allowed: true,
 
   // Build quality
-  construction_quality_rating: true,
-  handover_defect_rate: true,
   // buyer_satisfaction_rating is deliberately absent — see SYNTHETIC_FIELDS.
 
   // Vastu & orientation
@@ -209,7 +243,6 @@ export const PROJECT_PUBLIC_SELECT = {
   ceiling_height_ft: true,
   lifts_per_tower: true,
   has_service_lift: true,
-  shared_walls_type: true,
 } as const
 
 export type PublicProjectField = keyof typeof PROJECT_PUBLIC_SELECT

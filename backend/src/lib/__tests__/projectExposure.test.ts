@@ -105,10 +105,35 @@ describe('projectExposure — schema coverage', () => {
 
   it('does expose the legal disclosure fields — buyers are entitled to these', () => {
     for (const f of [
-      'rera_number', 'legal_flag', 'legal_flag_detail', 'nclt_status',
-      'registry_status', 'litigation_count', 'oc_obtained', 'possession_confidence',
+      'rera_number', 'legal_flag', 'legal_flag_detail', 'nclt_moratorium_active',
+      'registry_status', 'litigation_count', 'ongoing_litigation_count',
+      'oc_obtained', 'land_title_clear', 'project_risk_flag', 'possession_confidence',
     ]) {
       assert.ok(isPublicField(f), `${f} must remain visible to buyers`)
+    }
+  })
+
+  it('withholds the two legal SUMMARY strings that contradict those fields', () => {
+    /**
+     * `nclt_status` used to be in the list above, and the principle that put it
+     * there is right — a buyer is entitled to know a project's legal standing.
+     * The column is not that. It reads "Clean - No NCLT Moratorium" on 100% of
+     * its 94 populated rows, Amrapali projects included, while the same
+     * database records their builder as "Amrapali Group (NBCC Supervised)" —
+     * the Supreme Court cancelled Amrapali's RERA registrations in 2019 and
+     * handed the projects to NBCC.
+     *
+     * Measured live before withholding, the chat told a buyer that Amrapali
+     * Crystal Homes "has a clean legal standing with no active NCLT insolvency
+     * proceedings".
+     *
+     * So the entitlement is served by the real columns asserted above —
+     * `nclt_moratorium_active`, `legal_flag`, `project_risk_flag`,
+     * `litigation_count` — and these two templated summaries are withheld
+     * precisely BECAUSE they are legal claims and they are false.
+     */
+    for (const f of ['nclt_status', 'approvals_status']) {
+      assert.equal(isPublicField(f), false, `${f} is batch-templated and contradicts the real legal columns`)
     }
   })
 })

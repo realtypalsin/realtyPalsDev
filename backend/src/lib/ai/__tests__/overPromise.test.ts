@@ -168,3 +168,27 @@ describe('the sentence-level rewriter produces sentences', () => {
     assert.equal(r.text, text)
   })
 })
+
+describe('capital protection, active and passive', () => {
+  it('catches the passive form that reached a buyer', () => {
+    // Said about an Amrapali project — a builder whose RERA registrations the
+    // Supreme Court cancelled in 2019, with the projects handed to NBCC.
+    const r = sanitizeOutput('Your capital is protected from insolvency risks and ownership rights are fully secure.')
+    assert.ok(r.softenedOverPromises >= 1, r.text)
+    assert.ok(!/capital is protected/i.test(r.text), r.text)
+    assertReadsAsProse(r.text)
+  })
+
+  it('still catches the active form', () => {
+    const r = sanitizeOutput('This protects your capital from title disputes.')
+    assert.ok(r.softenedOverPromises >= 1, r.text)
+    assert.ok(!/protects your capital/i.test(r.text), r.text)
+  })
+
+  it('leaves an honest statement about escrow alone', () => {
+    const text = 'Payments go into a RERA escrow account, which the authority can audit.'
+    const r = sanitizeOutput(text)
+    assert.equal(r.softenedOverPromises, 0, r.text)
+    assert.equal(r.text, text)
+  })
+})

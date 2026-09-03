@@ -201,9 +201,22 @@ const SENTENCE_CLAIMS: Array<[RegExp, string]> = [
     /(?<=^|[.!?\n]\s{0,3})[^.!?\n]*\b(?:guarantee(?:s|d|ing)?|assur(?:es?|ed)|ensur(?:es?|ed)|promis(?:es?|ed))\b[^.!?\n]*\b(?:returns?|appreciation|rental\s+yield|profits?|capital\s+gains?)\b[^.!?\n]*[.!?]?\s*/gi,
     'Past prices and rents are on record; nobody can promise a future return, and we do not.',
   ],
-  // Protecting the buyer's capital.
+  /**
+   * Protecting the buyer's capital — active OR passive.
+   *
+   * The active form was covered and the passive one was not, which is how this
+   * reached a buyer verbatim:
+   *
+   *   "Your capital is protected from insolvency risks and ownership rights
+   *    are fully secure."
+   *
+   * said about an Amrapali project — a builder whose registrations the Supreme
+   * Court cancelled in 2019 and whose projects NBCC now runs. Nobody can
+   * promise a buyer their capital is safe from insolvency, and least of all
+   * there.
+   */
   [
-    /(?<=^|[.!?\n]\s{0,3})[^.!?\n]*\b(?:protects?|safeguards?|shields?)\s+(?:your|the\s+buyer'?s?)\s+(?:capital|money|investment|funds?)\b[^.!?\n]*[.!?]?\s*/gi,
+    /(?<=^|[.!?\n]\s{0,3})[^.!?\n]*\b(?:(?:protects?|safeguards?|shields?)\s+(?:your|the\s+buyer'?s?)\s+(?:capital|money|investment|funds?)|(?:your|the\s+buyer'?s?)\s+(?:capital|money|investment|funds?|ownership\s+rights?)\s+(?:is|are)\s+(?:fully\s+|completely\s+)?(?:protected|secure|safeguarded|shielded))\b[^.!?\n]*[.!?]?\s*/gi,
     'That lowers the risk without removing it.',
   ],
 ]
