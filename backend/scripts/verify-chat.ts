@@ -32,6 +32,21 @@ interface Turn {
   cards: number
   ms: number
   sessionId?: string
+  /**
+   * The resolved intent, carried on the `done` event.
+   *
+   * This is the structural signal, and preferring it over prose is the point of
+   * the file. The sector-pointer case first asserted `/79/` against the answer
+   * text and went red on a run where the resolution was perfect: the reply
+   * opened "Sector 79 positions investors…", quoted a real price band and named
+   * two real projects in that sector. A differently-worded run can simply omit
+   * the digits.
+   *
+   * So the first failure this harness reported was its own bad assertion —
+   * testing wording, which the header says it will not do. `intent.sector` is
+   * what actually resolved, and the model cannot phrase it away.
+   */
+  intent?: Record<string, unknown>
 }
 
 function parseSse(raw: string): Turn {
@@ -39,6 +54,7 @@ function parseSse(raw: string): Turn {
   let chips: string[] = []
   let cards = 0
   let sessionId: string | undefined
+  let intent: Record<string, unknown> | undefined
 
   for (const block of raw.split('\n\n')) {
     const event = /^event: (.+)$/m.exec(block)?.[1]
@@ -63,10 +79,13 @@ function parseSse(raw: string): Turn {
     if (event === 'properties') {
       cards += (data.exactResults as unknown[] | undefined)?.length ?? 0
     }
-    if (event === 'done' && typeof data.sessionId === 'string') sessionId = data.sessionId
+    if (event === 'done') {
+      if (typeof data.sessionId === 'string') sessionId = data.sessionId
+      if (data.intent && typeof data.intent === 'object') intent = data.intent as Record<string, unknown>
+    }
   }
 
-  return { text: tokens.join(''), chips, cards, ms: 0, sessionId }
+  return { text: tokens.join(''), chips, cards, ms: 0, sessionId, intent }
 }
 
 /**
@@ -202,7 +221,11 @@ const CASES: Case[] = [
       await ask('Find me apartments in Sector 62 Gurgaon vs Sector 79 Noida.')
       const t = await ask('The second one.')
       if (t.text.trim().length === 0) return 'empty reply'
-      if (!/79/.test(t.text)) return 'did not resolve to Sector 79'
+      // The resolution, not the wording. See the note on Turn.intent.
+      const sector = String(t.intent?.sector ?? '')
+      if (!/\b79\b/.test(sector)) return `resolved sector was "${sector || 'none'}", not Sector 79`
+      // Gurgaon's Sector 62 must never become ours by this route.
+      if (/gurgaon|62/i.test(sector)) return `resolved to the out-of-scope half: "${sector}"`
       if (/do not (track|cover)|not currently in our/i.test(t.text)) return 'denied inventory we hold'
       return null
     },
@@ -215,7 +238,11 @@ const CASES: Case[] = [
     run: async (ask) => {
       await ask('What all amenities are offered by Ace Parkway?')
       const t = await ask('what is the payment plan?')
-      return /ace parkway/i.test(t.text) ? null : 'lost the project between turns'
+      // Structural first: the carried project shows up on the resolved intent.
+      const named = String((t.intent?.projectNames as string[] | undefined)?.join(', ') ?? '')
+      if (/ace parkway/i.test(named)) return null
+      if (/ace parkway/i.test(t.text)) return null
+      return `lost the project between turns (intent: ${named || 'none'})`
     },
   },
   {
