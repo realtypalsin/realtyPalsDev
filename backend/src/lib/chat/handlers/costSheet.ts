@@ -1,3 +1,4 @@
+import { matchProjectInText } from '../../discovery/matchProjectInText'
 import { prisma } from '../../db'
 import { renderCostSheetTable, type CostSheetRow } from '../../ai/marketTable'
 import { executeWithFallbackChain } from '../../ai/fallbackChain'
@@ -19,7 +20,7 @@ export const costSheetHandler: ChatTopicHandler = {
 
   handle: async ctx => {
     const matchedTarget = ctx.catalog.find(p => p.name.toLowerCase() === ctx.activeProjectName?.toLowerCase() || p.id === ctx.activeProjectName) ||
-      ctx.catalog.find(p => ctx.message.toLowerCase().includes(p.name.toLowerCase())) ||
+      matchProjectInText(ctx.message, ctx.catalog) ||
       (ctx.cachedProjects && ctx.cachedProjects.length > 0 ? ctx.catalog.find(p => p.id === ctx.cachedProjects[0].id) : null)
 
     let costProject = null

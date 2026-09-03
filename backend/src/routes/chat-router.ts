@@ -2831,7 +2831,25 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
             targetProjects = [directMatch]
           } else {
             const activeLower = activeProjectName.toLowerCase()
-            const fuzzyMatch = allDbProjects.find(p => p.name.toLowerCase().includes(activeLower) || activeLower.includes(p.name.toLowerCase()))
+            /**
+             * Most specific match, not the first one the array happens to hold.
+             *
+             * `.find()` returns the first element, and `allDbProjects` is a
+             * `findMany` with no `orderBy` — so this was Postgres heap order
+             * deciding which project a buyer got. With containment matching in
+             * both directions, a shorter name matches everything a longer one
+             * does: asked about "ATS Pristine & Golf Meadows" this could return
+             * ATS Pristine, a different tower with a different RERA number and
+             * a possession date years apart. Eleven names in the catalogue are
+             * a prefix of another's, so it is not one unlucky pair.
+             *
+             * Same rule as `matchProjectInText`: the longest name that matches
+             * is the one the buyer meant, and ties break on id so the result is
+             * stable across processes.
+             */
+            const fuzzyMatch = [...allDbProjects]
+              .sort((a, b) => b.name.length - a.name.length || (a.id < b.id ? -1 : 1))
+              .find(p => p.name.toLowerCase().includes(activeLower) || activeLower.includes(p.name.toLowerCase()))
             if (fuzzyMatch) {
               targetProjects = [fuzzyMatch]
               fuzzyMatchedNotes.push(`Did you mean **${fuzzyMatch.name}**? Showing verified facts for **${fuzzyMatch.name}**:`)
