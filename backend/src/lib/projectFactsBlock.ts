@@ -374,6 +374,47 @@ export function buildProjectFacts(
 
   if (row.builder && typeof row.builder.name === 'string') facts.builder = row.builder.name
 
+  /**
+   * A developer's insolvency outranks the project's own "clean" markers.
+   *
+   * Measured on Amrapali Crystal Homes, and the database contradicts itself:
+   *
+   *   builder.insolvency_history   true
+   *   legal_flag                   "none"
+   *   project_risk_flag            "low_risk"
+   *   nclt_status                  "Clean - No NCLT Moratorium"
+   *
+   * Only the first is right. The Supreme Court cancelled Amrapali's RERA
+   * registrations in 2019 and handed the projects to NBCC. The project-level
+   * markers are batch-templated — `legal_flag` is "none" on all 94 of its
+   * populated rows — and none of them had ever reached the prompt anyway,
+   * because only `builder.name` was projected from the relation. So the model
+   * had the reassuring half of the record and not the disqualifying half, and
+   * told a buyer the project "has a clean legal standing with no active NCLT
+   * insolvency proceedings".
+   *
+   * Two changes, and the order matters. Surface the insolvency, because it is
+   * the single most consequential thing a buyer can know about a developer. And
+   * suppress the project-level markers that contradict it, because leaving both
+   * in the prompt asks the model to arbitrate between two of our own facts —
+   * which is how the wrong one gets picked.
+   */
+  const insolvent = row.builder?.insolvency_history === true
+  const builderFlag = typeof row.builder?.legal_flag === 'string' ? row.builder.legal_flag : null
+  if (insolvent || builderFlag) {
+    facts.developer_legal_standing =
+      `${row.builder?.name ?? 'This developer'} carries ` +
+      `${insolvent ? 'insolvency history on record' : ''}` +
+      `${insolvent && builderFlag ? ' and ' : ''}` +
+      `${builderFlag ? `a legal flag: ${builderFlag}` : ''}. ` +
+      `Treat any project-level "clean" or "low risk" marker for this developer as unreliable — ` +
+      `say plainly that the developer is under insolvency or legal supervision and that the ` +
+      `advisory team should confirm the current position before any commitment.`
+    for (const contradicted of ['legal_flag', 'project_risk_flag', 'nclt_moratorium_active', 'nclt_status', 'approvals_status']) {
+      delete facts[contradicted]
+    }
+  }
+
   if (row.unit_types?.length) {
     facts.unit_types = row.unit_types.slice(0, maxItems).map(u => {
       const bhk = u.bhk ?? '?'
