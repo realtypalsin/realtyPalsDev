@@ -2152,7 +2152,7 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
       /\b(?:beyond|on\s+top\s+of|over\s+and\s+above)\s+(?:the\s+)?(?:sticker|base|quoted|listed|ticket)?\s*price\b/i.test(topicText) ||
       /\bwhat\s+else\s+(?:do|will|would)\s+i\s+(?:pay|be\s+paying|spend)\b/i.test(topicText)
     const isStatutoryTaxQuery = /(stamp duty|registration (charges?|fees?)|gst on (flat|property|real estate)|tds on (property|sale)|circle rate|index 2|agreement value charges)/i.test(topicText)
-    const isReraCheckQuery = matchesReraProcessQuestion(topicText) && (intent.projectNames?.length ?? 0) === 0
+    let isReraCheckQuery = matchesReraProcessQuestion(topicText) && (intent.projectNames?.length ?? 0) === 0
     const isSubventionQuery = /\b(subvention|20[:\s]*80|10[:\s]*90|80[:\s]*20|builder\s+subvention)\b/i.test(topicText)
     const isBuilderReputationQuery =
       !isSubventionQuery &&
@@ -2222,6 +2222,15 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
         intent.projectNames = [focus.name]
         ;(intent as { targetProjectId?: string }).targetProjectId = focus.id
         console.log('[CHAT:FOCUS_CARRIED]', { project: focus.name, q: message.slice(0, 50) })
+        /**
+         * "Is it RERA registered?" about a project we hold is a fact lookup,
+         * not a question about our verification process. `isReraCheckQuery`
+         * was computed above, before the focus was carried, so it read zero
+         * project names and stayed true — and the process explainer answered a
+         * question whose answer is a registration number in the project's own
+         * row.
+         */
+        isReraCheckQuery = false
       }
     }
 

@@ -117,6 +117,28 @@ export const citywideQueryHandler: ChatTopicHandler = {
 
   matches: (ctx) => {
     const msg = (ctx.message || '').toLowerCase()
+
+    /**
+     * A project in focus outranks the citywide arms of this handler.
+     *
+     * Measured: "and the builder track record?" and "is it RERA registered?",
+     * both asked one turn after a Godrej Woods answer, were claimed here by
+     * BUILDER_REPUTATION_CITYWIDE_REGEX and RERA_VERIFY_CITYWIDE_REGEX. The
+     * buyer got a league table of Noida's top developers, and a generic
+     * explainer of how we verify projects — neither of which mentioned Godrej
+     * Woods, which holds both a builder scorecard and a registration number in
+     * its own rows.
+     *
+     * This handler sits second in the registry, ahead of the twelve
+     * project-scoped ones, so a citywide pattern matching a project-scoped
+     * question wins on position alone. Only these two arms overlap; the rest
+     * are genuinely about the city and are left alone.
+     *
+     * Same shape as the sticky `purpose` arm removed at the end of this list:
+     * the test should be what was asked, not a pattern that happens to fire.
+     */
+    const projectScoped = ctx.flags.hasSingleNamedProject === true
+
     return (
       SUBVENTION_LEGALITY_REGEX.test(msg) ||
       COMPETITOR_COMPARISON_REGEX.test(msg) ||
@@ -144,8 +166,8 @@ export const citywideQueryHandler: ChatTopicHandler = {
       FAMILY_LIVABILITY_REGEX.test(msg) ||
       METRO_TRANSIT_REGEX.test(msg) ||
       SECTOR_PROS_CONS_REGEX.test(msg) ||
-      BUILDER_REPUTATION_CITYWIDE_REGEX.test(msg) ||
-      RERA_VERIFY_CITYWIDE_REGEX.test(msg) ||
+      (!projectScoped && BUILDER_REPUTATION_CITYWIDE_REGEX.test(msg)) ||
+      (!projectScoped && RERA_VERIFY_CITYWIDE_REGEX.test(msg)) ||
       GOLF_LUXURY_REGEX.test(msg) ||
       COMMERCIAL_RETAIL_REGEX.test(msg) ||
       NRI_LEGAL_FEMA_REGEX.test(msg) ||
