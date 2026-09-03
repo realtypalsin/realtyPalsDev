@@ -1894,3 +1894,86 @@ It is a deploy check.
 **The habit this replaces:** ad-hoc probe scripts in the scratchpad, thrown away
 after each fix. That is exactly what the review criticised, and it was still how
 this session ran until the end.
+
+---
+
+## Session 2026-09-04 (cont.) — the five remaining items
+
+### Applied: the defaults migration
+
+Four `ALTER COLUMN … DROP DEFAULT` against the live database, with row counts
+captured either side as evidence: 105 builders, 280 projects, 190 rows at
+`ceiling_height_ft = 10.2` — identical before and after. All four defaults now
+read NONE. **Schema and database agree.**
+
+### Payment plans: 608 of 620 are templates, and labelling them nearly broke the guard
+
+Identical name AND identical milestone detail across ten or more projects;
+`watch_out` and `best_for` null on all 620. There is no researched subset, so
+the blanket qualifier is right.
+
+The 608 now carry `source = 'inferred_default'`. **That required inverting the
+gate first.** It tested `!verified_at && !source`, so recording the truth about
+these rows would have SILENCED the qualifier — the label reads as provenance to
+a check that only looks for absence. `hasRealProvenance()` is positive and
+excludes our own defaulting by name. Verified across all four states.
+
+`npm run audit:plans` reports; `--label` records.
+
+### rera_check was returning navigation chrome as a RERA record
+
+up-rera.in is ASP.NET with a **form-postback** search, so
+`?project_search=UPRERAPRJ1504` returns site chrome: nav, logo, font-size
+controls, today's date. 10,311 characters, zero mentions of either project.
+
+The check was `content ? …` and **chrome is truthy**, so a tool advertised as
+"live RERA registration details" handed the model ten kilobytes of nav links and
+called it success. Now tested for promoter/project/registration-date text.
+
+**The portal cannot be queried by URL. Do not build on `readPage` against it.**
+
+### Reconciliation: 0 of 16 collisions can be resolved from here
+
+`npm run reconcile:rera` gathers evidence and **writes nothing, deliberately** —
+the harm being prevented is a confidently wrong registration number, and writing
+an inferred one substitutes a new guess while making it look resolved.
+
+Result: **2 duplicate rows (mergeable), 16 collisions needing the authority
+record.** Web search returns generic UP-RERA news; the portal is closed to URL
+queries. The tool reporting that plainly is the useful outcome.
+
+Two of my own bugs, caught by reading the tool's first output instead of
+trusting it:
+
+* **Keyword noise scored as evidence.** Keywords were matched against every
+  snippet, and the search returns generic news — "Mahagun Manorialle" scored a
+  hit off an Economic Times piece containing "Greens". Three clusters were
+  labelled "weak evidence" with an arrow pointing at a project for no reason.
+  Now a passage must mention the number to count. **In a tool for the
+  highest-trust field, a confident-looking arrow is worse than reporting
+  nothing.**
+* **Substring where a word subset was needed.** "ATS Happy Trails" vs "ATS
+  Homekraft Happy Trails" — same builder, same sector, one project — and neither
+  string contains the other because the extra word is in the middle.
+
+### The rewriter lesson, stated plainly
+
+The over-promise softener swapped a verb phrase and stranded its object:
+`"This is no guarantee of a over five years."` That is broken, not clumsy, and
+**the test passed because it only asserted the banned word was gone.**
+
+Whole-sentence replacement is grammatical by construction; local adjective swaps
+("zero risk") stay word-level because they strand nothing. `assertReadsAsProse`
+now checks for stranded prepositions, doubled replacements, trailing connectives
+and welded replacements.
+
+**A test on a rewriter must assert what it produces, not only what it removes.**
+
+### Still open, and genuinely not mine to close
+
+* 16 RERA collisions — needs the UP-RERA record.
+* 620 payment plans — needs someone reading developers' terms.
+* 2 duplicate project rows — mergeable, but the FK repointing across
+  `amenities`, `connectivity`, `unit_types`, `payment_plans`, `cost_sheet`,
+  `price_history` and the profile tables should be a reviewed migration, not a
+  script run unsupervised.
