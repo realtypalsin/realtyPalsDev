@@ -1514,3 +1514,95 @@ Three regex bugs this week, all the same shape: `\brefund\b` misses "refunded",
 `\brelocat\b` misses "relocating", `\bprice\b` misses "prices". And now a fourth
 kind of measurement lesson: **instrument before optimising.** Both times a stage
 was blamed without a timer, the blame was misplaced.
+
+---
+
+## Session 2026-09-03 — project Q&A, referents, and the persistence hole
+
+### The bug behind four different symptoms
+
+`topicText` — the string every topic matcher runs over — was the raw user
+message, project name included. The amenity alternation contains `park`, and
+"Ace Parkway" contains it. Consequences, all measured in production:
+
+* "When is possession for Ace Parkway" and "What is near Ace Parkway" both
+  returned a byte-identical list of amenities.
+* The configuration handler was silently suppressed: two topic flags lit,
+  `singleTopic` went false, both handlers declined, and a question with a
+  purpose-built table renderer fell through to generic prose.
+
+**Decided:** strip `intent.projectNames` from `topicText` rather than adding a
+word boundary to `park`. Boundaries were added too, but they fix one project;
+removing the name fixes Green Court, Spa Residences and whatever is onboarded
+next. **Rejected:** hand-tightening fourteen regexes.
+
+### The persistence hole — the real cause of "no memory"
+
+All fourteen topic handlers end the response themselves and return, skipping the
+persistence block at the bottom of the POST handler. Nothing was recorded: not
+the message, not the answer, and on a first turn **not even the ChatSession
+row**. The open lane wrote its two messages but never created the session row,
+so its insert failed the foreign key on first turns and was swallowed by its own
+catch.
+
+Measured: turn 1 answered by `sectorComparison`; turn 2 on the same session id
+opened with "This is the start of our conversation." The sector referent built
+this session was reading an empty history — **correctly**. It was never a
+referent bug.
+
+`persistEarlyTurn` is one helper for every lane that answers and returns.
+
+### Chips: ask what a name IS
+
+`chipIsRelevant` tested every word ≥4 letters against an allow-list of common
+words, and the list could not be finished. "View Floor Plans" and "View Cost
+Sheet & Taxes" were discarded because "View" was absent from the answer — chips
+leading to tables we had already rendered, hidden for containing a verb. Now a
+token gates a chip only when it is part of a project name we actually hold.
+Same lesson as `toolBlindGuard`: a blocklist of words that must not appear is
+unfinishable, and every gap discards something honest.
+
+### focus_project_id was dead code
+
+`anchorResolution.ts` — the column, the FK, `setAnchor`,
+`resolveDrilldownAnchor`, a SET/CHANGE/CLEAR/KEEP state machine, tests — had no
+caller anywhere. So "what is the payment plan?" one turn after an ACE Parkway
+answer explained CLP generically and asked which project the buyer meant.
+
+Now wired, with a deliberately narrow gate: a project is inherited only when the
+turn asks about a project's attributes, names no project of its own, and names
+no sector **in this message**. The first version tested `intent.sector`, which
+memory hydration fills with the focus project's own sector — so the gate blocked
+itself. A sticky field deciding what a turn is about is the most repeated defect
+in this file (`purpose`, then `workplace`, now nearly this).
+
+### Handler cache writes were unscoped
+
+The handler context received the raw cache writer with none of the main path's
+guards. A builder scorecard for ACE Parkway was stored under the bare text "and
+the builder score?" and would replay to the next buyer asking about a different
+building. Wrapped: refuses to write with a project in focus, and passes scope
+plus intent fingerprint. Prefix v6 → v8.
+
+### Builder scores now state their basis
+
+"What is the builder score for Ace Parkway" returned a league table of six
+developers, none of them ACE. The focus project's developer now leads with a
+metric-per-row scorecard, each row naming what the figure is based on, plus an
+explicit statement that these are our analyst assessment — not a public rating,
+not supplied by the developer, not recalculated live. An unexplained number
+presented as a rating is the fake confidence score CLAUDE.md forbids; a number
+with its basis is not.
+
+### Open / not fixed
+
+* `promptPrefixCache.test.ts` — "system prompt prefix stays cacheable" fails at
+  75%. **Pre-existing**, confirmed by stashing this session's work. Something
+  per-turn sits above the variable tail.
+* `Builder.projects_delivered_count` has `@default(18)` in `schema.prisma`. Every
+  builder inserted without a real count claims eighteen delivered projects. Not
+  touched — it needs a migration.
+* `IFMS` is stored per sq.ft while the schema comment says these columns hold
+  rupees. Rendered as a rate below ₹1,000 rather than resolving the ambiguity in
+  the data.
+* Discovery latency 11–15s, spread evenly across three stages.

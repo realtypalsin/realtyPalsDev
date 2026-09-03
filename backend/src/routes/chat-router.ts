@@ -1193,6 +1193,15 @@ router.post('/', async (req: Request, res: Response) => {
       const userTurns = chatHistory.filter(m => m.role === 'user').map(m => m.content.trim()).filter(Boolean)
       const held: string[] = []
       if (intent.projectNames?.length) held.push(`project: **${intent.projectNames.join(', ')}**`)
+      else if (sessionData?.focus_project_id) {
+        // The turn inherits no project (this is not a project-attribute
+        // question), but the session still has one in focus and the honest
+        // answer to "what are you working with" includes it.
+        const f = await prisma.project.findUnique({
+          where: { id: sessionData.focus_project_id }, select: { name: true },
+        })
+        if (f) held.push(`project in focus: **${f.name}**`)
+      }
       if (intent.sector) held.push(`area: **${intent.sector}**`)
       if (intent.bhk?.length) held.push(`configuration: **${intent.bhk.join('/')} BHK**`)
       if (intent.budgetMax != null) held.push(`budget ceiling: **₹${intent.budgetMax} Cr**`)

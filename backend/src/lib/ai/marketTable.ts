@@ -386,7 +386,26 @@ export function renderCostSheetTable(
   }
   charge('Covered Car Parking', sheet?.parking_cost, 'Dedicated basement parking')
   charge('Club Membership', sheet?.club_membership, 'Access to clubhouse & amenities')
-  charge('IFMS (Maintenance Security)', sheet?.ifms, 'Interest-free refundable corpus')
+  /**
+   * IFMS is quoted per square foot in the rows we hold, not as a total.
+   *
+   * The schema comment says these columns store rupees, and `fromRupees`
+   * honoured that literally: ACE Parkway's stored 85 printed as "₹85" in a cost
+   * sheet whose all-inclusive total is ₹3.35 Cr. An ₹85 one-time refundable
+   * maintenance corpus on a three-crore flat is not a number anyone should read
+   * as ours.
+   *
+   * A value under ₹1,000 cannot be a corpus and is a per-sqft rate — the
+   * ₹50–75/sq.ft band this file already documents. Labelled as the rate it is,
+   * rather than silently multiplied by an area we may not hold for the unit the
+   * buyer is looking at.
+   */
+  if (typeof sheet?.ifms === 'number' && sheet.ifms > 0 && sheet.ifms < 1000) {
+    lines.push(['IFMS (Maintenance Security)', `${rupees(sheet.ifms)}/sqft`, 'Interest-free refundable corpus, charged on area'])
+    projectSpecificFigures += 1
+  } else {
+    charge('IFMS (Maintenance Security)', sheet?.ifms, 'Interest-free refundable corpus')
+  }
 
   if (typeof sheet?.all_inclusive_price_cr === 'number') {
     projectSpecificFigures += 1
