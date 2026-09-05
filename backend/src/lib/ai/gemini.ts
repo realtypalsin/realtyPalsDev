@@ -106,7 +106,7 @@ export async function streamWithGemini(
    */
   if (process.env.DEBUG_PROMPT_STABILITY) {
     const h = createHash('sha1').update(systemHead).digest('hex').slice(0, 12)
-    console.log('[PROMPT_HEAD_HASH]', h, 'headChars=' + systemHead.length, 'tailChars=' + systemTail.length)
+    console.log('[PROMPT_HEAD_HASH]', h, 'headChars=' + systemHead.length, 'tailChars=' + systemTail.length, '|', JSON.stringify(systemHead.slice(0, 46)))
   }
   // Gemini refuses CachedContent in a request that also sets system_instruction
   const cacheIsUsable = !GEMINI_TOOLS_ENABLED && !systemTail

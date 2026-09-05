@@ -2309,3 +2309,43 @@ not the prompt."** It had been applied to project names and never to numbers.
 a success to report. I told the user it had "caught a fabricated RERA number"
 before verifying the number against the table. It had binned a correct answer.
 Check what a new guard rejects against the source of truth before believing it.
+
+## 5 Sep 2026 (fourth pass) — prefix unification, done and measured
+
+**One interpolation cost the entire cacheable prefix.** `selectPlaybooks` was
+spliced in at character ~1,476 of the main lane's 25,000-character prompt.
+Gemini's implicit cache matches a request PREFIX, so everything after a
+per-message value is uncacheable — one line forfeited 24,000 characters.
+
+Measured over eight turns chosen to hit different playbooks and query kinds:
+
+| | before | after |
+|---|---|---|
+| distinct heads | 4 | 1 |
+| longest common prefix | 1,476 chars (~369 tokens) | 24,887 chars (~6,222 tokens) |
+
+Fix: render the playbook below `SYSTEM_PROMPT_BOUNDARY` with the rest of the
+per-turn context. Four lines moved, nothing rewritten. Confirmed live — the same
+head hash across different queries where there was one hash per query before.
+
+Arithmetic at $0.75/1M input, cached at a tenth: main-lane input $0.0098 →
+$0.0059 a turn, 40% off the input side.
+
+**What is NOT measured, and must not be reported as if it were:** the cache hit
+itself. A free-tier key returns `cachedContentTokenCount: 0` even for a
+byte-identical 10,220-token system instruction — probed directly — and the
+billed key was 429 throughout. The 40% is arithmetic over a measured prefix, not
+an observed bill. `DEBUG_PROMPT_STABILITY=1` plus a non-zero `[gemini:cache]`
+ratio on the billed key is the proof, once there is balance.
+
+**Two lanes checked and deliberately left alone.** `generalPrompt.ts` is already
+optimal — 4,640 of 4,642 characters shared, because `stateBrief` and
+`webContext` are last. The three topic handlers put their facts JSON at char
+~120 of an ~900-char template, so ~200 tokens sit behind a per-turn value:
+correct to fix, worth about a thirtieth of the main lane, and not worth the
+salience risk tonight. **Deciding not to do the small one is part of the job.**
+
+**The general lesson:** a prompt's cost is not its length, it is the position of
+its first variable byte. Nothing about this was visible in the code — it needed
+a hash of the prefix across turns. `promptPrefixStability.test.ts` pins it and
+fails on the pre-fix code, which is the only reason to trust it.

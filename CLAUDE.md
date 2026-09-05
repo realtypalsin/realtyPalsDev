@@ -497,12 +497,42 @@ Explicit caching is separately unreachable, because `cacheIsUsable` requires
 `!GEMINI_TOOLS_ENABLED` and tools are on in this deployment.
 
 So "shrinking the prompt optimises the smaller half" no longer holds either:
-input is roughly 13k tokens a turn at full rate, which is the same order as
-output. **The fix is one byte-identical opening block shared by every lane**,
-placed before anything per-request — not a smaller prompt. It is a prompt
-refactor with answer-quality risk, so measure with the hash line before and
-after: one repeated hash across turns means caching can engage, three distinct
-ones means it cannot.
+input is roughly 13k tokens a turn at full rate, the same order as output.
+
+**The main lane's prefix is fixed, and it was one interpolation.** The advisory
+playbook (`selectPlaybooks`) was spliced in at character ~1,476 of a
+25,000-character prompt. Everything after a per-message value is uncacheable, so
+one line cost the whole head. Measured over an eight-turn sample chosen to hit
+different playbooks and query kinds:
+
+| | before | after |
+|---|---|---|
+| distinct heads | 4 | **1** |
+| longest common prefix | 1,476 chars (~369 tokens) | **24,887 chars (~6,222 tokens)** |
+
+The playbook now renders below `SYSTEM_PROMPT_BOUNDARY` with the rest of the
+per-turn context. Nothing was rewritten; four lines moved. Confirmed live: the
+same head hash across different queries where there used to be one per query.
+
+At $0.75/1M input with cached tokens at a tenth, that is main-lane input from
+$0.0098 to $0.0059 a turn — **40% off the input side**, ~$4 per 1,000 turns.
+
+**Unmeasured, and say so:** the cache-hit itself. A free-tier key returns
+`cachedContentTokenCount: 0` even for a byte-identical 10,220-token system
+instruction — probed directly, twice — and the billed key was 429 throughout, so
+the saving above is arithmetic on a measured prefix, not an observed bill. Verify
+with `DEBUG_PROMPT_STABILITY=1` once the balance is topped up: a repeated head
+hash plus a non-zero `[gemini:cache]` ratio is the proof.
+
+**The other lanes were checked and left alone, deliberately.**
+`generalPrompt.ts` already keeps `stateBrief` and `webContext` last — 4,640 of
+4,642 characters are a shared prefix, so it is optimal already. The three topic
+handlers (`costSheet`, `paymentPlans`, `sectorComparison`) put their facts JSON
+at character ~120 of an ~900-character template, so ~200 tokens per turn sit
+behind a per-turn value. Reordering them is correct and worth roughly a
+thirtieth of what the main lane was worth; it is not worth the salience risk on
+a prompt nobody has re-measured. `promptPrefixStability.test.ts` pins the main
+lane and the general lane, and fails on the pre-fix code.
 
 **`GEMINI_DAILY_BUDGET_USD` defaults to $2** and is enforced across every
 caller. On a topped-up account that is roughly 130 turns before every Gemini leg

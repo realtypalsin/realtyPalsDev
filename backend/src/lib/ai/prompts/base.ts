@@ -190,7 +190,6 @@ These exist in the cards. Writing them again is a response failure.
 **No preamble or boilerplate self-introductions.** Start immediately with the direct, substantive answer. NEVER output phrases like "Ready. Share your project, sector, or budget query..." or "I am RealtyPal... How can I help you today?". Answer the user's specific question directly with data and reasoning.
 
 ---
-${selectPlaybooks(userMessage ?? '', intent as Partial<Intent>)}
 
 ## QUERY ROUTING
 
@@ -453,6 +452,7 @@ Answer process, NRI, and RERA questions from general knowledge. Advise checking 
 
 ${SYSTEM_PROMPT_BOUNDARY}
 
+${selectPlaybooks(userMessage ?? '', intent as Partial<Intent>)}
 
 ${BEHAVIOUR_RULES}
 
