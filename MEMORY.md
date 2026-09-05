@@ -2286,3 +2286,26 @@ line is kept behind the env flag so the fix can be measured when it is done.
 **Also flagged, not changed:** `GEMINI_DAILY_BUDGET_USD` defaults to $2, roughly
 130 turns on a topped-up account, after which every Gemini leg throws and the
 chain silently degrades.
+
+### 13. The new guard's first two "catches" were both false positives
+
+Within an hour of shipping the integrity gate it discarded two answers for
+`invented_rera(UPRERAPRJ76128)` and `invented_rera(UPRERAPRJ168120)`. Both
+numbers are **real** — exactly what our own rows hold, on a table where zero of
+280 projects lack a registration.
+
+`checkToolBlindAnswer` verified RERA claims only against `facts.reraNumbers`
+scraped out of the prompt text. On a turn where the model CALLS a tool, the
+number comes back in the tool RESULT and is never in the prompt, so a correct
+registration read from our own row failed the check. Pure false positive on
+every tool-calling turn — and it only became visible once the guard was extended
+past the tool-blind legs, because those are the legs that cannot call tools.
+
+CLAUDE.md already stated the principle: **"The reference set is the database,
+not the prompt."** It had been applied to project names and never to numbers.
+`loadKnownNames` now caches `rera_number` too.
+
+**The lesson worth keeping:** a guard's first firings are evidence to check, not
+a success to report. I told the user it had "caught a fabricated RERA number"
+before verifying the number against the table. It had binned a correct answer.
+Check what a new guard rejects against the source of truth before believing it.

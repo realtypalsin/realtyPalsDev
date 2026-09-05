@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test'
+import { describe, it, test } from 'node:test'
 import assert from 'node:assert'
 import { checkToolBlindAnswer, setKnownNamesForTest } from './toolBlindGuard'
 import { prisma } from '../db'
@@ -166,4 +166,30 @@ describe('tool-blind guard: the database is the reference set, not just the prom
       (prisma as unknown as { project: { findMany: unknown } }).project.findMany = original
     }
   })
+})
+
+test('a registration number we hold is not an invention', async () => {
+  // The guard checked RERA claims only against numbers scraped out of the
+  // prompt text. On a turn where the model CALLS a tool, the number comes back
+  // in the tool result and is never in the prompt — so a correct number read
+  // from our own row was reported as invented and the answer discarded. Both
+  // of these are real rows; zero of our 280 projects lack a registration.
+  setKnownNamesForTest({
+    projects: ['Amrapali Silicon City', 'Samridhi Daksh Avenue'],
+    builders: ['Amrapali Group'],
+    rera: ['UPRERAPRJ76128', 'UPRERAPRJ168120'],
+  })
+  const held = await checkToolBlindAnswer(
+    'Amrapali Silicon City is registered under UPRERAPRJ76128 and holds an Occupancy Certificate.',
+    'Verified facts: Amrapali Silicon City, Sector 76.',
+  )
+  assert.deepEqual(held.filter(v => v.kind === 'invented_rera'), [])
+
+  // The same phrasing with a number we do not hold still fails.
+  const invented = await checkToolBlindAnswer(
+    'Skyline Residency is registered under UPRERAPRJ999999.',
+    'Verified facts: Amrapali Silicon City, Sector 76.',
+  )
+  assert.equal(invented.some(v => v.kind === 'invented_rera'), true)
+  setKnownNamesForTest(null)
 })

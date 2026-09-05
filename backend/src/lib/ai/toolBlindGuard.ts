@@ -119,23 +119,32 @@ function looksLikeAName(s: string, builders: string[]): boolean {
  * database must not fail a turn the database would have cleared.
  */
 const NAME_CACHE_TTL_MS = 10 * 60 * 1000
-let nameCache: { at: number; projects: string[]; builders: string[] } | null = null
+let nameCache: { at: number; projects: string[]; builders: string[]; rera: string[] } | null = null
 let nameCacheInFlight: Promise<void> | null = null
 
-async function loadKnownNames(): Promise<{ projects: string[]; builders: string[] } | null> {
+async function loadKnownNames(): Promise<{ projects: string[]; builders: string[]; rera: string[] } | null> {
   if (nameCache && Date.now() - nameCache.at < NAME_CACHE_TTL_MS) return nameCache
   // Concurrent turns share one query rather than each issuing their own.
   if (!nameCacheInFlight) {
     nameCacheInFlight = (async () => {
       try {
         const [projects, builders] = await Promise.all([
-          prisma.project.findMany({ select: { name: true } }),
+          prisma.project.findMany({ select: { name: true, rera_number: true } }),
           prisma.builder.findMany({ select: { name: true } }),
         ])
         nameCache = {
           at: Date.now(),
           projects: projects.map(p => p.name).filter(Boolean),
           builders: builders.map(b => b.name).filter(Boolean),
+          // Registration numbers we actually hold. Without these the RERA check
+          // could only compare against the prompt text, and on a tool-calling
+          // turn the number arrives in a tool RESULT and never appears in the
+          // prompt at all — so a correct number read straight from our own row
+          // was reported as invented. Measured: UPRERAPRJ76128 (Amrapali
+          // Silicon City) and UPRERAPRJ168120 (Samridhi Daksh Avenue), both
+          // ours, both discarded, on a table where zero of 280 rows lack a
+          // registration number.
+          rera: projects.map(p => p.rera_number).filter((r): r is string => Boolean(r && r.trim())),
         }
       } catch (err) {
         console.warn('[TOOL_BLIND_GUARD] could not load known names, falling back to prompt facts:', err)
@@ -153,8 +162,10 @@ async function loadKnownNames(): Promise<{ projects: string[]; builders: string[
  * assert on the name rules, not on what happens to be in Postgres today.
  * Passing null drops it so the next check loads for real.
  */
-export function setKnownNamesForTest(v: { projects: string[]; builders: string[] } | null): void {
-  nameCache = v ? { at: Date.now(), ...v } : null
+export function setKnownNamesForTest(
+  v: { projects: string[]; builders: string[]; rera?: string[] } | null,
+): void {
+  nameCache = v ? { at: Date.now(), rera: [], ...v } : null
 }
 
 /**
@@ -188,10 +199,33 @@ export async function checkToolBlindAnswer(text: string, systemPrompt: string): 
   const claimed = new Set<string>()
   for (const m of text.matchAll(RERA_CLAIM)) claimed.add(m[0].trim())
   for (const m of text.matchAll(UPRERAPRJ)) claimed.add(m[0].trim())
+  /**
+   * The reference set is the database, not the prompt — for numbers too.
+   *
+   * That principle was already applied to project names and never to
+   * registration numbers, which were checked only against `facts.reraNumbers`
+   * scraped out of the prompt text. On a turn where the model CALLS a tool the
+   * number comes back in the tool RESULT and is never in the prompt at all, so
+   * a correct registration read straight from our own row was reported as
+   * invented and the answer discarded. Measured: UPRERAPRJ76128 (Amrapali
+   * Silicon City) and UPRERAPRJ168120 (Samridhi Daksh Avenue), both ours, both
+   * binned — on a table where zero of 280 rows lack a registration number. The
+   * check was pure false positive on every tool-calling turn.
+   *
+   * A database read that fails leaves `heldRera` empty and this falls back to
+   * prompt facts alone, exactly as the name check does: a guard that cannot
+   * read the database must not fail a turn the database would have cleared.
+   */
+  const canonRera = (r: string) => r.toUpperCase().replace(/[^A-Z0-9]/g, '')
+  const knownRera = [...(held?.rera ?? []), ...facts.reraNumbers]
+    .map(canonRera)
+    .filter(r => r.length >= 5)
   for (const claim of claimed) {
-    const verified = [...facts.reraNumbers].some(
-      r => text.includes(r) && claim.includes(r.split('/')[0]),
-    )
+    const digits = canonRera(claim)
+    // The model writes "UPRERAPRJ76128" and also "UP-RERA No. 76128", so a
+    // claim matches when it contains a registration we hold or is contained
+    // by one.
+    const verified = knownRera.some(r => digits.includes(r) || r.includes(digits))
     if (!verified) violations.push({ kind: 'invented_rera', detail: claim })
   }
 
