@@ -2074,3 +2074,55 @@ be added to the guard.
 
 That is now four guards this session that initially ate honest content. **Write
 the over-correction test in the same commit as the guard.**
+
+## 5 Sep 2026 — "Sector 1 vs Sector 2" for a budget question
+
+A demo transcript showed four faults in three turns. All four were routing, not
+the model: the log carries no `[FALLBACK:*]` line, Gemini answered on the first
+leg every turn. **The provider chain was never the problem.**
+
+### 1. A number with a unit was read as a sector
+
+`extractSectorsFromMessage` had a third rule that scanned every 1–3 digit token
+in any message containing "compare", "between" or "vs", and promoted anything
+that matched a sector number we hold. We hold Sectors 1 through 168, so every
+budget, BHK count and carpet area matched. "Show me the best projects between
+**1 and 2 crore**" became a Sector 1 vs Sector 2 comparison, table and all.
+
+Now `discovery/sectorMentions.ts`, extracted so it has a test. Two changes: a
+bare number is promoted only when the message already names exactly one sector
+explicitly (so "sector 76, or is 75 better?" still resolves), and a number
+immediately followed by a unit is never a sector. `carriesUnit` matches on word
+boundaries — an `indexOf` found the "1" inside "150" and cleared it.
+
+### 2. `contains` on a sector number matched a third of the table
+
+`{ sector: { contains: '1' } }` matches Sector 1, 10, 100, 128, 137, 150 and 16.
+That is why the comparison reported 154 projects in Sector 1 against a 280-row
+table and named landmark societies from neither sector. Four handlers built that
+clause by hand; `discovery/projects.ts` already had the right predicate inline.
+It is now `sectorWhereClause()` in `discovery/normalize.ts` and all five callers
+use it. **Rejected:** fixing only `sectorComparison.ts`, which is where the bug
+was reported — the other three would have stayed wrong.
+
+### 3. "its" pinned the previous project onto a fresh search
+
+`isExplicitFollowUp` contained `it|its` and outranked every discovery signal. Our
+own chip text — "…with the reason for each and **its** main trade-off" — carried
+a project card for NRI City Township onto a city-wide ranking query. A bare
+pronoun now only counts as a follow-up on a turn with no search signal at all.
+
+### 4. The greeting told the buyer how many rows we have
+
+"We maintain verified data on 280 projects across 61 sectors" was `renderEnvelope`
+being paraphrased. Counts are ours, not the buyer's; they also date themselves on
+the next import. The envelope now names the band and the configurations, and
+HARD RULE 7 forbids sizing the database in any answer.
+
+### Also
+
+`sectorCoverage` returned a paragraph about our coverage and rendered nothing
+when a sector held one project — a buyer asking for flats in Sector 2 got no
+home. It now returns the project so the card renders, keeps the caveat, and
+compares alternatives against the bare sector rather than the raw intent string
+(which is why it could offer the sector it had just called thin).

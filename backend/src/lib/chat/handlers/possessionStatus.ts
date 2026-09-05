@@ -1,4 +1,5 @@
 import type { ChatTopicHandler } from '../handlerContext'
+import { sectorWhereClause } from '../../discovery/normalize'
 import { prisma } from '../../db'
 import { UP_STATUTORY, unverified } from '../../factPresentation'
 
@@ -60,8 +61,7 @@ export const possessionStatusHandler: ChatTopicHandler = {
     const projects = await prisma.project.findMany({
       where: {
         OR: [
-          ...(sectorNumber ? [{ sector: { contains: sectorNumber, mode: 'insensitive' as const } }] : []),
-          ...(sector ? [{ sector: { contains: sector, mode: 'insensitive' as const } }] : []),
+          ...sectorWhereClause(sector ?? ''),
           ...(cachedIds.length ? [{ id: { in: cachedIds } }] : []),
         ],
       },

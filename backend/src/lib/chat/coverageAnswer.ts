@@ -3,6 +3,7 @@
 import { prisma } from '../db'
 import { builderNames } from '../builderNames'
 import { logSectorGap } from './coverageGap'
+import { sectorWhereClause } from '../discovery/normalize'
 
 export interface CoverageAnswer {
   text: string
@@ -215,8 +216,14 @@ export async function sectorCoverage(sector: string): Promise<CoverageAnswer | n
     // the very same answer went on to recommend.
     const bare = sector.split(',')[0].trim()
     const held = await prisma.project.findMany({
-      where: { sector: { equals: bare, mode: 'insensitive' } },
-      select: { name: true, price_min_cr: true },
+      where: { OR: sectorWhereClause(bare) },
+      select: {
+        name: true,
+        sector: true,
+        price_min_cr: true,
+        status: true,
+        builder: { select: { name: true } },
+      },
       take: 3,
     })
 
@@ -228,9 +235,13 @@ export async function sectorCoverage(sector: string): Promise<CoverageAnswer | n
       orderBy: { _count: { sector: 'desc' } },
       take: 4,
     })
+    // Compared against `bare`, not the raw intent string. `sector` arrives as
+    // "Sector 2, Greater Noida West", so the raw comparison never matched the
+    // column and the thin-sector answer could offer the very sector it had
+    // just called thin.
     const alternatives = neighbours
       .map((n) => n.sector)
-      .filter((s): s is string => Boolean(s) && s.toLowerCase() !== sector.toLowerCase())
+      .filter((s): s is string => Boolean(s) && s.toLowerCase() !== bare.toLowerCase())
       .slice(0, 3)
 
     const offer = alternatives.length
@@ -253,15 +264,24 @@ export async function sectorCoverage(sector: string): Promise<CoverageAnswer | n
       }
     }
 
+    // Show the one project rather than apologising for it.
+    //
+    // The old answer opened "We hold one project in Sector 2 … one project is
+    // not enough for me to tell you what the sector is like" and rendered
+    // nothing. A buyer who asked for 2 and 3 BHK flats in a sector got a
+    // paragraph about our coverage and no home. The caveat is honest and worth
+    // keeping — it just belongs after the listing, not instead of it.
     const only = held[0]
-    const price = only.price_min_cr ? `, from around ₹${only.price_min_cr} Cr` : ''
+    const price = only.price_min_cr ? ` from around ₹${only.price_min_cr} Cr` : ''
+    const builder = only.builder?.name ? ` by ${only.builder.name}` : ''
     return {
       kind: 'sector_thin',
       alternatives,
+      projects: held,
       text:
-        `We hold one project in ${bare} — ${only.name}${price}. One project is not enough for me ` +
-        `to tell you what the sector is like to live in or how it is priced against its neighbours; ` +
-        `I would be generalising from a single listing.${offer}`,
+        `${bare} has one project we hold verified data on — **${only.name}**${builder}${price}. ` +
+        `That is the whole of our inventory there, so treat it as one option rather than a read on the ` +
+        `sector: with a single listing I can't tell you how it is priced against its neighbours.${offer}`,
     }
   } catch {
     return null

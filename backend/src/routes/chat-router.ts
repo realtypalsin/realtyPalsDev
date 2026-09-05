@@ -60,6 +60,7 @@ import { DEFAULT_CITY, PILOT_SCOPE_LABEL, SUPPORTED_CITIES, outOfScopeCity } fro
 import { buyingTargetOutOfScope } from '../lib/discovery/coverage'
 import { ambiguousReraNumbers } from '../lib/reraIntegrity'
 import { inventoryEnvelope, renderEnvelope } from '../lib/ai/inventoryEnvelope'
+import { extractSectorMentions } from '../lib/discovery/sectorMentions'
 import { verifyUser } from '../lib/auth'
 import { clientIp } from '../lib/request'
 import { getChipInventory } from '../lib/discovery/chipInventory'
@@ -916,9 +917,25 @@ router.post('/', async (req: Request, res: Response) => {
         const isDiscoveryQuery = intent.queryKind === 'DISCOVERY' || /\b(show\s*(me)?|find|list|projects\s*in|flats\s*in|apartments\s*in|options\s*in|best\s*projects|top\s*societies)\b/i.test(message);
         const isBuilderDiscovery = Boolean((intent as any).builderName) || /\b(projects\s*by|builder|developer)\b/i.test(message);
         const isAdvisoryQuery = intent.queryKind === 'ADVISORY' || intent.queryKind === 'OPEN' || /\b(save\s*money|negotiat|hidden\s*cost|average\s*price|market\s*rate|how\s*to)\b/i.test(message);
-        const isExplicitFollowUp = /\b(it|its|this\s*project|the\s*project|payment\s*plan|floor\s*plan|cost\s*sheet|construction|rera|who\s*is|developer|amenities|layout|bhk\s*sizes)\b/i.test(message);
+        /**
+         * A pronoun is not a follow-up when the same sentence is a fresh search.
+         *
+         * "it" and "its" used to be in this alternation, and they outrank a
+         * discovery signal below. Our own chip text — "Show me the best
+         * projects between 1 and 2 crore, with the reason for each and **its**
+         * main trade-off" — therefore pinned the previous turn's project onto a
+         * city-wide ranking query, and the buyer got a project card for NRI
+         * City Township against a question that never named a project.
+         *
+         * A bare pronoun still counts (see `isBarePronounFollowUp`) but only on
+         * a turn with no search signal at all, which is what "what about it?"
+         * actually looks like.
+         */
+        const isExplicitFollowUp = /\b(this\s*project|the\s*project|payment\s*plan|floor\s*plan|cost\s*sheet|construction|rera|who\s*is|amenities|layout|bhk\s*sizes)\b/i.test(message);
+        const isBarePronounFollowUp = /\b(it|its|this|that)\b/i.test(message);
+        const isFreshSearch = isSectorOrLocationSearch || isDiscoveryQuery || isBuilderDiscovery || isAdvisoryQuery || isCityLevelGeneralQuery;
 
-        const shouldClearProjectFocus = (isSectorOrLocationSearch || isDiscoveryQuery || isBuilderDiscovery || isAdvisoryQuery || isCityLevelGeneralQuery) && !isExplicitFollowUp;
+        const shouldClearProjectFocus = isFreshSearch && !isExplicitFollowUp;
 
         if (shouldClearProjectFocus) {
           console.log('[CHAT] Fresh discovery / advisory / sector query detected — isolating project focus.');
@@ -929,7 +946,7 @@ router.post('/', async (req: Request, res: Response) => {
           const prevProjectName = (prevIntent as any)?.projectNames?.[0] || (hydratedIntent as any)?.projectNames?.[0] || cachedProjectsFromSession?.[0]?.name;
           const prevProjectId = (prevIntent as any)?.targetProjectId || (hydratedIntent as any)?.targetProjectId || cachedProjectsFromSession?.[0]?.id;
 
-          if (prevProjectName && isExplicitFollowUp) {
+          if (prevProjectName && (isExplicitFollowUp || (!isFreshSearch && isBarePronounFollowUp))) {
             console.log('[CHAT] Persisting active project focus for follow-up detail:', prevProjectName);
             intent.projectNames = [prevProjectName];
             if (prevProjectId) (intent as any).targetProjectId = prevProjectId;
@@ -2328,36 +2345,13 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
       return
     }
 
-    // Helper: Extract sectors from user query with support for "sector 76 with 75", "76 vs 75", etc.
-    const extractSectorsFromMessage = (msg: string): string[] => {
-      const normalized = msg.toLowerCase()
-      const sectorsFound = new Set<string>()
-
-      // 1. Explicit "sector \d+" matches
-      const explicitMatches = Array.from(normalized.matchAll(/\bsector\s*(\d+[a-z]?)\b/gi))
-      explicitMatches.forEach(m => sectorsFound.add(`Sector ${m[1]}`))
-
-      // 2. Relative pattern e.g. "sector 76 with 75", "sector 76 vs 75", "sector 76 and 75"
-      const relativeMatch = normalized.match(/\bsector\s*(\d+[a-z]?)\s*(?:vs\.?|versus|with|and|or|compared to|to)\s*(?:sector\s*)?(\d+[a-z]?)\b/i)
-      if (relativeMatch) {
-        sectorsFound.add(`Sector ${relativeMatch[1]}`)
-        sectorsFound.add(`Sector ${relativeMatch[2]}`)
-      }
-
-      // 3. Match known DB sectors if numbers appear in comparison context (avoid matching decimal parts like 1.5)
-      if (sectorsFound.size < 2 && /compare|vs|versus|better|difference|between|which\s+sector/i.test(normalized)) {
-        const dbSectors = new Set(allDbProjects.map(p => p.sector.replace(/^Sector\s*/i, '').trim().toLowerCase()))
-        const textWithoutDecimals = normalized.replace(/\d+\.\d+/g, ' ')
-        const numberTokens = Array.from(textWithoutDecimals.matchAll(/\b(\d{1,3}[a-z]?)\b/gi)).map(m => m[1])
-        numberTokens.forEach(tok => {
-          if (dbSectors.has(tok.toLowerCase())) {
-            sectorsFound.add(`Sector ${tok}`)
-          }
-        })
-      }
-
-      return Array.from(sectorsFound)
-    }
+    // Sector mentions live in `discovery/sectorMentions.ts` — see the note
+    // there about "between 1 and 2 crore" being read as Sector 1 vs Sector 2.
+    const extractSectorsFromMessage = (msg: string): string[] =>
+      extractSectorMentions(
+        msg,
+        allDbProjects.map(p => p.sector.replace(/^Sector\s*/i, '').trim()),
+      )
 
     /**
      * A sector attached to a city we do not cover is not one of our sectors.

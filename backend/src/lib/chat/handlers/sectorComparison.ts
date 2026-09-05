@@ -1,4 +1,5 @@
 import { prisma } from '../../db'
+import { sectorWhereClause } from '../../discovery/normalize'
 import { renderSectorComparisonTable } from '../../ai/marketTable'
 import { executeWithFallbackChain } from '../../ai/fallbackChain'
 import type { ChatTopicHandler } from '../handlerContext'
@@ -43,11 +44,11 @@ export const sectorComparisonHandler: ChatTopicHandler = {
     // Query deep relations for the two sectors specifically
     const [s1DetailedProjs, s2DetailedProjs] = await Promise.all([
       prisma.project.findMany({
-        where: { sector: { contains: s1.replace(/Sector\s*/i, ''), mode: 'insensitive' } },
+        where: { OR: sectorWhereClause(s1) },
         include: { unit_types: true, builder: true }
       }),
       prisma.project.findMany({
-        where: { sector: { contains: s2.replace(/Sector\s*/i, ''), mode: 'insensitive' } },
+        where: { OR: sectorWhereClause(s2) },
         include: { unit_types: true, builder: true }
       })
     ])

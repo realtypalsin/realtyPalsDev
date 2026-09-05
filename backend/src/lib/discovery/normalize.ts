@@ -85,3 +85,31 @@ export function isCanonical(sector: string | null, city: string | null): boolean
   if (city !== null && !VALID_CITIES.has(city as any)) return false
   return true
 }
+
+/**
+ * A Prisma `OR` clause that matches a sector as a whole word.
+ *
+ * `{ sector: { contains: '1' } }` is what four handlers were doing, and it
+ * matches Sector 1, 10, 11, 12, 100, 128, 137, 150 and 16 alike. Measured in
+ * production: a Sector 1 vs Sector 2 comparison reported 154 and 50 projects
+ * against a 280-row table, and named landmark societies from neither sector.
+ *
+ * `discovery/projects.ts` already had the right predicate inline; this is the
+ * same four clauses in one place so a fifth caller cannot get it wrong. The
+ * column holds either "Sector 150" or "Sector 150 Greater Noida West", hence
+ * the prefix/suffix/infix variants around a space-delimited token.
+ */
+export function sectorWhereClause(rawSector: string): Array<Record<string, unknown>> {
+  const bare = String(rawSector ?? '')
+    .replace(/,\s*(greater noida west|greater noida|noida extension|noida|up|uttar pradesh)\s*$/i, '')
+    .replace(/^[,\s]+|[,\s]+$/g, '')
+    .trim()
+  const sector = /^\d+[a-z]?$/i.test(bare) ? `Sector ${bare.toUpperCase()}` : bare
+  if (!sector) return []
+  return [
+    { sector: { equals: sector, mode: 'insensitive' } },
+    { sector: { startsWith: `${sector} `, mode: 'insensitive' } },
+    { sector: { endsWith: ` ${sector}`, mode: 'insensitive' } },
+    { sector: { contains: ` ${sector} `, mode: 'insensitive' } },
+  ]
+}

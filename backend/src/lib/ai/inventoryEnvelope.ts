@@ -68,17 +68,23 @@ function cr(n: number): string {
  */
 export function renderEnvelope(e: InventoryEnvelope | null): string {
   if (!e || e.projects === 0) return ''
+  // Row counts are not a selling point and they are ours, not the buyer's.
+  // "We maintain verified data on 280 projects across 61 sectors" was the
+  // first thing a buyer saw after typing "hi": it tells them the size of our
+  // table, tells a competitor the same thing, and dates itself the moment the
+  // next import lands. The band and the configurations are what a buyer can
+  // act on, so those are what the sentence carries.
   const parts: string[] = []
   if (e.priceMinCr != null && e.priceMaxCr != null) {
-    parts.push(`${e.projects} projects across ${e.sectors} sectors, from ${cr(e.priceMinCr)} to ${cr(e.priceMaxCr)}`)
+    parts.push(`homes from ${cr(e.priceMinCr)} to ${cr(e.priceMaxCr)}`)
   } else {
-    parts.push(`${e.projects} projects across ${e.sectors} sectors`)
+    parts.push('verified new-construction inventory')
   }
   if (e.bhk.length) {
     parts.push(`${e.bhk.join(', ')} BHK`)
   }
   if (e.readyToMove > 0) {
-    parts.push(`${e.readyToMove} of them ready to move`)
+    parts.push('both ready-to-move and under-construction')
   }
-  return `We hold ${parts.join(' — ')}.`
+  return `Across Noida and Greater Noida we cover ${parts.join(' — ')}.`
 }

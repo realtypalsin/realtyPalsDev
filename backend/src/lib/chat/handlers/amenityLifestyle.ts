@@ -1,4 +1,5 @@
 import { prisma } from '../../db'
+import { sectorWhereClause } from '../../discovery/normalize'
 import { FEATURE_PROBES } from '../../featureProbes'
 import { unverified, unverifiedFeature, confidenceFor, headingFor } from '../../factPresentation'
 import type { FactTier } from '../../factPresentation'
@@ -144,7 +145,7 @@ export const amenityLifestyleHandler: ChatTopicHandler = {
     let amenityProjects = await prisma.project.findMany({
       where: {
         OR: [
-          ...(sec ? [{ sector: { contains: sec.replace(/Sector\s*/i, ''), mode: 'insensitive' as const } }] : []),
+          ...sectorWhereClause(sec),
           { id: { in: (ctx.cachedProjects || []).map(p => p.id) } }
         ]
       },

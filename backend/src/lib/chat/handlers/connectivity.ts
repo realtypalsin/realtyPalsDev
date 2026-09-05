@@ -1,4 +1,5 @@
 import type { ChatTopicHandler } from '../handlerContext'
+import { sectorWhereClause } from '../../discovery/normalize'
 import { prisma } from '../../db'
 import { unverified } from '../../factPresentation'
 
@@ -77,7 +78,7 @@ export const connectivityHandler: ChatTopicHandler = {
           }
         : {
             OR: [
-              ...(sector ? [{ sector: { contains: sector.replace(/Sector\s*/i, ''), mode: 'insensitive' as const } }] : []),
+              ...sectorWhereClause(sector ?? ''),
               ...(cachedIds.length ? [{ id: { in: cachedIds } }] : []),
             ],
           },
