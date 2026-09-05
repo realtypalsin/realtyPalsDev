@@ -88,8 +88,29 @@ export async function buildUnknownProjectReply(
     console.warn('[UNKNOWN_PROJECT:GROUNDING_ERROR]', err)
   }
 
-  // Nothing to ground on is a real outcome, not a failure to paper over.
+  /**
+   * Nothing to ground on is a real outcome, not a failure to paper over — and
+   * "the model wrote something" is not grounding.
+   *
+   * `fromWeb` is the only signal that a live source contributed. Without it the
+   * paragraph below is the model's own recollection of a building it has never
+   * heard of, which is exactly the input that produces confident fiction.
+   * Measured: asked about an invented name, the reply described "a prominent
+   * high-rise residential development ... developed by **Supertech Limited**, a
+   * leading real estate firm with over thirty years of experience" — a building
+   * that does not exist, credited to a developer HARD RULES forbids
+   * recommending, with a compliment attached. The disclaimer above it does not
+   * make that acceptable; a buyer who skims takes away the builder's name.
+   *
+   * So an ungrounded answer is discarded and the honest dead end is used
+   * instead. It offers the advisory handoff, which is the useful thing we can
+   * actually do for someone naming a project we have not onboarded.
+   */
   if (!answer?.text?.trim()) {
+    return { text: projectNotFoundReply(name), fromWeb: false }
+  }
+  if (!answer.fromWeb) {
+    console.log('[UNKNOWN_PROJECT:UNGROUNDED_DISCARDED]', { name })
     return { text: projectNotFoundReply(name), fromWeb: false }
   }
 

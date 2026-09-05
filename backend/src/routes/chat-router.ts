@@ -938,7 +938,36 @@ router.post('/', async (req: Request, res: Response) => {
 
         const shouldClearProjectFocus = isFreshSearch && !isExplicitFollowUp;
 
-        if (shouldClearProjectFocus) {
+        /**
+         * A name the buyer typed in THIS message is not stale focus.
+         *
+         * This branch exists to drop a project carried over from an earlier
+         * turn. It was dropping names extracted from the current one too, and
+         * the sticky `intent.sector` is enough on its own to make
+         * `isSectorOrLocationSearch` true — so on a session with any sector in
+         * memory, EVERY project question cleared its own subject.
+         *
+         * Measured: "What is Skyline Verdant Quartz Residency?" arrived with
+         * `projectNames: ['Skyline Verdant Quartz Residency']` correctly
+         * extracted, this line wiped it, and the unknown-project guard
+         * downstream — which reads `projectNames` — therefore never fired. The
+         * buyer was told a building that does not exist is "a well-developed
+         * residential project ... typically ₹2.5 Cr to ₹4.5 Cr", invented
+         * prices and all, with no "not in our records" anywhere.
+         *
+         * The project we hold is handled by the `matched` branch above; this
+         * keeps the ones we do NOT hold, which are exactly the ones that need
+         * the guard.
+         */
+        const typedThisTurn = ((intent as Intent).projectNames ?? []).filter(
+          (n): n is string => typeof n === 'string' && n.length >= 5 && lowerMsg.includes(n.toLowerCase()),
+        );
+
+        if (shouldClearProjectFocus && typedThisTurn.length > 0) {
+          console.log('[CHAT] Fresh search, but the buyer named a project in this message — keeping:', typedThisTurn[0]);
+          intent.projectNames = typedThisTurn;
+          (intent as any).targetProjectId = undefined;
+        } else if (shouldClearProjectFocus) {
           console.log('[CHAT] Fresh discovery / advisory / sector query detected — isolating project focus.');
           intent.projectNames = undefined;
           (intent as any).targetProjectId = undefined;
@@ -1916,10 +1945,47 @@ router.post('/', async (req: Request, res: Response) => {
         })
       }
 
+      /**
+       * The turn is about a sector — but is it about THIS one?
+       *
+       * The two gates above ask whether the buyer is asking about an area, and
+       * both answer yes for "Compare Sector 150 and Sector 137". Neither checks
+       * that `intent.sector` is one of the sectors they named, and
+       * `intent.sector` is sticky: extraction returned no sector on that turn,
+       * so it still held "Sector 2, Greater Noida West" from four turns back.
+       *
+       * Measured in the demo replay: turn 4 asked about Sector 2, turn 5 asked
+       * to compare Sector 150 and Sector 137, and turn 5 came back with the
+       * byte-identical Sector 2 answer — right sector lane, wrong sector,
+       * no model call, 2.2 seconds. The classifier had correctly called it a
+       * COMPARISON; this gate answered first.
+       *
+       * So: when the message names sectors, the sticky one has to be among
+       * them. When it names none ("what's it like to live there?"), sticky is
+       * exactly what should be used and nothing changes.
+       */
+      const sectorsInMessage = extractSectorMentions(message, [])
+      const stickySectorContradicted =
+        sectorsInMessage.length > 0 &&
+        Boolean(intent.sector) &&
+        !sectorsInMessage.some(s => {
+          const bare = s.replace(/^Sector\s*/i, '').trim().toLowerCase()
+          const held = String(intent.sector).replace(/^Sector\s*/i, '').split(',')[0].trim().toLowerCase()
+          return bare === held
+        })
+      if (stickySectorContradicted) {
+        console.log('[CHAT:SECTOR_LANE_DECLINED]', {
+          reason: 'this turn names other sectors than the sticky one',
+          sticky: intent.sector,
+          named: sectorsInMessage,
+        })
+      }
+
       if (
         !coverage &&
         intent.sector &&
         (sectorNamedNow || asksAboutTheArea) &&
+        !stickySectorContradicted &&
         !isCityLevel(intent.sector) &&
         !isProximityQuestion(message) &&
         !askedAboutAProject
@@ -4356,7 +4422,25 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     /** Which table went on screen, so the chips can follow it. */
     let renderedTableKind: 'projects' | 'micro-market' | 'city-shelf' | 'yield' | null = null
     // A shortlist of real projects beats a city-wide table whenever discovery
-    const cardsAreRendering = renderTarget === 'cards' || renderTarget === 'both'
+    /**
+     * Cards are rendering only if there is something to put in them.
+     *
+     * This read `renderTarget` alone, which is an intention rather than an
+     * outcome: RANKING maps to 'both', so it was true on every ranking turn
+     * including the ones that retrieved nothing. It feeds `suppressTables`, and
+     * a turn that suppresses tables while rendering no cards deletes the answer.
+     *
+     * Measured in the demo replay: "Show me the best projects between 1 and 2
+     * crore" retrieved nothing, the model wrote its shortlist as a markdown
+     * table, `[CHAT:TABLE_SUPPRESSED]` stripped it because cards were
+     * "rendering", and the buyer got "Here are top-tier projects matching this
+     * range:" followed by nothing at all. The same question answered correctly
+     * on the previous run purely because the model happened to use bullets.
+     *
+     * Suppression has to follow what actually went on screen.
+     */
+    const cardsAreRendering =
+      (renderTarget === 'cards' || renderTarget === 'both') && projects.length > 0
 
     /**
      * Is the buyer asking us to list projects?

@@ -2401,3 +2401,71 @@ against the 154 / 50 that started this whole thread.
 **The lesson:** optimising a code path is a good excuse to check it runs at all.
 This handler had been dead on its headline query, and nothing in the tests, the
 logs or the types said so — the turn still produced a fluent answer.
+
+## 6 Sep 2026 — full demo replay, three more bugs, and a correction
+
+Ran the original demo as one continuous ten-turn session rather than isolated
+queries. Every bug below only appears with session state; each had passed when
+its query was tested alone.
+
+### 15. A stale sector answered a question about two other sectors
+
+Turn 4 asked about Sector 2. Turn 5 asked to compare Sector 150 and Sector 137
+and got back the **byte-identical Sector 2 answer** — 2.2s, no model call. The
+new classifier rule had correctly called it `COMPARISON`; the coverage lane
+answered first, using `intent.sector`, which extraction had not overwritten and
+still held "Sector 2, Greater Noida West" from four turns back.
+
+The two existing guards (`sectorNamedNow`, `asksAboutTheArea`) both ask whether
+the turn is about *an* area. Neither asked whether it is about *this* one. Now:
+if the message names sectors, the sticky one must be among them; if it names
+none, sticky is still exactly right and nothing changes.
+
+### 16. Focus isolation was deleting the project the buyer had just typed
+
+"What is Skyline Verdant Quartz Residency?" arrived with `projectNames`
+correctly extracted, and `[CHAT] Fresh discovery ... isolating project focus`
+wiped it — because a sticky `intent.sector` alone makes
+`isSectorOrLocationSearch` true. So on any session with a sector in memory,
+**every project question cleared its own subject**, and the unknown-project
+guard (which reads `projectNames`) could never fire. The buyer was told an
+invented building was "a well-developed residential project ... typically ₹2.5
+Cr to ₹4.5 Cr". A name present in the current message is now kept.
+
+### 17. Suppressing a table while rendering no cards deletes the answer
+
+`cardsAreRendering` was `renderTarget === 'cards' || 'both'` — an intention, not
+an outcome. RANKING maps to 'both', so it was true on ranking turns that
+retrieved nothing. It feeds `suppressTables`. Measured: the model wrote its
+shortlist as a markdown table, `[CHAT:TABLE_SUPPRESSED]` stripped it, no cards
+existed, and the buyer got "Here are top-tier projects matching this range:"
+followed by nothing. The same question answered correctly on the previous run
+purely because the model happened to choose bullets. Now requires
+`projects.length > 0`.
+
+### 18. The unknown-project disclaimer was licensing fiction
+
+The lead line "isn't in our verified database" was landing, and then an
+**ungrounded** paragraph followed it crediting the invented project to
+Supertech Limited with a compliment — a developer HARD RULES forbids
+recommending. `fromWeb` is the only signal a live source contributed; without
+it the text is the model's recollection of a building that does not exist. An
+ungrounded answer is now discarded in favour of the honest dead end.
+
+### CORRECTION: implicit caching IS working — I reported 0% and was wrong
+
+`[gemini:cache] 8088/34180 prompt tokens served from cache (23.7%)` on a
+free-tier key, turn 3 of the replay. My earlier probe returned
+`cachedContentTokenCount: 0` and I told the user free-tier keys cache nothing.
+The probe was two synthetic requests; the real session repeats a 25,187-char
+stable prefix across ten turns, which is what the cache needs. **A negative
+result from a synthetic probe is not a negative result.**
+
+### Flagged, not changed
+
+Turn 3 quoted internal numbers at the buyer — "builder delivery score (92)",
+"high overall score (89)". `groundedAnswer.ts:154` puts `Delivery score: N` in
+the prompt and `builder_lookup` returns it. These are real stored values, not
+fabricated, so HARD RULE 12 does not clearly forbid them — but a bare "92" a
+buyer cannot interpret is the same fake-confidence problem that rule exists for.
+**Product decision, not a bug**, so it is left for the user to call.

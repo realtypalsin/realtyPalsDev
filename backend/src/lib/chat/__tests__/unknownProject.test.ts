@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test'
+import { describe, it, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -131,4 +131,30 @@ describe('buildUnknownProjectReply', () => {
       'must not pivot to inventory',
     )
   })
+})
+
+test('an ungrounded description is discarded, not disclaimed', async () => {
+  // The disclaimer is not a licence to print the model's recollection of a
+  // building it has never heard of. Measured against an invented name, the
+  // ungrounded paragraph credited the project to Supertech Limited and praised
+  // the firm — a developer HARD RULES forbids recommending.
+  const reply = await buildUnknownProjectReply('Skyline Verdant Quartz Residency', {
+    city: 'Noida',
+    ground: async () => ({
+      text: 'Skyline Verdant Quartz Residency is a prominent high-rise development by Supertech Limited.',
+      fromWeb: false,
+    }),
+  } as never)
+  assert.equal(reply.fromWeb, false)
+  assert.ok(!/Supertech/i.test(reply.text), 'ungrounded builder attribution reached the buyer')
+  assert.ok(/don't have a verified record/i.test(reply.text))
+})
+
+test('a genuinely web-sourced description is kept, behind the lead line', async () => {
+  const reply = await buildUnknownProjectReply('Some Real Project', {
+    city: 'Noida',
+    ground: async () => ({ text: 'Reported as launched in 2024 by a regional developer.', fromWeb: true }),
+  } as never)
+  assert.equal(reply.fromWeb, true)
+  assert.ok(reply.text.indexOf("isn't in our verified database") < reply.text.indexOf('Reported as launched'))
 })
