@@ -20,6 +20,8 @@ const STREAM_INACTIVITY_MS = Number(process.env.GEMINI_STREAM_INACTIVITY_MS ?? 2
 
 /** Ceiling on tokens the model may spend thinking before it must start writing. */
 const THINKING_BUDGET_TOKENS = Number(process.env.GEMINI_THINKING_BUDGET ?? 1024)
+// Smallest budget gemini-3.5-flash-lite accepts; 0 is a 400 INVALID_ARGUMENT.
+const MIN_THINKING_BUDGET_TOKENS = Number(process.env.GEMINI_MIN_THINKING_BUDGET ?? 128)
 
 // Thrown when the stream stalls (no chunk within timeout) or produces nothing.
 export class GeminiStreamStallError extends Error {
@@ -98,7 +100,19 @@ export async function streamWithGemini(
   const usage: GeminiUsage = { promptTokens: 0, completionTokens: 0, cachedTokens: 0 }
   let billedModel = config.model || MODELS.GEMINI_MAIN
   // Per-turn where the caller has chosen one, module default otherwise.
-  const thinkingBudget = config.thinkingBudget ?? THINKING_BUDGET_TOKENS
+  /**
+   * Per-turn where the caller has chosen one, module default otherwise —
+   * floored at what the model will actually accept.
+   *
+   * `thinkingBudget: 0` is rejected by gemini-3.5-flash-lite with a bare
+   * `400 INVALID_ARGUMENT`; 128 is the smallest value it takes. The free-tier
+   * clamp in `fallbackChain` asks for 0, and that was survivable only because
+   * this value was computed and then never used — both fields below read the
+   * module constant instead. Plumbing it through without this floor turns a
+   * silently-ignored setting into a 400 on every free-tier call.
+   */
+  const requestedThinking = config.thinkingBudget ?? THINKING_BUDGET_TOKENS
+  const thinkingBudget = requestedThinking <= 0 ? MIN_THINKING_BUDGET_TOKENS : requestedThinking
 
   async function runCycle(cycle: number): Promise<string> {
     if (cycle >= MAX_TOOL_CYCLES) return fullText
@@ -132,14 +146,64 @@ export async function streamWithGemini(
         ...(cachedName ? { cachedContent: cachedName } : {}),
         ...(effectiveSystem ? { systemInstruction: effectiveSystem } : {}),
         // maxOutputTokens is the budget for thinking AND text together, and
-        maxOutputTokens: config.maxTokens + THINKING_BUDGET_TOKENS,
-        thinkingConfig: { thinkingBudget: THINKING_BUDGET_TOKENS },
+        // `thinkingBudget`, not the module constant.
+        //
+        // The local was computed from `config.thinkingBudget` on the line above
+        // and then never read — both fields here used THINKING_BUDGET_TOKENS
+        // directly. So `fallbackChain`'s free-tier clamp (`thinkingBudget = 0`,
+        // the thing CLAUDE.md says stops thinking eating the whole output
+        // budget) never reached the request, and neither did any per-turn
+        // budget `inferenceProfile` picked. Every Gemini call thought for the
+        // module default, and thinking bills at the output rate.
+        maxOutputTokens: config.maxTokens + thinkingBudget,
+        thinkingConfig: { thinkingBudget },
         abortSignal: abortController.signal,
       }
 
       // Reads the same constant FALLBACK_CHAIN uses for supportsTools, so the tool
-      if (cycle < MAX_TOOL_CYCLES - 1 && GEMINI_TOOLS_ENABLED && config.tools !== false) {
+      /**
+       * The declarations stay on the last cycle; only the permission to call
+       * is withdrawn.
+       *
+       * Dropping `tools` entirely on the final cycle left a conversation whose
+       * history contains `functionCall` and `functionResponse` parts being sent
+       * to a request that declares no functions. Gemini answers that with
+       * nothing at all. Reproduced against the free-tier key with the real
+       * catalogue: two `sector_projects` calls, then cycle 2 returns an empty
+       * string, which `fallbackChain` reports as "returned no text" and rolls
+       * over — so both free Gemini legs failed on every tool-using turn, and
+       * with the billed legs out of credit the whole chain fell to the
+       * tool-blind tail. That is the condition CLAUDE.md warns produces
+       * invented projects.
+       *
+       * `mode: 'NONE'` is the documented way to say "answer in text now": the
+       * declarations remain valid for the history, and no further call is
+       * possible. Which matters, because a call made on the last cycle has no
+       * later cycle to be read in and would be silently dropped.
+       */
+      /**
+       * The declarations stay on the last cycle; only the permission to call
+       * is withdrawn.
+       *
+       * Dropping `tools` entirely on the final cycle left a conversation whose
+       * history carries `functionCall` and `functionResponse` parts being sent
+       * to a request that declares no functions, and Gemini answers that with
+       * nothing at all. Reproduced against the free-tier key with the real
+       * catalogue: two `sector_projects` calls, then an empty string, which
+       * `fallbackChain` reports as "returned no text" and rolls over — so both
+       * free Gemini legs failed every tool-using turn, and with the billed legs
+       * out of credit the chain fell to its tool-blind tail. That is the exact
+       * condition CLAUDE.md warns produces invented projects.
+       *
+       * `mode: 'NONE'` keeps the declarations valid for the history while
+       * making a further call impossible — which is what we want anyway, since
+       * a call made on the last cycle has no later cycle to be read in.
+       */
+      if (GEMINI_TOOLS_ENABLED && config.tools !== false) {
         genConfig.tools = toGeminiTools()
+        if (cycle >= MAX_TOOL_CYCLES - 1) {
+          genConfig.toolConfig = { functionCallingConfig: { mode: 'NONE' } }
+        }
       }
 
       const targetModel = config.model || MODELS.GEMINI_MAIN

@@ -1,5 +1,6 @@
 // backend/src/lib/discovery/sectorDataGateway.ts
 import { prisma } from '../db'
+import { canonicalSector, sectorWhereClause } from './normalize'
 
 export interface MicroMarketSummary {
   microMarket: string
@@ -143,21 +144,32 @@ export async function getSectorFullIntelligence(city: string, sector: string): P
     return cached.data
   }
 
+  const bareSector = canonicalSector(sector) ?? sector.trim()
+
   try {
     let record: any = null
     try {
+      // Whole-word on the sector, not a substring. `contains: 'Sector 15'`
+      // returns Sector 150's intelligence row — the wrong sector's price band
+      // and commentary, presented as this sector's. Same defect that had a
+      // Sector 1 comparison counting 154 projects; see `sectorWhereClause`.
       record = await prisma.sectorIntelligence.findFirst({
         where: {
           city: { contains: city, mode: 'insensitive' },
-          sector: { contains: sector, mode: 'insensitive' }
+          OR: sectorWhereClause(sector),
         }
       })
     } catch {
       const rows = await prisma.$queryRawUnsafe<any[]>(`
         SELECT * FROM "sector_intelligence"
-        WHERE LOWER("city") LIKE $1 AND LOWER("sector") LIKE $2
+        WHERE LOWER("city") LIKE $1
+          AND (LOWER("sector") = $2 OR LOWER("sector") LIKE $3 OR LOWER("sector") LIKE $4)
         LIMIT 1
-      `, `%${city.toLowerCase()}%`, `%${sector.toLowerCase()}%`)
+      `,
+        `%${city.toLowerCase()}%`,
+        bareSector.toLowerCase(),
+        `${bareSector.toLowerCase()} %`,
+        `% ${bareSector.toLowerCase()}%`)
       record = rows && rows.length > 0 ? rows[0] : null
     }
 

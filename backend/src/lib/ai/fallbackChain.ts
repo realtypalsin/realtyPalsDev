@@ -358,9 +358,14 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
         ? Math.min(effectiveConfig.maxTokens ?? 1500, FREE_TIER_MAX_TOKENS)
         : effectiveConfig.maxTokens
 
+    // The profile's model only applies to the provider it was chosen for.
+    // `effectiveConfig` is shared by every leg, so a name from one vendor's
+    // catalogue reaching another's is a 404 — see the note on the OpenAI leg.
+    const profileModel =
+      effectiveConfig.model && /^gemini/i.test(effectiveConfig.model) ? effectiveConfig.model : undefined
     const geminiConfig = {
       ...effectiveConfig,
-      model: effectiveConfig.model ?? item.model,
+      model: profileModel ?? item.model,
       ...(item.apiVersion ? { apiVersion: item.apiVersion } : {}),
     }
 
@@ -387,11 +392,24 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
           cappedMessages,
           bufferedSend,
           onToolCall,
+          // `item.model`, never `effectiveConfig.model`.
+          //
+          // The profile picks a GEMINI model name for the turn — measured live,
+          // `[CHAT:PROFILE] model=gemini-3.5-flash-lite` — and `effectiveConfig`
+          // is one object shared by every leg. Preferring it here asked Cohere,
+          // NVIDIA and Cloudflare for a Gemini model: `404 status code (no
+          // body)`, `404 404 page not found`, `400 status code (no body)`. All
+          // three tool-capable non-Gemini legs failed on every turn, so when the
+          // Gemini prepay balance ran out the chain had no leg that could read a
+          // project row at all — which is the exact condition that produces
+          // invented projects. Both keys and both hosts probe fine by hand; only
+          // the model name was wrong.
+          //
           // Without item.model the leg falls back to MODELS.MAIN, which is a
           // gpt-4o name that neither Cohere nor NVIDIA has. Two legs share the
           // NVIDIA key and differ only by model, so this is also what keeps
           // them from being the same leg twice.
-          { ...effectiveConfig, model: effectiveConfig.model ?? item.model },
+          { ...effectiveConfig, model: item.model },
           userId,
           sessionId,
           apiKey,

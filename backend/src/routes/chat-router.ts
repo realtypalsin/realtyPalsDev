@@ -3778,9 +3778,34 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       hasProjectFocus: (intent.projectNames?.length ?? 0) > 0,
     })
 
+    /**
+     * "Show me the best projects between 1 and 2 crore."
+     *
+     * That turn retrieved nothing. `wantsCityBandShelf` declines the moment a
+     * budget is present — its comment says a buyer who names one "gets a ranked
+     * shortlist, because at that point one band IS the answer" — and then the
+     * budget-only arm of `needsClarification` below closed the gate, so no
+     * shortlist was ever built. The two rules contradicted each other and the
+     * buyer got neither: `[DISCOVERY:GATE] ran: false, reason:
+     * needsClarification`, an empty facts block, and a model asked to rank
+     * projects it had not been shown. Every tool-capable leg then failed and
+     * the tool-blind legs were correctly skipped for having nothing to list, so
+     * the turn ended on "our AI services are experiencing high traffic".
+     *
+     * A single filter is thin, and asking for a second one is reasonable — but
+     * not INSTEAD of showing what we hold. HARD RULE "RESULTS FIRST" and the
+     * chat-experience note about form-filling disguised as chat both say the
+     * same thing: show the rows, then ask. So an explicit request to see
+     * inventory opens the gate whatever else is missing, and the refining
+     * question rides along with the results.
+     */
+    const asksForInventoryNow =
+      /\b(project|projects|society|societies|propert(?:y|ies)|flat|flats|apartment|apartments|home|homes|option|options)\b/i.test(message ?? '') &&
+      /\b(show|list|find|give|recommend|suggest|best|top|cheapest|which|what.*available|any)\b/i.test(message ?? '')
+
     // Single-signal with no geographic or lifestyle context → ask rather than guess.
     // Covers: BHK-only, budget-only, sector-only. Takes priority over isAdvisoryQuery.
-    const needsClarification = !asksToSeeInventoryHere && !asksToSeeInventoryCitywide && intentState === 'GATHERING' && (
+    const needsClarification = !asksToSeeInventoryHere && !asksToSeeInventoryCitywide && !asksForInventoryNow && intentState === 'GATHERING' && (
       ((intent.bhk?.length ?? 0) > 0 && !intent.sector && !intent.budgetMax && !(intent.lifestyleKeywords?.length ?? 0)) ||
       (!!intent.budgetMax && !intent.sector && !(intent.bhk?.length ?? 0) && !(intent.lifestyleKeywords?.length ?? 0)) ||
       (!!intent.sector && !isCityLevel(intent.sector) && !(intent.bhk?.length ?? 0) && !intent.budgetMax && !(intent.lifestyleKeywords?.length ?? 0))
@@ -3823,7 +3848,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
     // recommend. It does not follow that we cannot LIST. Showing the shelf is
     // what moves a buyer out of GATHERING in the first place.
     const discoverySkipReason =
-      asksToSeeInventoryHere || asksToSeeInventoryCitywide ? null :
+      asksToSeeInventoryHere || asksToSeeInventoryCitywide || asksForInventoryNow ? null :
       needsClarification   ? 'needsClarification' :
       skipForCachedQuery   ? `cachedQuery=${cacheDecision?.reason ?? 'cached'}` :
       (intentState !== 'READY_TO_SEARCH' && intentState !== 'SHORTLISTED') ? `intentState=${intentState}` :

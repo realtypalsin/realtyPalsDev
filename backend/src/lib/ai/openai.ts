@@ -116,6 +116,22 @@ export class StreamStallError extends Error {
 const INITIAL_TOKEN_TIMEOUT_MS = 8_000;
 const STREAM_INACTIVITY_MS = 15_000;
 
+/**
+ * The header window after a tool call is not the header window before one.
+ *
+ * 8 seconds is right for cycle 0: a dead or rate-limited host should cost the
+ * turn one round-trip, not eight. It is wrong for cycle 1, where the model has
+ * already answered once, has just been handed a tool result, and is composing
+ * an answer over a prompt several thousand tokens longer. Measured live:
+ * Cohere emitted a clean `sector_projects` call, took the result, and was then
+ * aborted at exactly 8,000ms with `anyTokenSent=false` — logged as "returned
+ * no text" and rolled over, discarding a leg that was working.
+ *
+ * A leg that has already produced a tool call has proven it is alive, so the
+ * only thing left to guard against is a genuine hang.
+ */
+const TOOL_CYCLE_TOKEN_TIMEOUT_MS = 30_000;
+
 export async function streamWithOpenAI(
   system: string,
   messages: Array<{ role: 'user' | 'assistant'; content: string }>,
@@ -168,7 +184,9 @@ export async function streamWithOpenAI(
 
     const resetInactivity = (isStreaming = false) => {
       if (inactivityTimer) clearTimeout(inactivityTimer);
-      const timeoutMs = isStreaming ? STREAM_INACTIVITY_MS : INITIAL_TOKEN_TIMEOUT_MS;
+      const timeoutMs = isStreaming
+        ? STREAM_INACTIVITY_MS
+        : cycle > 0 ? TOOL_CYCLE_TOKEN_TIMEOUT_MS : INITIAL_TOKEN_TIMEOUT_MS;
       inactivityTimer = setTimeout(() => {
         inactivityFired = true;
         console.warn(`[openai] inactivity timeout cycle=${cycle} anyTokenSent=${anyTokenSent} (after ${timeoutMs}ms)`);

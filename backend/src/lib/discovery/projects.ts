@@ -288,6 +288,27 @@ export function buildHardFilters(
       ]
     })
   }
+  /**
+   * The floor of a stated range was never applied.
+   *
+   * `budgetMin` has been extracted for a long time — "between 1 and 2 crore"
+   * fills it — and nothing here read it. Measured live on exactly that
+   * question: the shortlist came back with Sikka Kaamna Greens at ₹0.82 Cr and
+   * Divine Meadows at ₹0.95 Cr, both under the floor the buyer had just named.
+   * A buyer who says "between 1 and 2" and is shown an 82-lakh flat concludes
+   * we did not read the question, and they are right.
+   *
+   * Symmetrical with the ceiling: the same tolerance, and unpriced units still
+   * pass, because an absent price is not evidence of a cheap one.
+   */
+  if (intent.budgetMin) {
+    unitConditions.push({
+      OR: [
+        { price_min_cr: { gte: intent.budgetMin / BUDGET_TOLERANCE_MAX } },
+        { price_min_cr: null },
+      ],
+    })
+  }
   if (unitConditions.length === 1) {
     where.unit_types = { some: unitConditions[0] }
   } else if (unitConditions.length > 1) {

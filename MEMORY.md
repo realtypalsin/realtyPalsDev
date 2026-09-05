@@ -2126,3 +2126,72 @@ when a sector held one project — a buyer asking for flats in Sector 2 got no
 home. It now returns the project so the card renders, keeps the caveat, and
 compares alternatives against the bare sector rather than the raw intent string
 (which is why it could offer the sector it had just called thin).
+
+## 5 Sep 2026 (later) — replaying the demo locally found four more, all silent
+
+The first four fixes were found by reading a transcript. These were found by
+running the pipeline against the real database and reading the log — which is
+the only way any of them could have been found, because every one of them
+failed quietly and rolled on to the next thing.
+
+### 5. The gate refused to search a stated budget
+
+`[DISCOVERY:GATE] ran: false, reason: needsClarification` on "Show me the best
+projects between 1 and 2 crore". `wantsCityBandShelf` declines the moment a
+budget is present — its own comment promises that buyer "a ranked shortlist,
+because at that point one band IS the answer" — and then the budget-only arm of
+`needsClarification` closed the gate, so no shortlist was ever built. The two
+rules contradicted each other and the buyer got neither.
+
+An explicit request to see inventory (`asksForInventoryNow`) now opens the gate
+whatever else is missing, and the refining question rides along with the
+results. HARD RULE "RESULTS FIRST" already said this.
+
+### 6. Every non-Gemini tool-capable leg was asking for a Gemini model
+
+`inferenceProfile` picks the model for the turn, and `effectiveConfig` is one
+object shared by every leg. `fallbackChain` preferred `effectiveConfig.model`
+over `item.model` on the OpenAI leg, so Cohere, NVIDIA and Cloudflare were each
+asked for `gemini-3.5-flash-lite`. 404, 404, 400 — on every turn, since the day
+they were added. Both keys and both hosts probe fine by hand.
+
+**This is why the invented projects happened.** With three tier-2 legs dead and
+the Gemini prepay balance out, the chain had no leg that could read a project
+row, which is the condition CLAUDE.md already names.
+
+### 7. Both free Gemini legs failed every tool-using turn
+
+Reproduced against the real catalogue: two `sector_projects` calls, then an
+empty string. `runCycle` dropped the tool declarations on the last cycle, which
+leaves `functionCall`/`functionResponse` history in a request that declares no
+functions — Gemini answers that with nothing. Keeping the declarations and
+setting `toolConfig.functionCallingConfig.mode = 'NONE'` turns the same call
+into 2,301 characters of real answer.
+
+Found underneath it: `thinkingConfig` and `maxOutputTokens` both read the module
+constant, so `config.thinkingBudget` was computed and discarded — the free-tier
+clamp CLAUDE.md describes never reached a request. **Two bugs cancelling out:**
+plumbing it through alone returns `400 INVALID_ARGUMENT`, because
+gemini-3.5-flash-lite rejects `thinkingBudget: 0` and floors at 128.
+
+### 8. `budgetMin` was extracted and never used
+
+"Between 1 and 2 crore" returned Sikka Kaamna Greens at ₹0.82 Cr and Divine
+Meadows at ₹0.95 Cr. Only the ceiling was ever applied. Symmetrical filter
+added, same tolerance, unpriced units still pass.
+
+### Also
+
+`openai.ts` aborted a leg 8 seconds after a tool result — Cohere emitted a clean
+`sector_projects` call, took the result, and was killed mid-composition at
+exactly 8,000ms with `anyTokenSent=false`, logged as "returned no text". 8s is
+right for cycle 0, where a dead host should cost one round-trip; a leg that has
+already produced a tool call has proven it is alive. 30s after that.
+
+`sectorDataGateway` matched sector intelligence with `contains`, so Sector 15
+returned Sector 150's row.
+
+**The lesson, and it is the same one every time:** a failure that logs a line
+and rolls on is indistinguishable from a slow provider. Three of these had been
+live since the code was written. Reading the transcript found the routing bugs;
+only running the thing and reading the log found these.
