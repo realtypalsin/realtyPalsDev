@@ -1,0 +1,197 @@
+// backend/src/lib/ai/answerIntegrity.ts
+//
+// One gate every finished answer passes before a buyer reads it.
+//
+// `toolBlindGuard` already asked "did this leg invent a project?", but only on
+// legs that could not call a tool. That was the wrong boundary: measured live,
+// the tool-capable Gemini leg answered "What is Skyline Verdant Quartz
+// Residency?" — a name that does not exist — with "a prominent high-rise
+// residential development in Noida, crafted by **Supertech Limited**", and no
+// guard ran at all, because the leg had tools.
+//
+// Two more classes showed up in the same session, and neither is fabrication:
+//
+//   "What about the second one?"
+//     → "The user asks 'What about the second one?', but the provided verified
+//        facts block only contains information for a single project…
+//        We only have records for Samridhi Daksh Avenue in Sector 150 Noida,
+//        as no second project was provided in the database."
+//
+// That is the prompt's own scaffolding read aloud to a buyer, wrapped around a
+// false claim about our coverage — we hold nineteen projects in Sector 150.
+//
+//   "Hi"
+//     → "We currently maintain verified data on 280 projects across 61 sectors"
+//
+// which is the shape of our table, told to anyone who types a greeting.
+//
+// So the gate asks three questions, and they carry different consequences:
+//
+//   FABRICATION  — a project or registration number from nowhere.  discard
+//   META_LEAK    — the answer describes the prompt, or denies data we hold. discard
+//   INVENTORY    — a count of what we hold.                        discard
+//   FRAMING      — "our database", "in our records".               rewrite
+//
+// Discard means the turn rolls to the next leg with nothing sent, exactly as a
+// provider failure does. Rewrite means the phrase is replaced in place, because
+// binning a good answer over a house-style slip is the more expensive error.
+
+import { checkToolBlindAnswer, type ToolBlindViolation } from './toolBlindGuard'
+
+export type IntegrityKind = 'fabrication' | 'meta_leak' | 'inventory_size'
+
+export interface IntegrityViolation {
+  kind: IntegrityKind
+  detail: string
+}
+
+/**
+ * The model describing its own inputs, or denying data on the grounds that the
+ * prompt did not carry it.
+ *
+ * Every pattern is anchored on OUR internal vocabulary — facts block, context,
+ * prompt, injected, system instruction — rather than on ordinary English. "The
+ * builder has not provided a possession date" is a real sentence a buyer should
+ * read; "no second project was provided in the database" is not.
+ */
+const META_LEAK: Array<[RegExp, string]> = [
+  [/\b(?:verified\s+)?facts?\s+block\b/i, 'names the facts block'],
+  [/\bsystem\s+(?:prompt|instruction)/i, 'names the system prompt'],
+  [/\b(?:the|my)\s+(?:instructions?|prompt)\s+(?:say|says|state|states|tell|told)/i, 'quotes its instructions'],
+  [/\bthe\s+user\s+(?:asks|asked|is\s+asking|says|said|wants|wanted)\b/i, 'narrates the request in the third person'],
+  [/\bas\s+an\s+AI\b|\blanguage\s+model\b/i, 'breaks character'],
+  // "…was not provided in the database". The trailing noun is what makes this a
+  // complaint about our input rather than a fact about a builder: "the builder
+  // has not provided a possession date" is a sentence a buyer needs to read.
+  [/\b(?:was|were|is|are)\s+not\s+(?:provided|supplied|included|present)\s+(?:in|to|within)\s+(?:the\s+|our\s+|my\s+)?(?:database|context|prompt|facts?|block|data\s?set)/i, 'blames the prompt for missing data'],
+  [/\bno\s+\w+(?:\s+\w+)?\s+(?:was|were)\s+(?:provided|supplied|injected)\b/i, 'blames the prompt for missing data'],
+  [/\b(?:provided|given|injected|supplied)\s+(?:verified\s+)?(?:facts|context|data\s+block)/i, 'names the injected block'],
+  [/\b(?:the\s+)?context\s+(?:provided|given|window|supplied)\b/i, 'names the context'],
+  // Reporting the shape of its input rather than answering from it.
+  [/\bonly\s+(?:contains?|includes?|has|holds?)\s+(?:information|details?|data)\s+(?:for|on|about)\b/i, 'reports the shape of its input'],
+]
+
+/** Numbers a model writes as words when it is counting something small. */
+const WORD_COUNT = '(?:a\\s+single|one|two|three|four|five|six|seven|eight|nine|ten|no)'
+const DIGIT_COUNT = '\\d[\\d,]*\\+?'
+const ANY_COUNT = `(?:${DIGIT_COUNT}|${WORD_COUNT})`
+
+/** "our database", "our verified database", "the data set we maintain". */
+const OUR_STORE = '(?:our|the|my)\\s+(?:\\w+\\s+){0,2}?(?:database|records?|inventory|portfolio|catalogue|catalog|data\\s?set|data|listings)'
+
+/**
+ * A claim about how much inventory we hold.
+ *
+ * Not the same thing as counting what is on screen. "Three of these six are
+ * ready to move" is a fact about the shortlist the buyer is looking at and is
+ * useful; "we hold 280 projects across 61 sectors" is the size of our table and
+ * belongs to us. The distinction the patterns draw is the possessive: a count
+ * attached to *we / our / the database*, not a count attached to *these*.
+ */
+const HEDGE = '(?:currently\\s+|right\\s+now\\s+|only\\s+|just\\s+|over\\s+|around\\s+|about\\s+|more\\s+than\\s+|nearly\\s+|approximately\\s+)*'
+
+const INVENTORY_SIZE: Array<[RegExp, string]> = [
+  // "We hold / maintain verified data on 280 projects". Digits only: a bare
+  // "we hold one project" is how our own sector-coverage reply is phrased, and
+  // it is scoped to a sector rather than to the table.
+  [new RegExp(`\\b(?:we|i)\\s+(?:hold|have|track|cover|maintain|list|carry)\\s+(?:verified\\s+)?(?:data\\s+on\\s+)?${HEDGE}${DIGIT_COUNT}\\s*(?:projects?|societies|properties|sectors?|builders?|developers?|listings?)`, 'i'), 'counts our holdings'],
+  // "280 projects across 61 sectors" — the shape of the table, whoever says it.
+  [new RegExp(`\\b${DIGIT_COUNT}\\s*(?:projects?|societies|properties)\\s+across\\s+${DIGIT_COUNT}\\s*(?:sectors?|micro[- ]?markets?|cities)`, 'i'), 'counts our holdings'],
+  // "Our verified database currently contains details for only one project".
+  // Word counts included here, because the subject is the store itself.
+  [new RegExp(`${OUR_STORE}\\s+${HEDGE}(?:has|have|holds?|contains?|covers?|includes?|spans?|lists?)\\s+(?:details?\\s+(?:for|on)\\s+)?${HEDGE}${ANY_COUNT}\\b`, 'i'), 'reports the size of our holdings'],
+  [new RegExp(`\\b(?:database|records?|inventory)\\s+(?:of|with)\\s+${HEDGE}${DIGIT_COUNT}\\s*(?:projects?|societies|properties|sectors?)`, 'i'), 'counts our holdings'],
+  [new RegExp(`\\b(?:total|entire|full|whole)\\s+(?:inventory|database|portfolio)\\s+(?:of|is|has)\\s+${HEDGE}${ANY_COUNT}`, 'i'), 'counts our holdings'],
+  // "We only have records for X" — a claim that our coverage ends at one row.
+  [new RegExp(`\\b(?:we|i)\\s+only\\s+(?:have|hold)\\s+(?:records?|data|details?|information)\\s+(?:for|on|about)\\b`, 'i'), 'reports the size of our holdings'],
+]
+
+/**
+ * House-style slips that are not worth binning an answer over.
+ *
+ * "Here are the verified matching projects in our database" is accurate and
+ * harmless in substance; it just says out loud that there is a database, which
+ * is our business and not the buyer's. Rewritten, never discarded — the
+ * replacement has to read naturally in mid-sentence, so each pair is chosen to
+ * drop into the same grammatical slot.
+ */
+const FRAMING_REWRITES: Array<[RegExp, string]> = [
+  // Most specific first: the negative forms have to win before the bare "in the
+  // database" rule rewrites their middle and leaves "not in our verified data",
+  // which is not what we mean.
+  [/\bnot\s+(?:currently\s+)?in\s+(?:our|the)\s+(?:\w+\s+){0,2}?database\b/gi, 'not something we hold'],
+  [/\bin\s+(?:our|the)\s+(?:\w+\s+){0,2}?database\b/gi, 'in our verified data'],
+  [/\bfrom\s+(?:our|the)\s+(?:\w+\s+){0,2}?database\b/gi, 'from our verified data'],
+  [/\b(?:our|the)\s+(?:\w+\s+){0,2}?database\s+(?:shows|says|lists|contains)\b/gi, 'our verified data shows'],
+  [/\b(?:our|my)\s+(?:\w+\s+){0,2}?database\b/gi, 'our verified data'],
+  [/\bin\s+our\s+records\b/gi, 'in what we hold'],
+  // Anything still saying "database" after the shaped rules above. Kept last so
+  // the natural phrasings win first; this only stops the word escaping.
+  [/\b(?:the\s+)?database\b/gi, 'our verified data'],
+]
+
+/** Strips the house-style slips. Never fails an answer. */
+export function rewriteFraming(text: string): { text: string; rewrites: number } {
+  let out = text
+  let rewrites = 0
+  for (const [pattern, replacement] of FRAMING_REWRITES) {
+    out = out.replace(pattern, () => {
+      rewrites++
+      return replacement
+    })
+  }
+  return { text: out, rewrites }
+}
+
+/**
+ * The disclosure half of the gate: meta-leak and inventory size.
+ *
+ * Exported because it is pure and is the half worth pinning with real strings.
+ * The fabrication half needs the database and is covered by toolBlindGuard.
+ */
+export function scanDisclosure(text: string): IntegrityViolation[] {
+  return [
+    ...scan(text, META_LEAK, 'meta_leak'),
+    ...scan(text, INVENTORY_SIZE, 'inventory_size'),
+  ]
+}
+
+function scan(text: string, table: Array<[RegExp, string]>, kind: IntegrityKind): IntegrityViolation[] {
+  const found: IntegrityViolation[] = []
+  for (const [pattern, detail] of table) {
+    const m = pattern.exec(text)
+    if (m) found.push({ kind, detail: `${detail}: "${m[0].slice(0, 60)}"` })
+  }
+  return found
+}
+
+/**
+ * Everything that must be true before a buyer reads this answer.
+ *
+ * `prompt` is the system prompt the leg was actually given — the fabrication
+ * check needs it to know which names were legitimately supplied. `hasTools`
+ * only affects reporting: the check itself is the same either way, which is the
+ * point. A leg that CAN look something up and invents it anyway is worse than
+ * one that cannot, not better.
+ */
+export async function checkAnswerIntegrity(
+  text: string,
+  prompt: string,
+): Promise<IntegrityViolation[]> {
+  const body = text.trim()
+  if (!body) return []
+
+  const violations: IntegrityViolation[] = scanDisclosure(body)
+
+  // Only worth the database round-trip when nothing cheaper has already failed
+  // the answer — the result is the same and the check is cached, but a turn
+  // that is already rolling over should roll over now.
+  if (violations.length === 0) {
+    const fabrications: ToolBlindViolation[] = await checkToolBlindAnswer(body, prompt)
+    for (const f of fabrications) {
+      violations.push({ kind: 'fabrication', detail: `${f.kind}(${f.detail})` })
+    }
+  }
+
+  return violations
+}

@@ -72,6 +72,7 @@ import { buildProjectFacts, detectFactTopics } from '../lib/projectFactsBlock'
 import { buildComponentResponse } from '../lib/discovery/componentSpec'
 import { loadMentionedProjectCards } from '../lib/chat/mentionedProjectCards'
 import { buildUnknownProjectReply } from '../lib/chat/unknownProject'
+import { substitutePointer } from '../lib/chat/resolvePointer'
 import { runTopicHandlers } from '../lib/chat/handlerContext'
 import { projectCatalog, catalogNamesSync } from '../lib/projectCatalog'
 import { applyCommuteAnchor, beltFor } from '../lib/discovery/commuteAnchor'
@@ -1723,6 +1724,24 @@ router.post('/', async (req: Request, res: Response) => {
       return
     }
 
+    /**
+     * The turn as the MODEL should read it.
+     *
+     * By this point "the second one" has been resolved into
+     * `intent.projectNames` and the prompt will carry that one project. Showing
+     * the model the buyer's literal words beside a one-project block produced a
+     * mismatch it explained rather than answered — "no second project was
+     * provided in the database", about a sector holding nineteen. Substituting
+     * the resolved name removes the mismatch instead of arguing with it.
+     *
+     * `message` itself is deliberately untouched: roughly forty routing gates
+     * below read it, and they must keep seeing what the buyer typed.
+     */
+    const modelMessage = substitutePointer(message, (intent as Intent).projectNames?.[0]).text
+    if (modelMessage !== message) {
+      console.log('[CHAT:POINTER_SUBSTITUTED]', { from: message.slice(0, 48), to: modelMessage.slice(0, 64) })
+    }
+
     // ─── Phase 0: Query Classification (deterministic + LLM fallback)
     const verifiedProjectNames = await resolveProjectNames(
       (intent as Intent).projectNames,
@@ -3181,7 +3200,7 @@ USING THE FACTS:
               send('token', { token: chunk })
             }
           } else {
-            const systemMsgHistory = [{ role: 'user' as const, content: message }]
+            const systemMsgHistory = [{ role: 'user' as const, content: modelMessage }]
             const fallbackResult = await executeWithFallbackChain({
               systemPrompt,
               messages: systemMsgHistory,
@@ -3558,7 +3577,21 @@ USING THE FACTS:
           confidence: v?.confidence ?? 0,
         }))
       const factsJson = JSON.stringify(factsList, null, 2)
-      const projectDataMsg = `User question: "${message}"\n\nVerified facts available:\n${factsJson}\n\nProvide an authoritative, clear breakdown based on these verified facts. Answer the user's specific question completely, highlighting exact figures (carpet area, super built-up area, carpet efficiency %, maintenance ₹/sqft, RERA IDs, extra charges, builder track record) wherever present.`
+      /**
+       * The question as the model should read it, not as the buyer typed it.
+       *
+       * The pointer is already resolved — `projectName` IS what "the second
+       * one" meant — but the model was shown the raw words beside a one-project
+       * facts block, saw a mismatch, and explained it instead of answering:
+       * "no second project was provided in the database". Substituting the name
+       * removes the mismatch rather than arguing with it. See
+       * `lib/chat/resolvePointer.ts`; the raw `message` is untouched, because
+       * every routing gate above reads it.
+       */
+      const askedForModel = { text: modelMessage, substituted: modelMessage !== message }
+      if (askedForModel.substituted) {
+      }
+      const projectDataMsg = `User question: "${askedForModel.text}"\n\nVerified facts available:\n${factsJson}\n\nProvide an authoritative, clear breakdown based on these verified facts. Answer the user's specific question completely, highlighting exact figures (carpet area, super built-up area, carpet efficiency %, maintenance ₹/sqft, RERA IDs, extra charges, builder track record) wherever present.`
 
       let componentSummary = ''
       try {
@@ -4228,7 +4261,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
       }
     }
 
-    const { systemSuffix, messages: rawMessages } = buildContextMessages(message, compressedHistory, selectedSummary, memory)
+    const { systemSuffix, messages: rawMessages } = buildContextMessages(modelMessage, compressedHistory, selectedSummary, memory)
     // ponytail: cache blockedBuilders for 1h, invalidate when legal flag updated.
     let blockedBuilders: Array<{ name: string; legal_flag?: string }> | null = await getCached('blockedBuilders')
     if (!blockedBuilders) {

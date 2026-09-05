@@ -1,4 +1,5 @@
 // backend/src/lib/ai/gemini.ts
+import { createHash } from 'crypto'
 import { getCachedPrefix } from './geminiCache'
 import { assertWithinGeminiBudget } from './geminiMeter'
 import { splitSystemPrompt } from './prompts/base'
@@ -87,6 +88,26 @@ export async function streamWithGemini(
   // head is worth caching; caching the whole thing would mint an entry per
   // tool-filter variant and hit almost none of them.
   const { head: systemHead, tail: systemTail } = splitSystemPrompt(system)
+  /**
+   * The cacheable head, fingerprinted — because it turned out not to be one.
+   *
+   * CLAUDE.md records that "78% of it [is] served from Gemini's implicit cache
+   * at a tenth of rate". Measured on 5 Sep 2026 over one four-turn
+   * conversation, the figure is 0%, and the reason is structural: each lane
+   * assembles its own system prompt, so the three heads produced were 25,193,
+   * 10,534 and 9,342 characters with a longest common prefix of SEVENTEEN
+   * characters — "You are RealtyPal". Implicit caching matches a prefix. There
+   * is nothing here for it to match.
+   *
+   * Left in behind an env flag rather than removed: the fix is to give every
+   * lane one byte-identical opening block, and this is how you tell whether it
+   * worked. `DEBUG_PROMPT_STABILITY=1` and compare hashes across turns — one
+   * repeated hash means caching can engage, three distinct ones means it cannot.
+   */
+  if (process.env.DEBUG_PROMPT_STABILITY) {
+    const h = createHash('sha1').update(systemHead).digest('hex').slice(0, 12)
+    console.log('[PROMPT_HEAD_HASH]', h, 'headChars=' + systemHead.length, 'tailChars=' + systemTail.length)
+  }
   // Gemini refuses CachedContent in a request that also sets system_instruction
   const cacheIsUsable = !GEMINI_TOOLS_ENABLED && !systemTail
   const cachedName = cacheIsUsable

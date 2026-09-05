@@ -2225,3 +2225,64 @@ disclaimer would be better than a fluent one.
 high-conviction residential asset" before disclosing the Supreme Court
 receivership. The disclosure happens, so HARD RULE 6c is met on the letter; the
 lead framing is not what that rule intends.
+
+## 5 Sep 2026 (third pass) — the guard, the pointer, and a caching claim that was false
+
+### 10. The fabrication guard ran on the wrong half of the chain
+
+`toolBlindGuard` only ever checked `supportsTools: false` legs, on the reasoning
+that a leg which CAN look something up will. It does not follow. The tool-capable
+Gemini leg invented a whole building and attributed it to Supertech; on a later
+run it invented `UPRERAPRJ168120` twice for a project whose row has no RERA
+number. Every leg is checked now.
+
+`answerIntegrity.ts` is the single gate. Three discard classes — fabrication,
+META_LEAK (the answer describing its own inputs), INVENTORY_SIZE (any count of
+what we hold) — and one rewrite class for house-style phrasing. Scanned raw,
+rewritten after, with a test pinning that the rewrite cannot launder a phrase
+the scan is looking for.
+
+**Consequence, accepted deliberately:** every leg is now fully buffered, so no
+leg streams. Time-to-first-token is worse; the answer arrives complete. The user
+was asked and chose "never risk a wrong fact". Two things came free: `endCleanly`
+now runs on the whole answer rather than a prefix, and screen/transcript/cache
+are one string.
+
+### 11. Blocking a phrasing is not fixing a bug
+
+"What about the second one?" produced a false coverage claim three runs running,
+each rewritten around the pattern added for the last:
+
+1. "the provided verified facts block only contains information for a single project"
+2. "our verified database currently contains details for only one project"
+3. "our verified data currently holds active records only for Samridhi Daksh Avenue"
+
+**The model was right that something was wrong.** The prompt carried one project
+and the buyer's words said "the second"; it was explaining a real mismatch.
+`resolvePointer.ts` removes the mismatch — the model reads "What about Samridhi
+Daksh Avenue?" — and the denials stopped. `message` itself is untouched because
+~40 routing gates read it; only the copy handed to the model is rewritten.
+
+**Why this matters beyond this bug:** the same shape is already in ERRORS-land
+for the fabrication blocklist ("it asks what a name IS, never what it is not").
+When the model keeps rewording its way around a filter, the filter is treating a
+symptom. Look for the contradiction it is reporting.
+
+### 12. Implicit prompt caching has never worked, and the doc said it was at 78%
+
+Measured with `DEBUG_PROMPT_STABILITY=1` over one four-turn conversation: every
+line reads `no cache hit — N prompt tokens billed at full rate`, N from 2,577 to
+31,288. Three lanes produced heads of 25,193 / 10,534 / 9,342 characters with a
+**longest common prefix of 17 characters** — "You are RealtyPal". Implicit
+caching matches a prefix. Explicit caching is separately unreachable:
+`cacheIsUsable` requires `!GEMINI_TOOLS_ENABLED` and tools are on.
+
+So input is ~13k tokens a turn at full rate — the same order as output, not the
+"smaller half" CLAUDE.md described. **Not fixed:** the fix is one byte-identical
+opening block shared by every lane, which is a prompt refactor with
+answer-quality risk and the wrong thing to land hours before a demo. The hash
+line is kept behind the env flag so the fix can be measured when it is done.
+
+**Also flagged, not changed:** `GEMINI_DAILY_BUDGET_USD` defaults to $2, roughly
+130 turns on a topped-up account, after which every Gemini leg throws and the
+chain silently degrades.

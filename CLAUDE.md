@@ -347,11 +347,51 @@ The invariant is now enforced in `beta-critical.test.ts`: **no tool-blind leg
 may rank above a tool-capable one, and the chain must lead with one that can
 call tools.** Ordering by which key is billed is not the property that matters.
 
-**A tool-blind leg that answers anyway is discarded.** `toolBlindGuard.ts`
-checks the finished answer of any `supportsTools: false` leg against the facts
-the prompt actually carried — a project name we did not supply, a
-registration-shaped number we did not supply, or a competitor portal fails the
-leg and rolls the turn to the next one.
+**Every answer passes one integrity gate, whatever leg produced it.**
+`answerIntegrity.ts` runs before a buyer has read a word, and a failure rolls
+the turn to the next leg exactly as a provider error does.
+
+`toolBlindGuard.ts` — a project name we did not supply, a registration-shaped
+number we did not supply, a competitor portal — used to run only on
+`supportsTools: false` legs. **That was the wrong boundary.** Measured 5 Sep:
+the tool-capable Gemini leg answered "What is Skyline Verdant Quartz
+Residency?", a name that does not exist, with "a prominent high-rise
+residential development in Noida, crafted by **Supertech Limited**" — a
+building we have never heard of, attributed to a developer HARD RULES forbids
+recommending — and no guard ran, because the leg had tools. *Having* a tool is
+not *using* one. It now runs on every leg, and on the same run it caught a
+fabricated `UPRERAPRJ168120` twice.
+
+Two classes beyond fabrication, both measured, both discarded:
+
+* **META_LEAK** — the answer describing its own inputs, or denying data on the
+  grounds the prompt did not carry it. "The user asks 'What about the second
+  one?', but the provided verified facts block only contains information for a
+  single project… as no second project was provided in the database" — the
+  prompt's scaffolding read aloud, wrapped around a false claim about a sector
+  holding nineteen projects.
+* **INVENTORY_SIZE** — any count of what we hold. "We currently maintain
+  verified data on 280 projects across 61 sectors" was the reply to "hi".
+
+House-style slips ("in our database") are **rewritten in place**, not
+discarded; binning a good answer over phrasing is the more expensive error. The
+scan runs on the model's raw words *before* the rewrite, so a rewrite can never
+launder a phrase the scan exists to catch — there is a test pinning that.
+
+**Blocking the phrasing is not how the pointer bug was fixed.** Three runs
+produced three different denials, each rewritten around the pattern added for
+the last one, because the mismatch the model was explaining was real: the
+prompt carried one project and the buyer's words said "the second". The fix is
+`lib/chat/resolvePointer.ts` — substitute the resolved name into the copy the
+model reads, so it sees "What about Samridhi Daksh Avenue?" and has nothing to
+apologise for. The raw `message` is untouched; ~40 routing gates read it.
+
+**Every leg is buffered now, not only the tool-blind ones.** The gate has to see
+the finished answer while it is still unsent. The cost is time-to-first-token on
+every leg; two things come free with it — `endCleanly` runs on the whole answer
+rather than a prefix that happened to fit the buffer, which is the mid-sentence
+ending that showed up in every corpus run; and the screen, the transcript and
+the cache are built from one identical string.
 
 **Every streaming leg has a stall timeout.** Gemini, Groq and OpenAI each grew
 their own; Mistral and Cerebras had none, so a stalled stream ran until the HTTP
@@ -438,13 +478,36 @@ balance refills when a human tops it up, not on a timer, and re-probing it cost
 two dead legs at the head of nearly every turn. `recordSuccess` clears the
 cooldown on the first probe that answers, so a top-up recovers without a restart.
 
-**Output is the bill, not input.** At verified pricing (3.6 Flash: $0.75 in /
-$3.75 out per 1M) a turn is ~$0.0023 of input — 78% of it served from Gemini's
-implicit cache at a tenth of rate — against ~$0.0049 of output. Thinking bills
-at the output rate, so a 1,024-token reasoning budget costs more than the entire
-input side. `inferenceProfile.ts` picks model, thinking budget and reply ceiling
-from the shape of the question; measured over the real corpus that is a 64% cut.
-Shrinking the prompt optimises the smaller half — check the profile first.
+**Output is the bill, not input** — but the input side is billing far more than
+this file used to claim. At verified pricing (3.6 Flash: $0.75 in / $3.75 out
+per 1M) output is ~$0.0049 a turn. Thinking bills at the output rate, so a
+1,024-token reasoning budget costs more than a small input side.
+`inferenceProfile.ts` picks model, thinking budget and reply ceiling from the
+shape of the question; measured over the real corpus that is a 64% cut.
+
+**The "78% served from Gemini's implicit cache" figure that stood here was
+wrong, and the real number is 0%.** Measured 5 Sep 2026 across one four-turn
+conversation with `DEBUG_PROMPT_STABILITY=1`: every log line reads `no cache hit
+— N prompt tokens billed at full rate`, N between 2,577 and 31,288. The cause is
+structural, not a misconfiguration. Each lane assembles its own system prompt,
+so the three heads that conversation produced were 25,193, 10,534 and 9,342
+characters with a **longest common prefix of seventeen characters** — "You are
+RealtyPal". Implicit caching matches a prefix; there is nothing here to match.
+Explicit caching is separately unreachable, because `cacheIsUsable` requires
+`!GEMINI_TOOLS_ENABLED` and tools are on in this deployment.
+
+So "shrinking the prompt optimises the smaller half" no longer holds either:
+input is roughly 13k tokens a turn at full rate, which is the same order as
+output. **The fix is one byte-identical opening block shared by every lane**,
+placed before anything per-request — not a smaller prompt. It is a prompt
+refactor with answer-quality risk, so measure with the hash line before and
+after: one repeated hash across turns means caching can engage, three distinct
+ones means it cannot.
+
+**`GEMINI_DAILY_BUDGET_USD` defaults to $2** and is enforced across every
+caller. On a topped-up account that is roughly 130 turns before every Gemini leg
+starts throwing and the chain silently degrades. Raise it deliberately before a
+demo rather than discovering it mid-conversation.
 
 **Tables are rendered in code, not by the model.** `marketTable.ts` builds the
 project shortlist, micro-market, sector-comparison, payment-plan and cost-sheet

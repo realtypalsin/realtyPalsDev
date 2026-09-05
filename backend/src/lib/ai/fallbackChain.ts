@@ -1,5 +1,6 @@
 // backend/src/lib/ai/fallbackChain.ts
 import { FALLBACK_CHAIN, FallbackKeyConfig, isFreeTierKey, vendorOf } from '../config'
+import { checkAnswerIntegrity, rewriteFraming } from './answerIntegrity'
 import { streamWithGemini } from './gemini'
 import { streamWithOpenAI } from './openai'
 import { streamWithGroq } from './groq'
@@ -251,7 +252,20 @@ function createBufferedSend(
     }
   }
 
-  return { bufferedSend, getTokensSent: () => tokensSent, flushRemaining }
+  /**
+   * Swap the held answer for an edited copy, before anything is forwarded.
+   *
+   * Only legal while the buffer is unflushed, which is now the state every leg
+   * is in when the integrity gate runs. A no-op once tokens have left, so a
+   * caller can never put the buyer's screen and the returned text out of step.
+   */
+  const replaceBufferedText = (next: string): boolean => {
+    if (flushed || tokensSent) return false
+    buffer = next
+    return true
+  }
+
+  return { bufferedSend, getTokensSent: () => tokensSent, flushRemaining, replaceBufferedText }
 }
 
 export async function executeWithFallbackChain(options: FallbackChainOptions): Promise<FallbackChainResult> {
@@ -343,13 +357,27 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
         : applyNoToolsBlock(systemPrompt, groqFallbackSuffix)
     // Validate against the prompt this provider actually received, not the
     // pre-variant one — otherwise the fact-check reads a different tool section.
-    // A leg that cannot look anything up has its whole answer held back rather
-    // than streamed, so checkToolBlindAnswer can reject it before the buyer has
-    // read a word of it. Costs this leg its time-to-first-token; it is the
-    // degraded path already, and an answer that invents a project is worse than
-    // a slow one. Tool-capable legs keep the ordinary 250-char failover window.
-    const bufferLimit = item.supportsTools ? undefined : Number.MAX_SAFE_INTEGER
-    const { bufferedSend, getTokensSent, flushRemaining } = createBufferedSend(send, effectivePrompt, bufferLimit, options.suppressTables === true)
+    /**
+     * Every leg is held back now, not only the tool-blind ones.
+     *
+     * The old split gave tool-capable legs a 250-char failover window and let
+     * the rest of the answer stream straight through, on the reasoning that a
+     * leg which CAN look something up will. Measured: the tool-capable Gemini
+     * leg answered a question about a project that does not exist with "a
+     * prominent high-rise residential development in Noida, crafted by
+     * **Supertech Limited**", and no guard ran, because the leg had tools.
+     * Having a tool is not the same as using it.
+     *
+     * So the whole answer is held until `checkAnswerIntegrity` has read it. The
+     * cost is time-to-first-token on every leg; the buyer sees a thinking
+     * indicator for a second or two longer and then the complete answer. Two
+     * things come free with it: `endCleanly` now runs on the full text rather
+     * than only on a prefix that happened to fit the buffer, which is the
+     * mid-sentence ending that showed up in every corpus run measured; and the
+     * screen, the transcript and the cache are built from one identical string.
+     */
+    const bufferLimit = Number.MAX_SAFE_INTEGER
+    const { bufferedSend, getTokensSent, flushRemaining, replaceBufferedText } = createBufferedSend(send, effectivePrompt, bufferLimit, options.suppressTables === true)
 
     const effectiveConfig = options.config || { maxTokens: 3000 }
     // Gemini ignores its FALLBACK_CHAIN item.model unless we thread it through here — without
@@ -419,18 +447,39 @@ export async function executeWithFallbackChain(options: FallbackChainOptions): P
         text = await streamWithGroq(effectivePrompt, cappedMessages, bufferedSend, userId, sessionId, apiKey, legMaxTokens)
       }
 
-      // Checked BEFORE flushRemaining, which is the only moment a tool-blind
-      // leg's answer is complete and still unsent. Throwing here rolls the turn
-      // over to the next leg with no tokens delivered, exactly as a pre-token
-      // provider failure does.
-      if (!item.supportsTools && text.trim()) {
-        const violations = await checkToolBlindAnswer(text, effectivePrompt)
+      /**
+       * The integrity gate, before `flushRemaining` and therefore before the
+       * buyer has read a word.
+       *
+       * Throwing here rolls the turn to the next leg with nothing delivered,
+       * exactly as a pre-token provider failure does — which is why the whole
+       * answer has to still be in the buffer at this point, and why every leg
+       * is now buffered rather than only the tool-blind ones.
+       *
+       * Three classes, all measured in production, all discarded: a project or
+       * registration number that came from nowhere; the prompt's own
+       * scaffolding read aloud ("the provided verified facts block only
+       * contains information for a single project"); and a count of what we
+       * hold ("280 projects across 61 sectors"), which is ours and not the
+       * buyer's.
+       */
+      if (text.trim()) {
+        // Scanned in the model's own words, before any rewriting. The raw text
+        // is what it meant to say, and a rewrite could file the edge off the
+        // very phrase the scan exists to catch.
+        const violations = await checkAnswerIntegrity(text, effectivePrompt)
         if (violations.length > 0) {
           console.warn(
-            `[FALLBACK:FABRICATED] ${item.label} could not look anything up and answered anyway — discarding: ` +
+            `[FALLBACK:INTEGRITY] ${item.label} — discarding: ` +
             violations.map(v => `${v.kind}(${v.detail})`).join(', '),
           )
-          throw new Error(`${item.label} fabricated ${violations[0].kind}: ${violations[0].detail}`)
+          throw new Error(`${item.label} failed integrity: ${violations[0].kind} — ${violations[0].detail}`)
+        }
+        const framed = rewriteFraming(text)
+        if (framed.rewrites > 0) {
+          console.log(`[FALLBACK:REFRAMED] ${item.label} — ${framed.rewrites} house-style phrase(s) rewritten`)
+          replaceBufferedText(framed.text)
+          text = framed.text
         }
       }
 
