@@ -2469,3 +2469,51 @@ the prompt and `builder_lookup` returns it. These are real stored values, not
 fabricated, so HARD RULE 12 does not clearly forbid them — but a bare "92" a
 buyer cannot interpret is the same fake-confidence problem that rule exists for.
 **Product decision, not a bug**, so it is left for the user to call.
+
+## 6 Sep 2026 — opaque scores removed from every buyer-facing path
+
+The user asked to remove the delivery score from the prompt. It was in **seven**
+emitters, not one, and the same defect class in all of them: analyst-set 0–100
+numbers a buyer can neither interpret nor check.
+
+  ai/groundedAnswer.ts:154,158   "Delivery score: 92/100", "RERA compliance score: N/100"
+  builders.ts:86,89-91,94        six scores in the builder_lookup tool payload
+  builderReputation.ts:112-145   three /100 COLUMNS rendered straight to screen
+  projectDataGateway.ts:902-905  four score builderFacts
+  projectDataGateway.ts:930      "RERA Standing" backed by our own score
+  projectDataGateway.ts:984      "The 92/100 delivery score is driven by: ..."
+  projectFacts.ts:804-805        overall_score + builder_delivery_score
+  projectFactsBlock.ts:66        the '/100' unit
+  projectExposure.ts:173         rera_compliance_score in PROJECT_PUBLIC_SELECT
+
+`routes/builders.ts:25` had already reasoned this out in a comment — "an
+analyst-set 0-100 number ... indistinguishable to a buyer from a measured
+rating ... CLAUDE.md forbids presenting one" — and left the field unselected.
+**The chat path never followed the decision the codebase had already made.**
+Worse, the prompt's own BUILDER DATA RULES already listed what may be claimed
+from `builder_lookup` (CREDAI membership, legal_flag, awards_count,
+delivered_units) and named none of the scores. The rule and the payload
+disagreed, and the model believed the payload.
+
+**What replaced them:** projects delivered, homes handed over, average handover
+delay, year founded, litigation count, UP-RERA promoter id. Every one is a count
+or a date a buyer can check against the registry.
+
+**The scores are not deleted, they are demoted to ranking.** `scoringEngine`,
+`cityShelf`, `discovery/projects` and the builder league table still order on
+them. Ordering with a number is honest; printing it is not. The league table now
+carries that explicitly: ordered by delivery record, columns show facts.
+
+One consequence worth keeping: `projectDataGateway`'s track-record narrative was
+GATED on `delivery_score != null`, so a builder with real delivery facts and no
+score recorded produced nothing at all. Ungating it was free.
+
+`opaqueScores.test.ts` pins the rule three ways — not in the public select,
+`stripOpaqueScores` works, and no prompt/response builder prints one. It fails
+on the pre-fix code and names all seven emitters with line numbers.
+
+**Flagged, not changed:** "Which builders have the best on-time delivery?" is
+still answered from model knowledge with subjective labels ("Corporate
+Governance / Tier 1", "Established Luxury Pioneer") and project attributions
+nobody verified. That is arguably worse than a score — the prompt's BUILDER DATA
+RULES forbid exactly it — but it is a separate lane and a separate fix.

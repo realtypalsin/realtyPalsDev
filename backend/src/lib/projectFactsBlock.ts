@@ -63,7 +63,6 @@ const UNITS: Record<string, string> = {
   green_cover_percent: '%',
   walkability_score: '/100',
   women_safety_score: '/100',
-  rera_compliance_score: '/100',
   construction_quality_rating: '/5',
   buyer_satisfaction_rating: '/5',
   handover_defect_rate: '%',

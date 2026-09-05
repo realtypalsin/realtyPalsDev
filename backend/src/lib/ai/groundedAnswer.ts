@@ -151,11 +151,14 @@ async function buildEntityContext(entity: string): Promise<string> {
   if (builder.headquarters) parts.push(`Headquarters: ${builder.headquarters}`)
   if (builder.projects_delivered_count) parts.push(`Projects delivered: ${builder.projects_delivered_count}`)
   if (builder.delivered_units) parts.push(`Units delivered: ${builder.delivered_units}`)
-  if (builder.delivery_score) parts.push(`Delivery score: ${builder.delivery_score}/100`)
+  // Scores are deliberately absent — see BUYER_OPAQUE_SCORES in
+  // projectExposure.ts. "Delivery score: 92/100" is an analyst-set number a
+  // buyer cannot interpret or check, and the model quoted it verbatim as
+  // evidence of quality. The handover delay below is the same signal in a form
+  // that means something.
   if (builder.average_delay_months !== null && builder.average_delay_months !== undefined) {
     parts.push(`Average handover delay: ${builder.average_delay_months} months`)
   }
-  if (builder.rera_compliance_score) parts.push(`RERA compliance score: ${builder.rera_compliance_score}/100`)
   if (builder.rera_promoter_id) parts.push(`RERA promoter ID: ${builder.rera_promoter_id}`)
   if (builder.legal_flag) parts.push(`Legal flag: ${builder.legal_flag}`)
   if (builder.company_overview) parts.push(`Overview: ${builder.company_overview.slice(0, 400)}`)

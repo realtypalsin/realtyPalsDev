@@ -899,11 +899,22 @@ async function getBuilderWithValidation(
       builderFact('builder_name', 'Builder / Developer Name', b.name)
       builderFact('builder_founded_year', 'Founded Year', b.founded_year ? String(b.founded_year) : null)
       builderFact('builder_experience', 'Experience in Industry', b.experience_years)
-      builderFact('builder_delivery_score', 'Track Record & Delivery Score', b.delivery_score != null ? `${b.delivery_score}/100` : null)
-      builderFact('builder_rera_score', 'RERA Compliance Score', b.rera_compliance_score != null ? `${b.rera_compliance_score}/100` : null)
-      builderFact('builder_construction_quality', 'Construction Quality Score', b.construction_quality_score != null ? `${b.construction_quality_score}/100` : null)
-      builderFact('builder_buyer_satisfaction', 'Buyer Satisfaction Score', b.buyer_satisfaction_score != null ? `${b.buyer_satisfaction_score}/100` : null)
+      // The four /100 scores that stood here are gone — see BUYER_OPAQUE_SCORES
+      // in projectExposure.ts. They were analyst-set numbers a buyer cannot
+      // interpret or check, and the model quoted them straight back as evidence
+      // of quality ("a strong builder delivery score (92)"). The counts and
+      // dates below are the same signal in a form that can be verified.
       builderFact('projects_delivered_count', 'Total Delivered Projects', b.projects_delivered_count)
+      builderFact('builder_delivered_units', 'Homes Handed Over', b.delivered_units != null ? String(b.delivered_units) : null)
+      builderFact(
+        'builder_handover_record',
+        'Average Handover Delay',
+        b.average_delay_months == null
+          ? null
+          : b.average_delay_months === 0
+            ? 'On time across delivered projects'
+            : `${b.average_delay_months} months average delay across delivered projects`,
+      )
 
       // "Clean" is a finding, not a default. It requires a recorded zero.
       builderFact(
@@ -927,7 +938,10 @@ async function getBuilderWithValidation(
       builderFact(
         'rera_registration',
         'RERA Standing',
-        b.rera_compliance_score != null ? `RERA compliance score ${b.rera_compliance_score}/100` : null,
+        // A promoter id is checkable on the UP-RERA portal; a compliance score
+        // is not. "RERA Standing" backed by a number we assigned invited the
+        // model to present our own score as a regulator's verdict.
+        b.rera_promoter_id ? `UP-RERA promoter registration ${b.rera_promoter_id}` : null,
       )
 
       if (Array.isArray(b.delivered_projects) && b.delivered_projects.length > 0) {
@@ -953,7 +967,18 @@ async function getBuilderWithValidation(
       // communities including ." A score with nothing behind it is the fake
       // confidence score CLAUDE.md forbids, and it is worse here than an
       // absent one because it arrives dressed as an explanation.
-      if (b.delivery_score != null) {
+      /**
+       * The track record, no longer hung off a score.
+       *
+       * This block existed to justify `delivery_score`, so it was gated on that
+       * number and headed "The 92/100 delivery score is driven by:". Both the
+       * gate and the heading are gone: the clauses underneath — delay months,
+       * litigation count, insolvency standing, delivered projects — were always
+       * the actual evidence, and they stand on their own. Gating on the score
+       * also meant a builder with real delivery facts and no score recorded
+       * produced nothing at all.
+       */
+      {
         const clauses: string[] = []
         if (b.average_delay_months != null) {
           clauses.push(
@@ -961,9 +986,6 @@ async function getBuilderWithValidation(
               ? 'Execution: 0 months historical delay'
               : `Execution: ${b.average_delay_months} mo average delay`,
           )
-        }
-        if (b.construction_quality_score != null) {
-          clauses.push(`Quality & Engineering: ${b.construction_quality_score}/100 construction rating`)
         }
         const legal: string[] = []
         if (b.litigation_count != null) {
@@ -979,11 +1001,9 @@ async function getBuilderWithValidation(
 
         if (clauses.length > 0) {
           builderFact(
-            'score_breakdown_justification',
-            'Delivery Score Justification',
-            `The ${b.delivery_score}/100 delivery score is driven by: ${clauses
-              .map((c, i) => `(${i + 1}) ${c}`)
-              .join('; ')}.`,
+            'track_record_evidence',
+            'Track Record Evidence',
+            `${clauses.map((c, i) => `(${i + 1}) ${c}`).join('; ')}.`,
           )
         }
       }

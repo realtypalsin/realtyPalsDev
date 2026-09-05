@@ -2691,6 +2691,7 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
             projects_delivered_count: true,
             total_projects_count: true,
             average_delay_months: true,
+            delivered_units: true,
             delivery_score: true,
             construction_quality_score: true,
             rera_compliance_score: true,

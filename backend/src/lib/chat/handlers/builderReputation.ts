@@ -16,13 +16,10 @@ import { prisma } from '../../db'
  * A number WITH its basis is not that.
  */
 const SCORE_BASIS =
-  '**How to read these.** They are our own analyst assessment, recorded per ' +
-  'developer from completed-project handover dates, RERA filing history and ' +
-  'site inspections — not a public rating, not supplied by the developer, and ' +
-  'not recalculated live. Delivery score weighs completed handovers against ' +
-  'committed dates; construction quality and RERA compliance are reviewed per ' +
-  'delivered project. Treat them as a record of past projects, not a ' +
-  'guarantee about this one.'
+  '**How to read this.** Every figure here is a count or a date from completed ' +
+  'projects — homes actually handed over, and how far past the committed date ' +
+  'they went. Nothing here is a rating we assigned. Treat it as a record of ' +
+  'past projects, not a guarantee about this one.'
 
 /**
  * The developer track record: delivery scores, handover delay, RERA compliance.
@@ -86,7 +83,7 @@ export const builderReputationHandler: ChatTopicHandler = {
               builder: {
                 select: {
                   id: true, name: true, founded_year: true,
-                  delivery_score: true, average_delay_months: true,
+                  delivery_score: true, average_delay_months: true, delivered_units: true,
                   projects_delivered_count: true, total_projects_count: true,
                   construction_quality_score: true, rera_compliance_score: true,
                 },
@@ -105,14 +102,24 @@ export const builderReputationHandler: ChatTopicHandler = {
       // labelled 'Verified' — asserting a compliance standing we do not hold,
       // about the exact subject a buyer is trying to assess. And a builder
       // whose delivered count was unknown was credited with '5+ Projects'.
+      /**
+       * The scores rank the rows; they are not columns.
+       *
+       * This printed "92/100", "87/100" and "—" across three score columns.
+       * Every one of those is an analyst-set number a buyer cannot interpret or
+       * check — see BUYER_OPAQUE_SCORES — and three of them side by side read
+       * as a measured rating card. `topBuilders` is still ordered by
+       * `delivery_score`, which is the honest use of it: the ordering carries
+       * the judgement and the columns carry facts a buyer can verify.
+       */
       const builderRows = topBuilders.map(b => {
         const delayStr = b.average_delay_months === 0
           ? 'On time'
-          : b.average_delay_months != null ? `${b.average_delay_months} months` : '—'
-        const qualStr = b.construction_quality_score ? `${b.construction_quality_score}/100` : '—'
-        const reraStr = b.rera_compliance_score ? `${b.rera_compliance_score}/100` : '—'
-        const deliveredStr = b.projects_delivered_count != null ? `${b.projects_delivered_count}` : '—'
-        return `| **${b.name}** | ${b.delivery_score != null ? `${b.delivery_score}/100` : '—'} | ${delayStr} | ${deliveredStr} | ${qualStr} | ${reraStr} |`
+          : b.average_delay_months != null ? `${b.average_delay_months} months` : 'Not recorded'
+        const deliveredStr = b.projects_delivered_count != null ? `${b.projects_delivered_count}` : 'Not recorded'
+        const unitsStr = b.delivered_units != null ? `${b.delivered_units.toLocaleString('en-IN')}` : 'Not recorded'
+        const sinceStr = b.founded_year != null ? `${b.founded_year}` : 'Not recorded'
+        return `| **${b.name}** | ${deliveredStr} | ${unitsStr} | ${delayStr} | ${sinceStr} |`
       }).join('\n')
 
       /**
@@ -130,8 +137,8 @@ export const builderReputationHandler: ChatTopicHandler = {
         const add = (metric: string, value: string | null, basis: string) => {
           if (value != null) rows.push(`| ${metric} | ${value} | ${basis} |`)
         }
-        add('Delivery score', b.delivery_score != null ? `**${b.delivery_score}/100**` : null,
-          'Completed handovers against committed dates')
+        // No score row. The delay, the delivered count and the litigation
+        // record below say the same thing in numbers a buyer can check.
         add('Average handover delay', b.average_delay_months == null ? null
           : b.average_delay_months === 0 ? 'On time' : `${b.average_delay_months} months`,
           'Mean slippage across delivered projects')
@@ -140,10 +147,8 @@ export const builderReputationHandler: ChatTopicHandler = {
         add('Projects in progress', b.total_projects_count != null && b.projects_delivered_count != null
           ? String(Math.max(0, b.total_projects_count - b.projects_delivered_count)) : null,
           'Under construction or launched')
-        add('Construction quality', b.construction_quality_score != null ? `${b.construction_quality_score}/100` : null,
-          'Reviewed per delivered project')
-        add('RERA compliance', b.rera_compliance_score != null ? `${b.rera_compliance_score}/100` : null,
-          'Filing and disclosure history')
+        add('Units delivered', b.delivered_units != null ? b.delivered_units.toLocaleString('en-IN') : null,
+          'Homes handed over across all projects')
         add('Operating since', b.founded_year != null ? String(b.founded_year) : null, 'Year founded')
 
         const head = `### ${b.name} — the developer behind ${focusBuilder?.name ?? focusName}\n\n`
@@ -161,11 +166,11 @@ export const builderReputationHandler: ChatTopicHandler = {
       // scored, and says nothing when there are none.
       const reputationText = `${focusBlock}### ${focusBlock ? 'How they compare' : 'Developer track record (Noida & Greater Noida)'}
 
-| Developer | Delivery score | Avg handover delay | Delivered | Construction quality | RERA compliance |
-| :--- | :--- | :--- | :--- | :--- | :--- |
+| Developer | Projects delivered | Units delivered | Avg handover delay | Operating since |
+| :--- | :--- | :--- | :--- | :--- |
 ${builderRows}
 
-A dash means we have not scored that dimension for the developer — it is not a low score.${focusBlock ? '' : `\n\n${SCORE_BASIS}`}${topSafeNames && !focusBlock ? `\n\n**On this data**, ${topSafeNames} carry the strongest delivery records of those we hold. Delivery history is the best available predictor of handover risk, but it is a record of past projects, not a guarantee about this one.` : ''}`
+Ordered by delivery record. "Not recorded" is a gap in our data, not a poor result.${focusBlock ? '' : `\n\n${SCORE_BASIS}`}${topSafeNames && !focusBlock ? `\n\n**On this data**, ${topSafeNames} carry the strongest delivery records of those we hold. Delivery history is the best available predictor of handover risk, but it is a record of past projects, not a guarantee about this one.` : ''}`
 
       /**
        * With a project in focus, the next step is about that project. Offering

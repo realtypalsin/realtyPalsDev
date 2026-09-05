@@ -810,7 +810,7 @@ export async function getSectorProjects(opts: {
       ? ['some projects have no verified score and are ranked last, not lowest']
       : [],
     note:
-      'Ranking is by our verified overall_score, then by entry price — it is not a market ranking or a paid placement. Say so if asked how the order is decided. ' +
+      'Ranking is by our own verified assessment, then by entry price — it is not a market ranking or a paid placement. Say so if asked how the order is decided. Never quote a numeric score: the ordering is the judgement, and the figures beside each project are the evidence. ' +
       'A project_risk_flag must be disclosed and that project must not be recommended. ' +
       'rera NOT_IN_DATABASE means we hold no number; do not invent one.',
   }

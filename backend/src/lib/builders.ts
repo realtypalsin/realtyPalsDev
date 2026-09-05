@@ -56,11 +56,14 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
 
   // `== null` throughout: a genuine zero (0 delivered units, a 0 score) is a
   // verified fact, not a missing one, and must not be reported as unverified.
+  // Gaps are named by the FACT that is missing, not by the score that stands in
+  // for it. "delivery score unverified" told the model a score exists and
+  // invited it to ask for one; "handover record unverified" is the same gap
+  // stated in terms a buyer can act on.
   const dataGaps: string[] = []
   if (builder.delivered_units == null) dataGaps.push('delivery count unverified')
-  if (b.delivery_score == null) dataGaps.push('delivery score unverified')
-  if (b.construction_quality_score == null) dataGaps.push('construction quality unverified')
-  if (b.rera_compliance_score == null) dataGaps.push('RERA compliance score unverified')
+  if (b.average_delay_months == null) dataGaps.push('handover record unverified')
+  if (b.rera_promoter_id == null) dataGaps.push('RERA promoter registration unverified')
   if (b.litigation_count == null) dataGaps.push('litigation count unverified')
 
   return {
@@ -83,15 +86,17 @@ export async function getBuilderRecord(name: string): Promise<Record<string, unk
     ongoing_projects: builder.ongoing_projects ?? [],
     delayed_projects_count: b.delayed_projects_count ?? null,
     average_delay_months: b.average_delay_months ?? null,
-    delivery_score: b.delivery_score ?? null,
 
-    // Quality
-    construction_quality_score: b.construction_quality_score ?? null,
-    after_sales_score: b.after_sales_score ?? null,
-    buyer_satisfaction_score: b.buyer_satisfaction_score ?? null,
+    // No scores. `delivery_score`, `construction_quality_score`,
+    // `after_sales_score`, `buyer_satisfaction_score` and
+    // `rera_compliance_score` are analyst-set 0-100 numbers — see
+    // BUYER_OPAQUE_SCORES in projectExposure.ts. They stayed in this payload
+    // while the prompt's own BUILDER DATA RULES already listed what may be
+    // claimed from it (CREDAI membership, legal_flag, awards_count,
+    // delivered_units) and named none of them, so the rule and the data
+    // disagreed and the model believed the data.
 
     // Compliance
-    rera_compliance_score: b.rera_compliance_score ?? null,
     litigation_count: b.litigation_count ?? null,
     insolvency_history: b.insolvency_history ?? false,
     legal_flag: b.legal_flag ?? null,

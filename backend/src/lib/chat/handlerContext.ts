@@ -39,6 +39,13 @@ export interface BuilderRow {
   projects_delivered_count: number | null
   total_projects_count: number | null
   average_delay_months: number | null
+  delivered_units: number | null
+  /**
+   * Ranking only — never a column, never a sentence.
+   *
+   * See BUYER_OPAQUE_SCORES in `projectExposure.ts`. These order the league
+   * table; the columns beside them carry counts and dates a buyer can check.
+   */
   delivery_score: number | null
   construction_quality_score: number | null
   rera_compliance_score: number | null

@@ -46,6 +46,9 @@ export const INTERNAL_ONLY_FIELDS: Record<string, string> = {
   appreciation_potential_5yr: 'forward-looking estimate — the prompt forbids presenting projections as fact',
   rental_yield_annual_percent: 'forward-looking estimate — same rule',
   competing_projects_nearby: 'internal ranking input',
+  rera_compliance_score:
+    'analyst-set 0-100 number — a buyer cannot check it and reads it as the regulator’s verdict; ' +
+    'rera_number and rera_url are the checkable facts. See BUYER_OPAQUE_SCORES.',
 
   // ─── Batch-templated columns, found by `npm run audit:synthetic` ─────────
   //
@@ -167,7 +170,6 @@ export const PROJECT_PUBLIC_SELECT = {
   rera_number: true,
   rera_url: true,
   rera_valid_until: true,
-  rera_compliance_score: true,
   oc_obtained: true,
   oc_obtained_date: true,
   oc_valid_until: true,
@@ -472,4 +474,43 @@ export const SCHEMA_DEFAULT_SENTINELS: Record<string, number> = {
 export function isSchemaDefault(field: string, value: unknown): boolean {
   const sentinel = SCHEMA_DEFAULT_SENTINELS[field]
   return sentinel !== undefined && typeof value === 'number' && value === sentinel
+}
+
+/**
+ * Analyst-set 0–100 numbers that must never reach a buyer.
+ *
+ * Every one of these is entered by hand, frequently unverified, and — this is
+ * the part that matters — indistinguishable to a buyer from a measured rating.
+ * `routes/builders.ts` already reasoned this out for `rera_compliance_score`
+ * and left it unselected; the chat path never followed, so six siblings kept
+ * flowing into prompts and onto the screen.
+ *
+ * Measured in the demo replay: "Show me the best projects between 1 and 2
+ * crore" came back citing "a strong builder delivery score (92)", "a high
+ * overall score (89)" and "a moderate delivery score (87)". A buyer cannot tell
+ * what 87 is out of, who set it, or what separates it from 92 — which is
+ * exactly the fake confidence score CLAUDE.md forbids, arriving by a route
+ * nobody had closed.
+ *
+ * They remain useful and remain in use: `scoringEngine`, `cityShelf` and
+ * `discovery/projects` all rank on them. Ranking with a number is fine.
+ * Printing it is not. The interpretable facts underneath — projects delivered,
+ * average handover delay, litigation count, RERA promoter id, legal flag —
+ * are what a buyer can actually check, and they stay.
+ */
+export const BUYER_OPAQUE_SCORES = [
+  'delivery_score',
+  'construction_quality_score',
+  'after_sales_score',
+  'buyer_satisfaction_score',
+  'rera_compliance_score',
+  'overall_score',
+  'internal_confidence',
+] as const
+
+/** Drops every opaque score from an object bound for a prompt or a response. */
+export function stripOpaqueScores<T extends Record<string, unknown>>(row: T): Partial<T> {
+  const out: Record<string, unknown> = { ...row }
+  for (const field of BUYER_OPAQUE_SCORES) delete out[field]
+  return out as Partial<T>
 }
