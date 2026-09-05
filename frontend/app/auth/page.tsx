@@ -148,9 +148,9 @@ export default function AuthPage() {
       <div className="relative z-10 w-full max-w-[420px] px-4">
         {/* Logo + wordmark */}
         <div className="flex flex-col items-center mb-10 gap-5">
-          <Image src="/images/icons/ExpandedRealtyPalsWhite.png" alt="RealtyPals" width={180} height={40} className="object-contain" priority />
+          <Image src="/images/icons/ExpandedPropFyndrWhite.png" alt="PropFyndr" width={180} height={40} className="object-contain" priority />
           <div className="text-center">
-            <h1 className="text-white font-semibold text-[22px] tracking-tight">Welcome to RealtyPals</h1>
+            <h1 className="text-white font-semibold text-[22px] tracking-tight">Welcome to PropFyndr</h1>
             <p className="text-white/50 text-[13px] mt-1 font-medium tracking-wide">Unbiased property guidance for Noida & Greater Noida</p>
 
           </div>

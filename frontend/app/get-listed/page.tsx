@@ -1,8 +1,8 @@
 import PropertyListingForm from '@/components/PropertyListingForm'
 
 export const metadata = {
-  title: 'List Your Property | RealtyPals',
-  description: 'Submit your real estate project for listing on RealtyPals.',
+  title: 'List Your Property | PropFyndr',
+  description: 'Submit your real estate project for listing on PropFyndr.',
 }
 
 export default function GetListedPage() {

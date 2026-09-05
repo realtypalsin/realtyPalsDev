@@ -98,7 +98,7 @@
 - `frontend/sentry.client.config.ts` - Session replay, 20% trace sample in prod
 - `frontend/sentry.server.config.ts` - Server-side init
 - `frontend/sentry.edge.config.ts` - Edge runtime init
-- Org: `realtypals`, Project: `realtypals-sentry`
+- Org: `propfyndr`, Project: `propfyndr-sentry`
 
 ## Platform Requirements
 

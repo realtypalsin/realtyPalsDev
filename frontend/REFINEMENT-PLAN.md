@@ -91,7 +91,7 @@
 - Overflow: `overflow-hidden` on step container with two-column `grid-cols-2` at 320px. Remove `overflow-hidden`, change grid to `grid-cols-1 sm:grid-cols-2`.
 - Button loading state: spinner-only, no accessible name. Keep label, add `aria-busy={isSubmitting}`.
 - Button icons: `<ArrowLeft/>` / `<ArrowRight/>` without `aria-hidden`. Add to both.
-- Copy: "live on the marketplace" — RealtyPals not a marketplace (CLAUDE.md). Change to "live on RealtyPals".
+- Copy: "live on the marketplace" — PropFyndr not a marketplace (CLAUDE.md). Change to "live on PropFyndr".
 - Price validation: `price_min`/`price_max` free-text ("e.g. 1.5 Cr") with no numeric parsing or min<max check. Use `type="number"` + Lakh|Cr select, reject `price_min > price_max` in `handleNext`.
 - Decorative blurs (4 at line 114-115/177-178): `bg-blue-500/10 blur-[120px]`, `bg-indigo-500/10`, gradients. Delete all four (zero info, 50-80vw each, 6-step compliance form).
 - Action bar: `bg-white/50 backdrop-blur-md` over solid card. Replace with `bg-white`, drop blur.
@@ -118,7 +118,7 @@
 - Loading states show accessible names.
 - `prefers-reduced-motion` guarded animations.
 - No decorative blur blobs.
-- Copy aligns with RealtyPals product voice.
+- Copy aligns with PropFyndr product voice.
 
 **Impeccable commands:** `/impeccable audit app/builder-register/page.tsx` (a11y + contrast), `/impeccable clarify` (copy, validation messages), `/impeccable adapt` (responsive grid).
 
@@ -139,12 +139,12 @@
 - Offline state: `navigator.onLine` never checked. Add online/offline banner, disable send while offline.
 - Message retry: no "failed to send" state on user bubble. Add `message.failed` flag, render with red `!` + "Tap to retry".
 - Error boundary: `Try again` only rerenders same children → usually re-throws. Bump a `key` to reset, offer "Reload page" fallback. Add `track('chat_error_boundary', {...})` telemetry (currently `console.error` only).
-- Draft persistence: input preserved in `localStorage['realtypals_draft']` ✓. Good.
+- Draft persistence: input preserved in `localStorage['propfyndr_draft']` ✓. Good.
 - Scroll position: **not** restored. Debounce-persist `el.scrollTop` per `sessionId`, restore in layout effect after `chatHistory` hydrates.
 - `visibleCount` windowing: resets on mount, forces "Load older messages" re-click after refresh. Persist alongside scroll position.
-- Guest token key mismatch: `/discover` uses `'guest_token'`, `/discover/[sessionId]` uses `'realtypals_guest_token'` and **deletes** the old key. Navigation loses all prior sessions. Extract `getOrCreateGuestToken()` to `lib/guestToken.ts`, use single key in both pages.
-- Auth migration: `/discover/[sessionId]` reads old key (`'guest_token'`) while getter stores under `'realtypals_guest_token'`. On sign-in, guest sessions **never migrated** (buyer's days of chat lost). Read same constant.
-- New-chat remount: `key={`new-${newChatNonce}`}` remounts `DiscoveryContent` on every `realtypals:new-chat` event, discarding draft. Call `performReset()` instead of remounting.
+- Guest token key mismatch: `/discover` uses `'guest_token'`, `/discover/[sessionId]` uses `'propfyndr_guest_token'` and **deletes** the old key. Navigation loses all prior sessions. Extract `getOrCreateGuestToken()` to `lib/guestToken.ts`, use single key in both pages.
+- Auth migration: `/discover/[sessionId]` reads old key (`'guest_token'`) while getter stores under `'propfyndr_guest_token'`. On sign-in, guest sessions **never migrated** (buyer's days of chat lost). Read same constant.
+- New-chat remount: `key={`new-${newChatNonce}`}` remounts `DiscoveryContent` on every `propfyndr:new-chat` event, discarding draft. Call `performReset()` instead of remounting.
 - `localStorage` error: raw `localStorage.getItem` with no `try/catch` on private-mode Safari. Wrap like page.tsx:36-49, set `setReady(true)` in catch.
 - Debug logging: `console.log('[NAV] 3. page-mount…')` and `__navTimings` ship to production. Delete or gate behind `process.env.NODE_ENV !== 'production'`.
 

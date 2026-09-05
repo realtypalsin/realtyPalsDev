@@ -1,9 +1,9 @@
-RealtyPals KDS
+PropFyndr KDS
 Knowledge & Data Specification
 
 Version: 1.0
 Status: Active Development
-Product: RealtyPals
+Product: PropFyndr
 Owner: Knowledge Engineering
 
 Related Documents
@@ -14,9 +14,9 @@ Intelligence Specification (ISD)
 Database Schema Reference (DBS)
 Executive Summary
 
-The Knowledge Platform is the foundation of the RealtyPals ecosystem.
+The Knowledge Platform is the foundation of the PropFyndr ecosystem.
 
-Unlike traditional real estate platforms that primarily store listings, RealtyPals stores structured, verified, interconnected knowledge that enables deterministic decision-making, explainable recommendations, and conversational guidance.
+Unlike traditional real estate platforms that primarily store listings, PropFyndr stores structured, verified, interconnected knowledge that enables deterministic decision-making, explainable recommendations, and conversational guidance.
 
 Every recommendation, builder insight, investment analysis, and AI response ultimately depends on the quality of this knowledge.
 
@@ -27,7 +27,7 @@ Part I — Knowledge Platform Foundation
 
 The Knowledge & Data Specification defines:
 
-what information RealtyPals stores,
+what information PropFyndr stores,
 how knowledge is organized,
 how entities relate to one another,
 how information enters the platform,
@@ -37,7 +37,7 @@ This document serves as the canonical reference for the Knowledge Platform.
 
 2. Knowledge Philosophy
 
-RealtyPals follows one central principle:
+PropFyndr follows one central principle:
 
 Verified knowledge outlives artificial intelligence.
 
@@ -57,7 +57,7 @@ The Knowledge Platform follows nine principles.
 
 Principle 1 — Single Source of Truth
 
-After verification, every fact consumed by RealtyPals originates from the internal PostgreSQL Knowledge Platform.
+After verification, every fact consumed by PropFyndr originates from the internal PostgreSQL Knowledge Platform.
 
 External sources exist only during ingestion.
 
@@ -175,11 +175,11 @@ models,
 frontend components,
 APIs.
 
-It is the long-term moat of RealtyPals.
+It is the long-term moat of PropFyndr.
 
 4. What Is Knowledge?
 
-Within RealtyPals, knowledge consists of three layers.
+Within PropFyndr, knowledge consists of three layers.
 
 Layer 1 — Raw Facts
 
@@ -502,13 +502,13 @@ Investment insights become speculative.
 
 The Knowledge Platform transforms fragmented real estate data into trusted decision intelligence.
 
-It is therefore the foundation upon which every other RealtyPals subsystem is built.
+It is therefore the foundation upon which every other PropFyndr subsystem is built.
 
 
 Part II — Property Knowledge
 13. Purpose
 
-Property Knowledge represents the complete body of verified information RealtyPals maintains about every residential project.
+Property Knowledge represents the complete body of verified information PropFyndr maintains about every residential project.
 
 It is the largest and most important knowledge domain within the platform.
 
@@ -516,7 +516,7 @@ Every recommendation, comparison, investment insight, and conversational respons
 
 14. Philosophy
 
-Within RealtyPals, a property is not simply a listing.
+Within PropFyndr, a property is not simply a listing.
 
 It is a living knowledge object composed of:
 
@@ -964,7 +964,7 @@ The lifecycle ensures consistency and quality across all property knowledge.
 
 31. Property Knowledge Principles
 
-Every property within RealtyPals should satisfy the following principles:
+Every property within PropFyndr should satisfy the following principles:
 
 Every property has a permanent identity.
 Facts are verified before publication.
@@ -981,9 +981,9 @@ Recommendation quality depends on knowledge completeness.
 Part III — Builder Knowledge
 32. Purpose
 
-Builder Knowledge represents the complete body of verified information RealtyPals maintains about real estate developers.
+Builder Knowledge represents the complete body of verified information PropFyndr maintains about real estate developers.
 
-Unlike traditional listing platforms, RealtyPals treats builders as first-class knowledge entities rather than simple attributes of projects.
+Unlike traditional listing platforms, PropFyndr treats builders as first-class knowledge entities rather than simple attributes of projects.
 
 Understanding the builder is fundamental to helping buyers evaluate trust, execution capability, delivery consistency, and long-term investment confidence.
 
@@ -1000,7 +1000,7 @@ Customer trust
 Regulatory compliance
 Market positioning
 
-RealtyPals evaluates projects within the broader context of the builder behind them.
+PropFyndr evaluates projects within the broader context of the builder behind them.
 
 34. Builder Hierarchy
 
@@ -1259,7 +1259,7 @@ Builder knowledge should evolve continuously as the company grows.
 
 46. Builder Knowledge Principles
 
-Every builder within RealtyPals should satisfy these principles:
+Every builder within PropFyndr should satisfy these principles:
 
 Every builder has a permanent identity.
 Company facts are independently verifiable.
@@ -1271,9 +1271,9 @@ Intelligence is explainable.
 Metadata enables governance.
 Knowledge completeness influences recommendation confidence.
 Builder trust is earned through verified evidence, not popularity.
-⭐ 47. Builder Trust Profile (Core RealtyPals Concept)
+⭐ 47. Builder Trust Profile (Core PropFyndr Concept)
 
-This is a concept I believe should become unique to RealtyPals.
+This is a concept I believe should become unique to PropFyndr.
 
 Instead of a simplistic "Builder Score" or "Rating," each builder should have a Builder Trust Profile.
 
@@ -1294,7 +1294,7 @@ Instead of saying:
 
 "Builder Score: 8.7"
 
-RealtyPals could say:
+PropFyndr could say:
 
 "This builder has an excellent delivery history and execution quality, but most of its experience is concentrated in premium projects. Buyers looking for timely possession can generally have high confidence, while first-time affordable buyers may want to compare alternatives."
 
@@ -1304,9 +1304,9 @@ That is far more useful than a number.
 Part IV — Locality & Infrastructure Knowledge
 48. Purpose
 
-Locality Knowledge represents the complete body of verified information RealtyPals maintains about every geographical area within its coverage.
+Locality Knowledge represents the complete body of verified information PropFyndr maintains about every geographical area within its coverage.
 
-Unlike traditional real estate platforms that merely associate projects with sectors or pincodes, RealtyPals models localities as independent knowledge domains that influence recommendations, investment analysis, and buyer suitability.
+Unlike traditional real estate platforms that merely associate projects with sectors or pincodes, PropFyndr models localities as independent knowledge domains that influence recommendations, investment analysis, and buyer suitability.
 
 Every project inherits locality context from this domain.
 
@@ -1324,7 +1324,7 @@ Accessibility
 Community
 Investment potential
 
-RealtyPals helps buyers evaluate where they will live, not merely what they will buy.
+PropFyndr helps buyers evaluate where they will live, not merely what they will buy.
 
 50. Locality Hierarchy
 
@@ -1435,7 +1435,7 @@ Connectivity should remain factual rather than opinion-based.
 
 54. Social Infrastructure
 
-RealtyPals maintains structured information about nearby facilities.
+PropFyndr maintains structured information about nearby facilities.
 
 Education
 Schools
@@ -1459,7 +1459,7 @@ Nearby facilities should reference actual entities rather than duplicate their i
 
 55. Mobility Knowledge
 
-Rather than storing only distances, RealtyPals captures practical mobility.
+Rather than storing only distances, PropFyndr captures practical mobility.
 
 Examples:
 
@@ -1511,7 +1511,7 @@ Lifestyle descriptors should always be explainable.
 
 58. Environmental Knowledge
 
-Where available, RealtyPals maintains information about the surrounding environment.
+Where available, PropFyndr maintains information about the surrounding environment.
 
 Examples include:
 
@@ -1552,7 +1552,7 @@ These relationships allow the Decision Engine to reason about a locality holisti
 
 60. Nearby Entity Model
 
-Instead of storing repeated information for every project, RealtyPals references shared entities.
+Instead of storing repeated information for every project, PropFyndr references shared entities.
 
 Examples:
 
@@ -1674,9 +1674,9 @@ Relationships connect localities to the broader knowledge graph.
 Metadata supports governance.
 Completeness influences recommendation confidence.
 Buyers evaluate neighborhoods, not just buildings.
-⭐ 65. Locality DNA (Core RealtyPals Concept)
+⭐ 65. Locality DNA (Core PropFyndr Concept)
 
-This is another concept I believe should become unique to RealtyPals.
+This is another concept I believe should become unique to PropFyndr.
 
 Instead of describing an area through disconnected facts, every locality should have a Locality DNA.
 
@@ -1696,7 +1696,7 @@ Rather than saying:
 
 "Sector 150 has two metro stations within 5 km."
 
-RealtyPals could explain:
+PropFyndr could explain:
 
 "Sector 150 offers a calm residential environment with strong recreational amenities and growing metro connectivity. It is particularly well suited for families seeking long-term residential living, while buyers prioritizing immediate access to commercial hubs may also want to consider nearby sectors."
 
@@ -1706,9 +1706,9 @@ This is significantly more useful than a list of nearby places because it helps 
 Part V — Investment Knowledge
 66. Purpose
 
-Investment Knowledge represents RealtyPals' structured understanding of the long-term financial potential of residential properties.
+Investment Knowledge represents PropFyndr' structured understanding of the long-term financial potential of residential properties.
 
-Unlike traditional real estate platforms that merely display prices and appreciation charts, RealtyPals models the drivers that influence future value.
+Unlike traditional real estate platforms that merely display prices and appreciation charts, PropFyndr models the drivers that influence future value.
 
 Investment Knowledge enables buyers to understand not only what a property costs today, but why it may become more or less valuable tomorrow.
 
@@ -1716,7 +1716,7 @@ Investment Knowledge enables buyers to understand not only what a property costs
 
 Investment analysis should never be speculative.
 
-Every conclusion presented by RealtyPals must be supported by observable and explainable factors.
+Every conclusion presented by PropFyndr must be supported by observable and explainable factors.
 
 The platform should avoid making promises or guarantees about future appreciation.
 
@@ -1781,7 +1781,7 @@ These facts form the foundation of investment reasoning.
 
 70. Investment Drivers
 
-Rather than assigning arbitrary scores, RealtyPals identifies measurable investment drivers.
+Rather than assigning arbitrary scores, PropFyndr identifies measurable investment drivers.
 
 Examples include:
 
@@ -1828,7 +1828,7 @@ Market context should describe the environment rather than predict outcomes.
 
 72. Appreciation Factors
 
-Rather than forecasting prices, RealtyPals identifies appreciation catalysts.
+Rather than forecasting prices, PropFyndr identifies appreciation catalysts.
 
 Examples include:
 
@@ -1845,7 +1845,7 @@ Catalysts should reference verified public information where available.
 
 Every investment has risks.
 
-RealtyPals should surface them transparently.
+PropFyndr should surface them transparently.
 
 Examples include:
 
@@ -1964,9 +1964,9 @@ Investment knowledge evolves as markets change.
 Generated insights remain explainable.
 Investment reasoning supports—not replaces—buyer judgment.
 Transparency builds long-term trust.
-⭐ 79. Investment Profile (Core RealtyPals Concept)
+⭐ 79. Investment Profile (Core PropFyndr Concept)
 
-Instead of assigning a simplistic "Investment Score," RealtyPals should generate an Investment Profile.
+Instead of assigning a simplistic "Investment Score," PropFyndr should generate an Investment Profile.
 
 An Investment Profile describes the character of an investment using structured dimensions.
 
@@ -1984,13 +1984,13 @@ Instead of saying:
 
 "Investment Score: 8.6"
 
-RealtyPals could explain:
+PropFyndr could explain:
 
 "This project benefits from strong connectivity improvements and is backed by an established developer with a consistent delivery record. The surrounding area is still developing, making it more suitable for buyers with a medium- to long-term investment horizon. Buyers seeking immediate rental yield or rapid short-term appreciation should consider these trade-offs."
 
 This provides meaningful guidance without implying false precision.
 
-⭐ 80. Investment Suitability Matrix (Unique RealtyPals Feature)
+⭐ 80. Investment Suitability Matrix (Unique PropFyndr Feature)
 
 Every property can also maintain an Investment Suitability Matrix.
 
@@ -2016,15 +2016,15 @@ Two buyers looking at the same project may receive different investment recommen
 Part VI — User Knowledge
 81. Purpose
 
-User Knowledge represents the structured understanding RealtyPals builds about every buyer over time.
+User Knowledge represents the structured understanding PropFyndr builds about every buyer over time.
 
-Unlike traditional platforms that primarily store account information, RealtyPals continuously develops a buyer profile based on stated preferences, interactions, conversations, and decisions.
+Unlike traditional platforms that primarily store account information, PropFyndr continuously develops a buyer profile based on stated preferences, interactions, conversations, and decisions.
 
 The objective is to enable progressively better, more personalized recommendations while respecting user privacy and maintaining transparency.
 
 82. Philosophy
 
-RealtyPals does not merely remember what a user clicked.
+PropFyndr does not merely remember what a user clicked.
 
 It remembers what the user is trying to achieve.
 
@@ -2147,7 +2147,7 @@ Goals influence recommendation reasoning more than filters alone.
 
 88. Conversation Memory
 
-Conversation memory allows RealtyPals to maintain continuity across sessions.
+Conversation memory allows PropFyndr to maintain continuity across sessions.
 
 Memory is divided into two layers.
 
@@ -2310,7 +2310,7 @@ Decision History
 
 Long-Term Relationship
 
-RealtyPals should evolve alongside the buyer's journey rather than treating every visit as independent.
+PropFyndr should evolve alongside the buyer's journey rather than treating every visit as independent.
 
 97. User Knowledge Principles
 
@@ -2326,9 +2326,9 @@ Privacy is respected by design.
 Personalization remains explainable.
 User knowledge supports better decisions, not manipulation.
 Long-term trust is more valuable than short-term engagement.
-⭐ 98. Buyer Persona (Core RealtyPals Concept)
+⭐ 98. Buyer Persona (Core PropFyndr Concept)
 
-One of the most valuable knowledge objects in RealtyPals should be the Buyer Persona.
+One of the most valuable knowledge objects in PropFyndr should be the Buyer Persona.
 
 A Buyer Persona is not demographic data.
 
@@ -2348,7 +2348,7 @@ Instead of saying:
 
 "The user likes Sector 150."
 
-RealtyPals could understand:
+PropFyndr could understand:
 
 "This is a family-focused buyer with a medium-term ownership horizon, moderate budget flexibility, and a strong preference for trusted builders and good school access."
 
@@ -2358,7 +2358,7 @@ This becomes far more useful for personalization than storing dozens of isolated
 
 Another unique concept I recommend is maintaining a Decision Journey Timeline.
 
-Rather than recording disconnected events, RealtyPals tracks meaningful milestones.
+Rather than recording disconnected events, PropFyndr tracks meaningful milestones.
 
 Example:
 
@@ -2388,7 +2388,7 @@ Site Visit Requested
 
 Purchase Completed (Future)
 
-This timeline allows RealtyPals to adapt its behavior based on where the buyer is in the decision process.
+This timeline allows PropFyndr to adapt its behavior based on where the buyer is in the decision process.
 
 For example:
 
@@ -2403,7 +2403,7 @@ The platform becomes context-aware without requiring the user to repeat informat
 Part VII — Decision Knowledge
 100. Purpose
 
-Decision Knowledge represents the structured output produced by the RealtyPals Decision Engine.
+Decision Knowledge represents the structured output produced by the PropFyndr Decision Engine.
 
 Unlike Property Knowledge or Builder Knowledge, Decision Knowledge is not permanently stored as business data.
 
@@ -2691,9 +2691,9 @@ Recommendations evolve as user knowledge evolves.
 Decisions are contextual, not universal.
 Transparency outweighs persuasion.
 Recommendations support buyers—they do not pressure them.
-⭐ 115. Decision Package (Core RealtyPals Concept)
+⭐ 115. Decision Package (Core PropFyndr Concept)
 
-Rather than thinking of a recommendation as a paragraph of text, RealtyPals should generate a structured Decision Package.
+Rather than thinking of a recommendation as a paragraph of text, PropFyndr should generate a structured Decision Package.
 
 Example:
 
@@ -2766,7 +2766,7 @@ Decision Stability	Would repeated evaluations produce the same result?
 
 Decision Confidence is primarily for internal use.
 
-It helps determine whether RealtyPals should:
+It helps determine whether PropFyndr should:
 
 Ask another clarification question.
 Proceed with recommendations.
@@ -2795,7 +2795,7 @@ These signals improve future Decision Engine behavior without altering the under
 Part VIII — Knowledge Lifecycle & Knowledge Factory
 118. Purpose
 
-The Knowledge Factory is the operational system responsible for acquiring, validating, enriching, publishing, and maintaining every piece of knowledge within RealtyPals.
+The Knowledge Factory is the operational system responsible for acquiring, validating, enriching, publishing, and maintaining every piece of knowledge within PropFyndr.
 
 Unlike traditional data pipelines that merely import information, the Knowledge Factory transforms fragmented external information into trusted, structured, explainable knowledge.
 
@@ -2807,7 +2807,7 @@ Knowledge is not imported.
 
 Knowledge is manufactured.
 
-Every fact within RealtyPals should pass through a controlled production process before becoming available to buyers.
+Every fact within PropFyndr should pass through a controlled production process before becoming available to buyers.
 
 The Knowledge Factory treats information as a product rather than a database record.
 
@@ -2892,7 +2892,7 @@ Collected information remains untrusted until validation.
 
 Different sources describe the same information differently.
 
-Normalization converts raw information into RealtyPals' standard structure.
+Normalization converts raw information into PropFyndr' standard structure.
 
 Examples:
 
@@ -3143,9 +3143,9 @@ Quality is continuously measured.
 Knowledge remains explainable.
 Publication is atomic.
 The factory continuously improves over time.
-⭐ 136. Knowledge Production Pipeline (Core RealtyPals Concept)
+⭐ 136. Knowledge Production Pipeline (Core PropFyndr Concept)
 
-Instead of thinking in terms of "data ingestion," RealtyPals should adopt the concept of a Knowledge Production Pipeline.
+Instead of thinking in terms of "data ingestion," PropFyndr should adopt the concept of a Knowledge Production Pipeline.
 
 Raw Information
 
@@ -3183,7 +3183,7 @@ Buyer
 
 This reinforces an important philosophy:
 
-RealtyPals does not consume data.
+PropFyndr does not consume data.
 
 It manufactures trusted knowledge.
 
@@ -3241,13 +3241,13 @@ The architecture is designed to support this evolution without changing downstre
 Part IX — Knowledge Governance
 139. Purpose
 
-Knowledge Governance defines the policies, workflows, permissions, and controls that ensure every piece of knowledge within RealtyPals remains trustworthy, auditable, and explainable throughout its lifecycle.
+Knowledge Governance defines the policies, workflows, permissions, and controls that ensure every piece of knowledge within PropFyndr remains trustworthy, auditable, and explainable throughout its lifecycle.
 
 Governance protects the integrity of the Knowledge Platform.
 
 Its objective is not to slow down publishing.
 
-Its objective is to ensure buyers can trust every recommendation made by RealtyPals.
+Its objective is to ensure buyers can trust every recommendation made by PropFyndr.
 
 140. Governance Philosophy
 
@@ -3548,7 +3548,7 @@ Audit history is immutable.
 Source hierarchy is respected.
 Accountability outweighs speed.
 Trust is preserved above all else.
-⭐ 154. Knowledge Confidence (Core RealtyPals Concept)
+⭐ 154. Knowledge Confidence (Core PropFyndr Concept)
 
 One concept I recommend introducing is Knowledge Confidence.
 
@@ -3599,7 +3599,7 @@ This dashboard becomes the operational control center for the Knowledge Platform
 Part X — Refresh, Versioning & Knowledge Quality
 156. Purpose
 
-Knowledge Quality ensures that the RealtyPals Knowledge Platform remains accurate, complete, current, and trustworthy throughout its lifecycle.
+Knowledge Quality ensures that the PropFyndr Knowledge Platform remains accurate, complete, current, and trustworthy throughout its lifecycle.
 
 This chapter defines how knowledge is refreshed, versioned, monitored, and continuously improved.
 
@@ -3926,7 +3926,7 @@ Measure freshness continuously.
 Prefer incremental updates.
 Never overwrite history.
 Quality is continuous, not periodic.
-⭐ 174. Knowledge Health Index (Core RealtyPals Concept)
+⭐ 174. Knowledge Health Index (Core PropFyndr Concept)
 
 I recommend introducing a platform-wide Knowledge Health Index.
 
@@ -3981,7 +3981,7 @@ Every correction strengthens the platform for future buyers.
 Part XI — Security & Access Control
 176. Purpose
 
-The Security & Access Control model protects the RealtyPals Knowledge Platform from unauthorized access, accidental modification, data corruption, and intellectual property leakage.
+The Security & Access Control model protects the PropFyndr Knowledge Platform from unauthorized access, accidental modification, data corruption, and intellectual property leakage.
 
 The objective is to ensure that:
 
@@ -3991,7 +3991,7 @@ every action is accountable,
 knowledge integrity is preserved.
 177. Security Philosophy
 
-Knowledge is one of RealtyPals' most valuable business assets.
+Knowledge is one of PropFyndr' most valuable business assets.
 
 Every interaction with the Knowledge Platform should satisfy three principles:
 
@@ -4081,7 +4081,7 @@ AI Enrichment
 Validation Engine
 180. Permission Model
 
-RealtyPals follows Role-Based Access Control (RBAC).
+PropFyndr follows Role-Based Access Control (RBAC).
 
 Guest
 
@@ -4291,7 +4291,7 @@ Decision Packages
 Knowledge Factory workflows
 Evaluation methodologies
 
-These represent RealtyPals' competitive advantage.
+These represent PropFyndr' competitive advantage.
 
 190. API Protection
 
@@ -4364,9 +4364,9 @@ Public APIs expose only approved knowledge.
 Sensitive operational metrics remain internal.
 Least privilege applies to every role.
 Protect the Knowledge Platform as a strategic business asset.
-⭐ 194. Knowledge Access Matrix (Core RealtyPals Concept)
+⭐ 194. Knowledge Access Matrix (Core PropFyndr Concept)
 
-Instead of scattered permission rules, RealtyPals should maintain a centralized Knowledge Access Matrix.
+Instead of scattered permission rules, PropFyndr should maintain a centralized Knowledge Access Matrix.
 
 Example:
 
@@ -4407,7 +4407,7 @@ This prevents accidental exposure of internal methodologies while allowing the p
 Part XII — Future Knowledge Evolution
 196. Purpose
 
-The Future Knowledge Evolution strategy defines how the RealtyPals Knowledge Platform expands over time while preserving its architectural principles.
+The Future Knowledge Evolution strategy defines how the PropFyndr Knowledge Platform expands over time while preserving its architectural principles.
 
 The Knowledge Platform should evolve through continuous extension rather than repeated redesign.
 
@@ -4415,7 +4415,7 @@ Every future capability should strengthen the existing knowledge graph instead o
 
 197. Long-Term Vision
 
-Today, RealtyPals maintains knowledge about:
+Today, PropFyndr maintains knowledge about:
 
 Properties
 Builders
@@ -4496,7 +4496,7 @@ Each domain should follow the same governance and lifecycle defined throughout t
 
 200. Knowledge Graph Evolution
 
-Today, RealtyPals primarily models relationships between:
+Today, PropFyndr primarily models relationships between:
 
 Property
 Builder
@@ -4713,7 +4713,7 @@ Upgrade
 
 Resale
 
-RealtyPals evolves from a buying platform into a long-term homeowner companion.
+PropFyndr evolves from a buying platform into a long-term homeowner companion.
 
 208. Knowledge Operations Evolution
 
@@ -4759,9 +4759,9 @@ Prefer deterministic reasoning.
 Separate facts from interpretation.
 Keep AI grounded in verified knowledge.
 Build long-term buyer trust.
-⭐ 211. RealtyPals Knowledge Flywheel (Core Company Concept)
+⭐ 211. PropFyndr Knowledge Flywheel (Core Company Concept)
 
-This is the concept I believe should become the long-term operating philosophy of RealtyPals.
+This is the concept I believe should become the long-term operating philosophy of PropFyndr.
 
 More Buyers
 
@@ -4807,13 +4807,13 @@ This flywheel is what creates a sustainable competitive advantage.
 
 ⭐ 212. The End State
 
-The final evolution of RealtyPals is not:
+The final evolution of PropFyndr is not:
 
 "A website that recommends properties."
 
 It becomes:
 
-                RealtyPals
+                PropFyndr
 
                      │
 

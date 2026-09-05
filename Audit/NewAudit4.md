@@ -1,4 +1,4 @@
-# Master Implementation Plan – UiRealtyPals Full Audit Execution
+# Master Implementation Plan – UiPropFyndr Full Audit Execution
 
 **Version:** 1.0 | **Date:** 2026-07-13  
 **Purpose:** Step-by-step execution guide synthesizing all 7 audit artifacts.  
@@ -10,7 +10,7 @@
 
 - Tasks are grouped into **Phases** and **Sprints**.
 - Each task has: a **What** (what it does), a **Why** (why it matters), a **How** (exact steps to implement).
-- File paths are always **absolute** from the project root `C:\Users\Furqan\Desktop\UiRealtyPals`.
+- File paths are always **absolute** from the project root `C:\Users\Furqan\Desktop\UiPropFyndr`.
 - Commands are written for **PowerShell on Windows**.
 - After each Phase, run the **Verification Commands** listed at the end of that Phase.
 - If a task says **ALREADY DONE**, it was applied in the audit session — skip it and verify it is still present.
@@ -26,18 +26,18 @@ Before starting any Phase, run these checks to confirm the baseline:
 node --version
 
 # 2. Confirm both builds pass (they should from the audit session)
-cd C:\Users\Furqan\Desktop\UiRealtyPals\backend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\backend
 npm run build   # Must print: > tsc (with no errors)
 
-cd C:\Users\Furqan\Desktop\UiRealtyPals\frontend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\frontend
 npm run build   # Must complete with route listing
 
 # 3. Confirm no merge conflicts remain in render.yaml
-Select-String -Path "C:\Users\Furqan\Desktop\UiRealtyPals\render.yaml" -Pattern "<<<<<<"
+Select-String -Path "C:\Users\Furqan\Desktop\UiPropFyndr\render.yaml" -Pattern "<<<<<<"
 # Must return NOTHING. If it returns something, the conflict fix didn't apply — re-do Task 1.1.
 
 # 4. Confirm TLS bypass is gone
-Select-String -Path "C:\Users\Furqan\Desktop\UiRealtyPals\frontend\.env.local" -Pattern "NODE_TLS_REJECT_UNAUTHORIZED=0"
+Select-String -Path "C:\Users\Furqan\Desktop\UiPropFyndr\frontend\.env.local" -Pattern "NODE_TLS_REJECT_UNAUTHORIZED=0"
 # Must return NOTHING. If it returns something, re-do Task 1.2.
 ```
 
@@ -56,14 +56,14 @@ Select-String -Path "C:\Users\Furqan\Desktop\UiRealtyPals\frontend\.env.local" -
 **Status:** Fixed in audit session. Verify it looks correct:
 
 ```powershell
-Get-Content "C:\Users\Furqan\Desktop\UiRealtyPals\render.yaml"
+Get-Content "C:\Users\Furqan\Desktop\UiPropFyndr\render.yaml"
 ```
 
 Expected output should start with:
 ```yaml
 services:
   - type: web
-    name: realtypals-backend
+    name: propfyndr-backend
     env: node
     plan: starter
     rootDir: backend
@@ -71,13 +71,13 @@ services:
 
 If not, create the file with this exact content:
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\render.yaml`  
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\render.yaml`  
 **Action:** Replace entire file contents with:
 
 ```yaml
 services:
   - type: web
-    name: realtypals-backend
+    name: propfyndr-backend
     env: node
     plan: starter
     rootDir: backend
@@ -142,7 +142,7 @@ services:
 
 Verify:
 ```powershell
-Select-String -Path "C:\Users\Furqan\Desktop\UiRealtyPals\frontend\.env.local" -Pattern "NODE_TLS_REJECT_UNAUTHORIZED=0"
+Select-String -Path "C:\Users\Furqan\Desktop\UiPropFyndr\frontend\.env.local" -Pattern "NODE_TLS_REJECT_UNAUTHORIZED=0"
 # Must return nothing
 ```
 
@@ -186,7 +186,7 @@ if (process.env.NODE_ENV === 'production' && !process.env.FRONTEND_URL) {
 
 **Step 1:** Create a new file:
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\backend\src\lib\ai\sanitize.ts`  
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\backend\src\lib\ai\sanitize.ts`  
 **Content (create this file entirely):**
 
 ```typescript
@@ -271,7 +271,7 @@ if (blocked) {
 **What:** The `readPage` function in `backend/src/lib/web.ts` fetches arbitrary URLs provided by users. An attacker could pass `http://169.254.169.254/` (AWS metadata endpoint) or `http://localhost:5432/` to access internal infrastructure.  
 **Why:** OWASP A10: Server-Side Request Forgery. High severity.
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\backend\src\lib\web.ts`
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\backend\src\lib\web.ts`
 
 **Step 1:** Open the file and add this validation function at the top (after the imports, before any exported functions):
 
@@ -330,7 +330,7 @@ export async function readPage(url: string): Promise<string> {
 
 **Step 1:** Install the `file-type` package in the backend:
 ```powershell
-cd C:\Users\Furqan\Desktop\UiRealtyPals\backend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\backend
 npm install file-type
 npm install --save-dev @types/file-type
 ```
@@ -341,7 +341,7 @@ npm install --save-dev @types/file-type
 
 **Step 2:** Create a shared upload validator:
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\backend\src\lib\uploadValidator.ts`  
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\backend\src\lib\uploadValidator.ts`  
 **Content (create this file entirely):**
 
 ```typescript
@@ -404,7 +404,7 @@ if (req.file) {
 **What:** `frontend/middleware.ts` line 12 has `'sb-eargxntetfmtdpwedjbd-auth-token'` hardcoded. This leaks the Supabase project reference in source code and breaks silently if the project is migrated.  
 **Why:** Medium security finding; also a maintenance risk.
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\frontend\middleware.ts`
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\frontend\middleware.ts`
 
 Find this line:
 ```typescript
@@ -428,12 +428,12 @@ const supabaseToken = request.cookies.get(supabaseCookieName)?.value
 
 ```powershell
 # Backend must still compile cleanly
-cd C:\Users\Furqan\Desktop\UiRealtyPals\backend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\backend
 npm run build
 # Expected: exits with code 0, no TypeScript errors
 
 # Frontend must still build cleanly
-cd C:\Users\Furqan\Desktop\UiRealtyPals\frontend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\frontend
 npm run build
 # Expected: exits with code 0, all 28+ pages generated
 ```
@@ -452,7 +452,7 @@ npm run build
 **What:** The Leaflet map library (~150 kB gzipped) is currently bundled into the main `/discover` chunk. It should only load when the map tab is actually clicked.  
 **Why:** Reduces `/discover` page bundle from 622 kB to ~450 kB.
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\SectorMapInner.tsx`  
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\SectorMapInner.tsx`  
 You don't need to change this file. Instead, find everywhere `SectorMapInner` is imported in other components:
 
 ```powershell
@@ -557,7 +557,7 @@ Select-String -Path "frontend" -Pattern "from 'framer-motion'" -Include "*.tsx",
 **What:** `backend/src/routes/admin.ts` around line 1390 calls `prisma.propertyEvent.findMany()` with **no filter** and **no limit**. As the analytics table grows, this could fetch millions of rows on every analytics page load.  
 **Why:** Critical performance risk in production.
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\backend\src\routes\admin.ts`
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\backend\src\routes\admin.ts`
 
 Find this exact code block:
 ```typescript
@@ -584,7 +584,7 @@ const events = await prisma.propertyEvent.findMany({
 **What:** `searchProjects` in `frontend/lib/repositories/projectRepository.ts` fetches ALL images for each project. A project with 50 photos returns all 50, but only the hero image is ever shown in the card.  
 **Why:** Reduces payload and DB query cost significantly.
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\frontend\lib\repositories\projectRepository.ts`
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\frontend\lib\repositories\projectRepository.ts`
 
 Find the `include` block in `searchProjects` (around line 136):
 ```typescript
@@ -608,7 +608,7 @@ images: { orderBy: { sort_order: 'asc' }, take: 10 },
 **What:** Enable query logging so you can see which queries are slow during development.  
 **Why:** Necessary for diagnosing future performance issues.
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\backend\src\lib\db.ts`
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\backend\src\lib\db.ts`
 
 Open the file. It likely looks like:
 ```typescript
@@ -641,7 +641,7 @@ export const prisma = new PrismaClient({
 **What:** Create a generic caching middleware that can be applied to any GET endpoint to cache its response in Redis for a configurable TTL.  
 **Why:** Reduces repeated DB queries for frequently accessed data like project details and builder profiles.
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\backend\src\lib\routeCache.ts`  
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\backend\src\lib\routeCache.ts`  
 **Content (create this file entirely):**
 
 ```typescript
@@ -712,7 +712,7 @@ router.get('/:slug', routeCache(3600), async (req, res) => { ... })  // 1 hour
 
 **Step 1:** Install the package:
 ```powershell
-cd C:\Users\Furqan\Desktop\UiRealtyPals\frontend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\frontend
 npm install next-nprogress-bar
 ```
 
@@ -739,7 +739,7 @@ Inside the `return` of the layout, just inside the `<body>` tag, add:
 
 **What:** Different pages use different loading states (some spinners, some empty, some nothing). Create a standard skeleton system so every loading state looks consistent and polished.
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\skeletons\index.tsx`  
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\skeletons\index.tsx`  
 **Content (create this file entirely):**
 
 ```tsx
@@ -868,7 +868,7 @@ export default function AdminPage() {
 
 ```powershell
 # Frontend build must still pass
-cd C:\Users\Furqan\Desktop\UiRealtyPals\frontend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\frontend
 npm run build
 
 # Check bundle sizes in the output — /discover should now be < 450 kB (target: < 300 kB after all tasks)
@@ -877,7 +877,7 @@ npm run build
 # /discover                                x kB     < 450 kB ✅
 
 # Backend must still compile
-cd C:\Users\Furqan\Desktop\UiRealtyPals\backend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\backend
 npm run build
 ```
 
@@ -894,7 +894,7 @@ npm run build
 
 **What:** Replace scattered hardcoded hex values across components with a unified CSS variable system. This is the foundation — all subsequent UI tasks depend on this.
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\frontend\app\globals.css`
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\frontend\app\globals.css`
 
 **Action:** Find the existing `:root` block (lines 5-8) and the `.dark` block (lines 10-13). Replace them with:
 
@@ -995,7 +995,7 @@ Also add this `.glass-card` class immediately after the existing `.glass-surface
 
 **What:** The admin dashboard shows plain text metrics. Replace them with premium stat cards that have icons, trend indicators, and proper visual hierarchy.
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\admin\StatCard.tsx`  
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\admin\StatCard.tsx`  
 **Content (create this file entirely):**
 
 ```tsx
@@ -1113,7 +1113,7 @@ The current `--color-text-muted` value was set to `#6B7280` (updated in Task 3.1
 
 ```powershell
 # Build must still pass
-cd C:\Users\Furqan\Desktop\UiRealtyPals\frontend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\frontend
 npm run build
 
 # Start dev server and visually verify:
@@ -1222,7 +1222,7 @@ const cards = rows.map((row) => toProjectCard(row as ProjectWithRelations))
 **Action:** Run these commands to move scripts to a dedicated directory:
 ```powershell
 # Create a scripts archive directory
-New-Item -ItemType Directory -Path "C:\Users\Furqan\Desktop\UiRealtyPals\scripts\archived" -Force
+New-Item -ItemType Directory -Path "C:\Users\Furqan\Desktop\UiPropFyndr\scripts\archived" -Force
 
 # Move one-off scripts
 $scripts = @(
@@ -1231,20 +1231,20 @@ $scripts = @(
   "add-route.js", "register-route.js", "test-haiku.js", "extract-amenities.js"
 )
 foreach ($s in $scripts) {
-  $src = "C:\Users\Furqan\Desktop\UiRealtyPals\$s"
+  $src = "C:\Users\Furqan\Desktop\UiPropFyndr\$s"
   if (Test-Path $src) {
-    Move-Item $src "C:\Users\Furqan\Desktop\UiRealtyPals\scripts\archived\"
+    Move-Item $src "C:\Users\Furqan\Desktop\UiPropFyndr\scripts\archived\"
   }
 }
 
 # Delete log files (they should not be committed)
-Remove-Item -Force "C:\Users\Furqan\Desktop\UiRealtyPals\backend-err.txt" -ErrorAction SilentlyContinue
-Remove-Item -Force "C:\Users\Furqan\Desktop\UiRealtyPals\backend-out.txt" -ErrorAction SilentlyContinue
+Remove-Item -Force "C:\Users\Furqan\Desktop\UiPropFyndr\backend-err.txt" -ErrorAction SilentlyContinue
+Remove-Item -Force "C:\Users\Furqan\Desktop\UiPropFyndr\backend-out.txt" -ErrorAction SilentlyContinue
 ```
 
 **Update `.gitignore`** to prevent log files from being committed:
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\.gitignore`  
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\.gitignore`  
 Add these lines at the bottom:
 ```
 # Root-level log files
@@ -1258,7 +1258,7 @@ dev.log
 ## Phase 4 Verification
 
 ```powershell
-cd C:\Users\Furqan\Desktop\UiRealtyPals\frontend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\frontend
 npm run lint
 # Should report significantly fewer warnings than before
 
@@ -1282,15 +1282,15 @@ npm run build
 **Step 1:** Rename the file:
 ```powershell
 Rename-Item `
-  "C:\Users\Furqan\Desktop\UiRealtyPals\frontend\sentry.client.config.ts" `
-  "C:\Users\Furqan\Desktop\UiRealtyPals\frontend\instrumentation-client.ts"
+  "C:\Users\Furqan\Desktop\UiPropFyndr\frontend\sentry.client.config.ts" `
+  "C:\Users\Furqan\Desktop\UiPropFyndr\frontend\instrumentation-client.ts"
 ```
 
 **Step 2:** Open `frontend/instrumentation-client.ts` and verify it still has the Sentry initialization call. The content should remain the same — just the filename changes.
 
 **Step 3:** Verify the dev server starts without the deprecation warning:
 ```powershell
-cd C:\Users\Furqan\Desktop\UiRealtyPals\frontend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\frontend
 npm run dev
 # Check the startup output — should NOT say "DEPRECATION WARNING"
 ```
@@ -1301,7 +1301,7 @@ npm run dev
 
 **What:** Add convenient npm scripts for running full build checks before deploying.
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\frontend\package.json`
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\frontend\package.json`
 
 In the `"scripts"` section, add these entries:
 ```json
@@ -1310,7 +1310,7 @@ In the `"scripts"` section, add these entries:
 "build:vercel": "npx prisma generate --schema=../prisma/schema.prisma && next build"
 ```
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\backend\package.json`
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\backend\package.json`
 
 In the `"scripts"` section, add:
 ```json
@@ -1324,7 +1324,7 @@ In the `"scripts"` section, add:
 
 **What:** Automatically run builds on every push to `main` and on every pull request. This catches breaking changes before they reach deployment.
 
-**File:** `C:\Users\Furqan\Desktop\UiRealtyPals\.github\workflows\ci.yml`  
+**File:** `C:\Users\Furqan\Desktop\UiPropFyndr\.github\workflows\ci.yml`  
 **Content (create this file entirely):**
 
 ```yaml
@@ -1436,8 +1436,8 @@ jobs:
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase dashboard → Settings → API |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase dashboard → Settings → API |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Same as ANON_KEY |
-| `NEXT_PUBLIC_BACKEND_URL` | Your Render backend URL, e.g. `https://realtypals-backend.onrender.com` |
-| `NEXT_PUBLIC_API_URL` | `https://realtypals-backend.onrender.com/api/v1` |
+| `NEXT_PUBLIC_BACKEND_URL` | Your Render backend URL, e.g. `https://propfyndr-backend.onrender.com` |
+| `NEXT_PUBLIC_API_URL` | `https://propfyndr-backend.onrender.com/api/v1` |
 | `DATABASE_URL` | Supabase pooler connection string |
 | `DIRECT_URL` | Supabase direct connection string |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
@@ -1456,7 +1456,7 @@ jobs:
 # Push to a branch and check the Actions tab in GitHub
 
 # Verify Sentry deprecation warning is gone
-cd C:\Users\Furqan\Desktop\UiRealtyPals\frontend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\frontend
 npm run dev
 # Startup output must NOT contain "DEPRECATION WARNING"
 ```
@@ -1543,12 +1543,12 @@ const VALID_SECTORS = [
 
 const SECTOR_META: Record<string, { title: string; description: string; query: string }> = {
   'sector-150': {
-    title: 'Properties in Sector 150, Noida | RealtyPals',
+    title: 'Properties in Sector 150, Noida | PropFyndr',
     description: 'Find verified residential properties in Sector 150, Noida. Compare projects, check builder track records, and get AI-powered recommendations.',
     query: 'Show me all properties in Sector 150 Noida',
   },
   'sector-137': {
-    title: 'Properties in Sector 137, Noida | RealtyPals',
+    title: 'Properties in Sector 137, Noida | PropFyndr',
     description: 'Discover top-rated residential projects in Sector 137, Noida. AI-powered search with real-time builder intelligence.',
     query: 'Show me properties in Sector 137 Noida near Noida Expressway',
   },
@@ -1557,7 +1557,7 @@ const SECTOR_META: Record<string, { title: string; description: string; query: s
 
 export async function generateMetadata({ params }: { params: { sector: string } }): Promise<Metadata> {
   const meta = SECTOR_META[params.sector]
-  if (!meta) return { title: 'Properties in Noida | RealtyPals' }
+  if (!meta) return { title: 'Properties in Noida | PropFyndr' }
   return {
     title: meta.title,
     description: meta.description,
@@ -1615,7 +1615,7 @@ Inside the card content (below the project name), add:
 
 ```powershell
 # Build must still pass
-cd C:\Users\Furqan\Desktop\UiRealtyPals\frontend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\frontend
 npm run build
 
 # Manual check:
@@ -1634,25 +1634,25 @@ Run these checks after completing all phases:
 
 ```powershell
 # 1. Backend compiles
-cd C:\Users\Furqan\Desktop\UiRealtyPals\backend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\backend
 npm run build
 # Expected: exits 0
 
 # 2. Frontend compiles
-cd C:\Users\Furqan\Desktop\UiRealtyPals\frontend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\frontend
 npm run build
 # Expected: exits 0, all pages generated
 
 # 3. No merge conflicts anywhere
-Select-String -Path "C:\Users\Furqan\Desktop\UiRealtyPals\render.yaml" -Pattern "<<<<<<"
+Select-String -Path "C:\Users\Furqan\Desktop\UiPropFyndr\render.yaml" -Pattern "<<<<<<"
 # Expected: no output
 
 # 4. TLS bypass is gone
-Select-String -Path "C:\Users\Furqan\Desktop\UiRealtyPals\frontend\.env.local" -Pattern "NODE_TLS_REJECT_UNAUTHORIZED=0"
+Select-String -Path "C:\Users\Furqan\Desktop\UiPropFyndr\frontend\.env.local" -Pattern "NODE_TLS_REJECT_UNAUTHORIZED=0"
 # Expected: no output
 
 # 5. Dev server starts cleanly
-cd C:\Users\Furqan\Desktop\UiRealtyPals\frontend
+cd C:\Users\Furqan\Desktop\UiPropFyndr\frontend
 npm run dev
 # Expected: no DEPRECATION warnings in output
 

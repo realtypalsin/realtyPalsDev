@@ -47,7 +47,7 @@ async function seed() {
       city: 'Noida',
       status: 'ready_to_move' as const,
       tagline: 'A Strategic Gateway to Premium Central Noida Living',
-      hero_image_url: 'https://storage.realtypals.com/projects/gardenia-gateway/hero.jpg',
+      hero_image_url: 'https://storage.propfyndr.com/projects/gardenia-gateway/hero.jpg',
       rera_number: 'UPRERAPRJ7346',
       total_towers: 7,
       floors: 'G+19',
@@ -226,7 +226,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "Official Gardenia Gateway Brochure",
-        storage_url: "https://storage.realtypals.com/documents/gardenia-gateway-brochure.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/gardenia-gateway-brochure.pdf",
         doc_type: "brochure",
         file_size_bytes: 5120000
       }
@@ -236,7 +236,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "Gardenia Gateway Floor Layout Blueprint",
-        storage_url: "https://storage.realtypals.com/documents/gardenia-gateway-layouts.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/gardenia-gateway-layouts.pdf",
         doc_type: "floor_plan",
         file_size_bytes: 4120000
       }
@@ -248,7 +248,7 @@ async function seed() {
     await prisma.projectImage.create({
       data: {
         project_id: project.id,
-        url: "https://storage.realtypals.com/projects/gardenia-gateway/hero.jpg",
+        url: "https://storage.propfyndr.com/projects/gardenia-gateway/hero.jpg",
         type: "hero"
       }
     })

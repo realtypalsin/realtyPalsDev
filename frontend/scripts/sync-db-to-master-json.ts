@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 const prisma = new PrismaClient()
-const outputDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75'
+const outputDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75'
 
 async function main() {
   console.log('\n📦 Exporting 100% Complete Database Snapshot into Master JSON Files in newProj/75/...\n')
@@ -37,7 +37,7 @@ async function main() {
 
   for (const p of projects) {
     const rawSector = (p.sector || 'General').toLowerCase().replace(/[^a-z0-9]/g, '')
-    const fileName = `realtypals_${rawSector}_master_data.json`
+    const fileName = `propfyndr_${rawSector}_master_data.json`
 
     if (!sectorGroups[fileName]) {
       sectorGroups[fileName] = []

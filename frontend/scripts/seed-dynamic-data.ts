@@ -270,7 +270,7 @@ async function seed() {
           description: "Comprehensive 3D layout maps, super areas, and detailed carpet dimensions for 3 BHK, 3.5 BHK, and 4 BHK units.",
           thumbnail_url: "/assets/projects/elite-x/docs/thumbnails/floor-plan-thumb.jpg",
           file_format: "PDF",
-          verified_by: "RealtyPals Legal",
+          verified_by: "PropFyndr Legal",
           is_quick_access: true,
           category: { category_description: "Unit layouts and dimension blueprints", category_icon_name: "floor_plan" }
         },
@@ -279,7 +279,7 @@ async function seed() {
           description: "Official unit-by-unit cost breakdown, Preferential Location Charges (PLC), utility fees, and construction-linked payment milestones.",
           thumbnail_url: "/assets/projects/elite-x/docs/thumbnails/price-list-thumb.jpg",
           file_format: "PDF",
-          verified_by: "RealtyPals Legal",
+          verified_by: "PropFyndr Legal",
           is_quick_access: true,
           category: { category_description: "Pricing sheets and payment plans", category_icon_name: "price_list" }
         }

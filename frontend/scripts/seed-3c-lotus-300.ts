@@ -47,7 +47,7 @@ async function seed() {
       city: 'Noida',
       status: 'ready_to_move' as const,
       tagline: 'Ultra Luxury Living in the Heart of Noida',
-      hero_image_url: 'https://storage.realtypals.com/projects/3c-lotus-300/hero.jpg',
+      hero_image_url: 'https://storage.propfyndr.com/projects/3c-lotus-300/hero.jpg',
       rera_number: 'UPRERAPRJ6828',
       total_towers: 6,
       floors: 'G+30',
@@ -195,7 +195,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "Official 3C Lotus 300 Brochure",
-        storage_url: "https://storage.realtypals.com/documents/lotus-300-brochure.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/lotus-300-brochure.pdf",
         doc_type: "brochure",
         file_size_bytes: 6540000
       }
@@ -205,7 +205,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "3C Lotus 300 Floorplots Blueprint",
-        storage_url: "https://storage.realtypals.com/documents/lotus-300-floorplots.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/lotus-300-floorplots.pdf",
         doc_type: "floor_plan",
         file_size_bytes: 4920000
       }
@@ -217,7 +217,7 @@ async function seed() {
     await prisma.projectImage.create({
       data: {
         project_id: project.id,
-        url: "https://storage.realtypals.com/projects/3c-lotus-300/hero.jpg",
+        url: "https://storage.propfyndr.com/projects/3c-lotus-300/hero.jpg",
         type: "hero"
       }
     })

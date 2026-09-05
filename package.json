@@ -1,5 +1,5 @@
 {
-  "name": "realtypals-monorepo",
+  "name": "propfyndr-monorepo",
   "private": true,
   "workspaces": [
     "frontend",

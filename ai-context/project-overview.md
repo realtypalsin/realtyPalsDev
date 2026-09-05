@@ -1,8 +1,8 @@
-# RealtyPals — Project Overview
+# PropFyndr — Project Overview
 
 ## Vision
 
-RealtyPals is an AI-powered real estate advisor designed to help Indian home buyers make better property decisions faster.
+PropFyndr is an AI-powered real estate advisor designed to help Indian home buyers make better property decisions faster.
 
 The product focuses on guidance, trust, and decision support rather than property discovery alone.
 

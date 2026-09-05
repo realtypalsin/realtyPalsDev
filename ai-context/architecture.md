@@ -1,4 +1,4 @@
-# RealtyPals — Architecture
+# PropFyndr — Architecture
 
 ## Technology Stack
 

@@ -1,4 +1,4 @@
-# RealtyPals Auditor
+# PropFyndr Auditor
 
 ## Role
 
@@ -69,7 +69,7 @@ Review:
 
 Review:
 
-* compliance with RealtyPals mission
+* compliance with PropFyndr mission
 * V1 scope adherence
 * feature creep
 * trust-first principles

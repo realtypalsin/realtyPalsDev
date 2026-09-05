@@ -127,7 +127,7 @@ which immediately feels faster.
 
 ---
 
-# Now imagine this for RealtyPals
+# Now imagine this for PropFyndr
 
 Instead of
 
@@ -169,7 +169,7 @@ Already this feels 10x better.
 
 # But we can go much further.
 
-RealtyPals has structured data.
+PropFyndr has structured data.
 
 Unlike ChatGPT, you KNOW exactly what your backend is doing.
 
@@ -357,7 +357,7 @@ These numbers make the AI feel alive.
 
 Cursor changes labels dynamically.
 
-For RealtyPals
+For PropFyndr
 
 Collapsed state
 
@@ -586,7 +586,7 @@ Those are vague and repetitive.
 
 Instead, expose **domain-specific execution steps** that correspond to actual backend operations. This makes the interface feel transparent and trustworthy because users can see *what* the system is doing rather than imagining *how* it thinks.
 
-For RealtyPals, the ideal experience is:
+For PropFyndr, the ideal experience is:
 
 ```
 ▶ Finding the best options for you

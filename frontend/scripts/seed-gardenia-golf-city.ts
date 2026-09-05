@@ -47,7 +47,7 @@ async function seed() {
       city: 'Noida',
       status: 'ready_to_move' as const,
       tagline: 'Golf-Centric Lifestyle and Modern Thematic Township',
-      hero_image_url: 'https://storage.realtypals.com/projects/gardenia-golf-city/hero.jpg',
+      hero_image_url: 'https://storage.propfyndr.com/projects/gardenia-golf-city/hero.jpg',
       rera_number: 'UPRERAPRJ11463',
       total_towers: 25,
       floors: 'G+20',
@@ -192,7 +192,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "Official Gardenia Golf City Brochure",
-        storage_url: "https://storage.realtypals.com/documents/gardenia-golf-city-brochure.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/gardenia-golf-city-brochure.pdf",
         doc_type: "brochure",
         file_size_bytes: 5410000
       }
@@ -202,7 +202,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "Gardenia Golf City Floor Layouts",
-        storage_url: "https://storage.realtypals.com/documents/gardenia-golf-city-floorplots.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/gardenia-golf-city-floorplots.pdf",
         doc_type: "floor_plan",
         file_size_bytes: 4120000
       }
@@ -214,7 +214,7 @@ async function seed() {
     await prisma.projectImage.create({
       data: {
         project_id: project.id,
-        url: "https://storage.realtypals.com/projects/gardenia-golf-city/hero.jpg",
+        url: "https://storage.propfyndr.com/projects/gardenia-golf-city/hero.jpg",
         type: "hero"
       }
     })

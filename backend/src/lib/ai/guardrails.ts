@@ -49,8 +49,8 @@ const INVESTMENT_CLAIM_PATTERNS = [
 ]
 
 const EXTERNAL_URL_PATTERNS = [
-  /https?:\/\/(?!(?:[\w-]+\.)?uirealtypals\.com|(?:[\w-]+\.)?up-rera\.in)[^\s"]+/i,
-  /www\.(?!uirealtypals\.com|up-rera\.in)[^\s"]+/i
+  /https?:\/\/(?!(?:[\w-]+\.)?uipropfyndr\.com|(?:[\w-]+\.)?up-rera\.in)[^\s"]+/i,
+  /www\.(?!uipropfyndr\.com|up-rera\.in)[^\s"]+/i
 ]
 
 /**
@@ -71,7 +71,7 @@ export async function outputGuardrail(
   // Check if response is leaking system prompt/context (fallback protection)
   if (systemPrompt) {
     const keyMarkers = [
-      /realtypals (ai |data |behavior |communication )/i,
+      /propfyndr (ai |data |behavior |communication )/i,
       /hard rule|strong rule/i,
       /fallback mode/i,
       /prohibited|never invent|never share/i,

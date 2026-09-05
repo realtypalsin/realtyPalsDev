@@ -5,7 +5,7 @@
 ## Directory Layout
 
 ```
-RealtyPalsxElite/                   # Repo root
+PropFyndrxElite/                   # Repo root
 ├── prisma/                         # Prisma schema (source of truth)
 │   ├── schema.prisma               # All models — Builder, Project, UnitType, etc.
 │   └── migrations/                 # SQL migration files

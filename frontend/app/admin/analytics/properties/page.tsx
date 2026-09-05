@@ -125,7 +125,7 @@ export default function PropertiesAnalytics() {
             What is Property Engagement Analytics?
           </h4>
           <p className="text-blue-800 dark:text-blue-200 font-medium leading-relaxed">
-            This dashboard tracks real-time buyer actions across all listed properties on RealtyPals: <strong>Views</strong> (project page visits), <strong>Saves</strong> (bookmarked by users), <strong>Comparisons</strong> (side-by-side analysis), <strong>Shares</strong>, and <strong>WhatsApp Inquiries</strong>. Properties are sorted by total engagement level.
+            This dashboard tracks real-time buyer actions across all listed properties on PropFyndr: <strong>Views</strong> (project page visits), <strong>Saves</strong> (bookmarked by users), <strong>Comparisons</strong> (side-by-side analysis), <strong>Shares</strong>, and <strong>WhatsApp Inquiries</strong>. Properties are sorted by total engagement level.
           </p>
         </div>
       </div>

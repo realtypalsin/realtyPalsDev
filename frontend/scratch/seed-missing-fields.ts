@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 
 async function seedMissingFields() {
   try {
-    const patchPath = path.resolve('C:/Users/Furqan/Desktop/UiRealtyPals/realtypals-missing-fields-patch.json')
+    const patchPath = path.resolve('C:/Users/Furqan/Desktop/UiPropFyndr/propfyndr-missing-fields-patch.json')
     if (!fs.existsSync(patchPath)) {
       console.error(`Patch file not found at: ${patchPath}`)
       return

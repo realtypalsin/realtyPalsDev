@@ -1,15 +1,15 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75'
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75'
 const masterFiles = [
-  'realtypals_sector10_master_data.json',
-  'realtypals_sector12_master_data.json',
-  'realtypals_sector75_master_data.json',
-  'realtypals_sector76_master_data.json',
-  'realtypals_sector77_master_data.json',
-  'realtypals_sector78_master_data.json',
-  'realtypals_sector79_master_data.json'
+  'propfyndr_sector10_master_data.json',
+  'propfyndr_sector12_master_data.json',
+  'propfyndr_sector75_master_data.json',
+  'propfyndr_sector76_master_data.json',
+  'propfyndr_sector77_master_data.json',
+  'propfyndr_sector78_master_data.json',
+  'propfyndr_sector79_master_data.json'
 ]
 
 // Verified RERA-registered Channel Partners pool

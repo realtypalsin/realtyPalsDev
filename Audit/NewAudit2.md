@@ -1,4 +1,4 @@
-# UiRealtyPals — Complete Implementation Plan
+# UiPropFyndr — Complete Implementation Plan
 ### Written by: Senior AI Engineer × Indian Real Estate Insider × Marketing Strategist
 ### For any model to execute fully and independently.
 
@@ -33,7 +33,7 @@ Prevent duplicate sessions and messages when the user double-clicks "New Chat" o
 **Market**: Indian property buyers are typically impatient mobile users. They WILL tap twice. First impression matters; seeing a blank chat in the sidebar destroys trust immediately.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\DiscoveryContent.tsx`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\DiscoveryContent.tsx`
 - **Function**: `dispatchAction` (around line 717)
 
 ### HOW
@@ -101,7 +101,7 @@ Make the `upreraprj_hallucination` violation type actually block the AI response
 **Real Estate Context**: Buyers in Noida check UPRERAPRJ numbers on up-rera.in. If your AI gives them a fake one and they don't verify (many won't), they may commit ₹50-80 lakh on a legally compromised project.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\backend\src\lib\ai\guardrails.ts`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\backend\src\lib\ai\guardrails.ts`
 - **Lines**: 137-139
 
 ### HOW
@@ -156,8 +156,8 @@ Ensure that when there are multiple projects in the shortlist, ALL info chips (a
 **UX**: The dropdown pattern is already designed (ChipPicker.tsx). It just needs consistent wiring.
 
 ### WHERE
-- **File 1**: `c:\Users\Furqan\Desktop\UiRealtyPals\backend\src\lib\discovery\conversationEngine.ts`
-- **File 2**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\DiscoveryContent.tsx`
+- **File 1**: `c:\Users\Furqan\Desktop\UiPropFyndr\backend\src\lib\discovery\conversationEngine.ts`
+- **File 2**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\DiscoveryContent.tsx`
 
 ### HOW
 
@@ -243,9 +243,9 @@ Replace the in-memory chip dedup store with a database-backed solution so chip d
 **Market**: Indian users research properties over multiple sessions (morning browse → evening decision → weekend site visit). If the same "Builder track record" chip appears every single session, it feels like a broken app, not a smart advisor.
 
 ### WHERE
-- **File 1**: `c:\Users\Furqan\Desktop\UiRealtyPals\backend\src\lib\discovery\chipDedup.ts`
-- **File 2**: `c:\Users\Furqan\Desktop\UiRealtyPals\prisma\schema.prisma` (to add a new table or use existing session)
-- **File 3**: `c:\Users\Furqan\Desktop\UiRealtyPals\backend\src\routes\chat.ts`
+- **File 1**: `c:\Users\Furqan\Desktop\UiPropFyndr\backend\src\lib\discovery\chipDedup.ts`
+- **File 2**: `c:\Users\Furqan\Desktop\UiPropFyndr\prisma\schema.prisma` (to add a new table or use existing session)
+- **File 3**: `c:\Users\Furqan\Desktop\UiPropFyndr\backend\src\routes\chat.ts`
 
 ### HOW
 
@@ -338,7 +338,7 @@ model ChatSession {
 
 **Step 3**: Run a migration:
 ```
-cd c:\Users\Furqan\Desktop\UiRealtyPals
+cd c:\Users\Furqan\Desktop\UiPropFyndr
 npx prisma migrate dev --name add_shown_chip_ids
 ```
 
@@ -378,11 +378,11 @@ Expand jailbreak pattern coverage to include Unicode substitution attacks, zero-
 ### WHY
 **Engineering**: Regex-only guardrails are beaten in 60 seconds by anyone who's ever seen a jailbreak tutorial. Unicode substitution (ᵢɡnore) and zero-width characters (i​g​n​o​r​e) pass every current pattern.
 
-**Market**: If RealtyPals is mentioned in a tech blog or on Twitter as "easily jailbroken," the SEO and trust damage is permanent. Indian tech Twitter is ruthless about this.
+**Market**: If PropFyndr is mentioned in a tech blog or on Twitter as "easily jailbroken," the SEO and trust damage is permanent. Indian tech Twitter is ruthless about this.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\backend\src\lib\ai\patterns.ts`
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\backend\src\lib\ai\sanitize.ts`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\backend\src\lib\ai\patterns.ts`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\backend\src\lib\ai\sanitize.ts`
 
 ### HOW
 
@@ -468,7 +468,7 @@ Configure Express trust proxy correctly so the IP rate limiter can't be bypassed
 **Engineering**: Without `app.set('trust proxy', 1)`, Express reads the raw socket IP. With an improper trust proxy config, a malicious user can set `X-Forwarded-For: 1.2.3.4, 5.6.7.8` and the app reads the wrong hop.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\backend\src\index.ts`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\backend\src\index.ts`
 
 ### HOW
 
@@ -505,7 +505,7 @@ Prevent duplicate API calls when a user clicks a chip more than once in rapid su
 **UX**: Real users tap twice on mobile. This creates duplicate messages and duplicate sessions.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\chat\ChipPicker.tsx`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\chat\ChipPicker.tsx`
 
 ### HOW
 
@@ -562,7 +562,7 @@ Generate intelligent, context-aware session titles that capture the intent of th
 **Market/UX**: Indian property buyers research over many sessions. A buyer researching 3 BHK options in Sector 79 wants to see "3BHK · Sector 79 · ₹1.5-2Cr" in their sidebar — not "I am looking for a 3 BHK..." Smart titles make the sidebar a research history they actually want to use.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\DiscoveryContent.tsx`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\DiscoveryContent.tsx`
 - **Lines**: around 886-898 (the auto-generate smart title block in the `done` event handler)
 
 ### HOW
@@ -630,7 +630,7 @@ Ensure the project detail panel never shows blank/empty sections when optional d
 **Market**: In Noida's new-launch heavy market, new projects get added rapidly. A builder registers a new project with minimal data. If a buyer opens the detail panel and sees blank "Why Buy" and "Risk Radar" sections, they think the app is broken — not that the data is missing.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\ProjectDetailPanel.tsx`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\ProjectDetailPanel.tsx`
 
 ### HOW
 
@@ -691,7 +691,7 @@ Show a clear, helpful error state when a session fails to restore, with a button
 **Market**: A buyer coming back to research a property they were considering yesterday and finding a blank screen will assume the app is broken and leave. This is especially painful because they were in a high-intent state.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\DiscoveryContent.tsx`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\DiscoveryContent.tsx`
 
 ### HOW
 
@@ -740,7 +740,7 @@ Show a non-blocking toast if session migration fails after sign-in, and log the 
 **Market**: A buyer who spent 2 hours researching projects as a guest, then signs in and loses everything, will never use the product again. Worse — they'll leave a negative review.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\app\auth\page.tsx` OR wherever post-login migration is called
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\app\auth\page.tsx` OR wherever post-login migration is called
 
 ### HOW
 
@@ -764,7 +764,7 @@ try {
   console.log(`[session-migrate] Migrated ${migrateData.migrated} sessions`);
   
   // Clear the guest token from storage after successful migration
-  localStorage.removeItem('realtypals_guest_token');
+  localStorage.removeItem('propfyndr_guest_token');
 } catch (err) {
   console.error('[session-migrate] Failed:', err);
   // Non-blocking — user can still use the app, but their guest history is lost
@@ -796,7 +796,7 @@ Fix the particle vanish animation so it works correctly with the new multi-line 
 **Engineering**: The `draw()` function in `placeholders-and-vanish-input.tsx` renders text on a canvas at `y=40` assuming a single-line input. With a multi-line textarea, the text may span multiple lines, but only line 1 gets the vanish animation; lines 2+ just disappear abruptly.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\ui\placeholders-and-vanish-input.tsx`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\ui\placeholders-and-vanish-input.tsx`
 
 ### HOW
 
@@ -847,7 +847,7 @@ The scroll-to-bottom button should show the number of new messages received whil
 **UX**: If a user scrolls up to re-read something and the AI responds with 3 messages, they should know. "↓ 3 new" is far more compelling than just an arrow.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\DiscoveryContent.tsx`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\DiscoveryContent.tsx`
 
 ### HOW
 
@@ -916,7 +916,7 @@ When the context warning appears (after 45 turns), offer "Archive and start fres
 **Market**: Indian property buyers who've had a long research session have valuable context in that chat. They don't want to DELETE it — they want to SAVE it and start fresh. "Archive" feels safe; "Delete" feels scary.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\DiscoveryContent.tsx`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\DiscoveryContent.tsx`
 
 ### HOW
 
@@ -982,7 +982,7 @@ Split `DiscoveryContent.tsx` (currently 1730 lines) into smaller, focused files.
 **Engineering**: A 1730-line component is a maintenance nightmare. Every feature adds 50-100 more lines. Adding the chips dropdown required modifying this file in 8 places. At this rate, in 3 months this component will be 3000 lines and untestable.
 
 ### WHERE
-- **New files to create in**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\hooks\`
+- **New files to create in**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\hooks\`
 
 ### HOW
 
@@ -1061,7 +1061,7 @@ Add social proof elements to the landing page that resonate with Indian real est
 **Real Estate Context**: What Indian buyers trust: RERA verification, actual project counts, specific numbers. Not vague claims. "100+ RERA-verified projects" beats "Comprehensive database."
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\app\page.tsx`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\app\page.tsx`
 
 ### HOW
 
@@ -1123,8 +1123,8 @@ Make the re-engagement banner smarter — show specific project names and last s
 **Real Estate Context**: Indian buyers research over 2-3 months before deciding. Re-engagement at the right moment with the right context can be the difference between a lost lead and a site visit booking.
 
 ### WHERE
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\chat\ReEngagementBanner.tsx`
-- **File**: `c:\Users\Furqan\Desktop\UiRealtyPals\backend\src\routes\sessions.ts` (the `/re-engagement/latest` endpoint)
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\chat\ReEngagementBanner.tsx`
+- **File**: `c:\Users\Furqan\Desktop\UiPropFyndr\backend\src\routes\sessions.ts` (the `/re-engagement/latest` endpoint)
 
 ### HOW
 

@@ -1,4 +1,4 @@
-Ok so i am building this realty pals. Chat interface teal estate decision platform.
+Ok so i am building this propfyndr. Chat interface teal estate decision platform.
 Where users come and chat about their queries and we show them the properties accordingly.
 We help them make better decisions.
 We have all the pros and cons of each.

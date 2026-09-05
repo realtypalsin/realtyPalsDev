@@ -29,7 +29,7 @@ async function seedDocumentData() {
         "file_name": "floor-plan.pdf",
         "file_format": "PDF",
         "is_quick_access": true,
-        "verified_by": "RealtyPals Legal",
+        "verified_by": "PropFyndr Legal",
         "thumbnail_url": "/assets/projects/elite-x/docs/thumbnails/floor-plan-thumb.jpg",
         "description": "Intelligently drafted 3D layouts, carpet areas, and dimensional details for 3 BHK, 3.5 BHK, and 4 BHK units [2, 4, 5].",
         "category": {
@@ -44,7 +44,7 @@ async function seedDocumentData() {
         "file_name": "price-list.pdf",
         "file_format": "PDF",
         "is_quick_access": true,
-        "verified_by": "RealtyPals Legal",
+        "verified_by": "PropFyndr Legal",
         "thumbnail_url": "/assets/projects/elite-x/docs/thumbnails/price-list-thumb.jpg",
         "description": "Official 2026 pricing schedule detailing base rates, allied parking, club membership fees, and PLC schedules [4, 6, 7].",
         "category": {

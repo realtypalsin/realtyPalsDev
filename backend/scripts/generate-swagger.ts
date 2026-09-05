@@ -307,12 +307,12 @@ const existingSwagger = fs.existsSync(swaggerPath)
 const swaggerOutput: any = {
   openapi: '3.1.0',
   info: existingSwagger.info || {
-    title: 'RealtyPals Backend API',
+    title: 'PropFyndr Backend API',
     description: 'AI-powered real estate advisor backend API. Provides complete single-source-of-truth endpoints for chat, property discovery, lead management, analytics, and admin operations.',
     version: '1.0.0',
     contact: {
-      name: 'RealtyPals Team',
-      email: 'team@realtypals.com',
+      name: 'PropFyndr Team',
+      email: 'team@propfyndr.com',
     },
     license: {
       name: 'Private',
@@ -320,7 +320,7 @@ const swaggerOutput: any = {
   },
   servers: existingSwagger.servers || [
     { url: 'http://localhost:3001', description: 'Local development server' },
-    { url: 'https://api.realtypals.com', description: 'Production server' },
+    { url: 'https://api.propfyndr.com', description: 'Production server' },
   ],
   tags: existingSwagger.tags || [
     { name: 'Chat', description: 'Conversational AI advisor endpoints' },

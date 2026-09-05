@@ -26,12 +26,12 @@
 
 ---
 
-# RealtyPals
+# PropFyndr
 
 AI-powered real estate advisor for Indian home buyers.
 
 ## Purpose Of This File
-This file is the primary source of context for all AI-assisted development on RealtyPals.
+This file is the primary source of context for all AI-assisted development on PropFyndr.
 Before implementing any feature, modifying any schema, generating any UI, creating APIs, or writing any AI prompts, consult this document.
 
 The goal is to:
@@ -45,11 +45,11 @@ The goal is to:
 ---
 
 ## Product Vision
-RealtyPals is not a property listings website.
-RealtyPals is an AI-powered real estate advisor.
+PropFyndr is not a property listings website.
+PropFyndr is an AI-powered real estate advisor.
 The product exists to help home buyers make better decisions faster.
 Traditional property portals force users to browse hundreds of listings.
-RealtyPals asks users what they want and recommends suitable properties with clear reasoning.
+PropFyndr asks users what they want and recommends suitable properties with clear reasoning.
 The AI advisor is the product.
 The property database exists to support the advisor.
 
@@ -428,9 +428,9 @@ Fall back to Grep/Glob/Read **only** when the graph doesn't cover what you need.
 4. Use `query_graph` pattern="tests_for" to check coverage.
 ## Product Mission
 
-RealtyPals helps buyers make better property decisions faster.
+PropFyndr helps buyers make better property decisions faster.
 
-RealtyPals is NOT:
+PropFyndr is NOT:
 
 - A listings portal
 - A broker marketplace

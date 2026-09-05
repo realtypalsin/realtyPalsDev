@@ -1,6 +1,6 @@
 # Project Database Fields Guide
 
-This guide maps every section of the RealtyPals frontend UI to its exact database field or JSON structure. To ensure no project has missing or "empty" sections, ensure every field listed below is populated in your database.
+This guide maps every section of the PropFyndr frontend UI to its exact database field or JSON structure. To ensure no project has missing or "empty" sections, ensure every field listed below is populated in your database.
 
 ---
 

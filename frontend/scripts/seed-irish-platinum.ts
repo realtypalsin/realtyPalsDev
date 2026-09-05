@@ -47,7 +47,7 @@ async function seed() {
       city: 'Greater Noida',
       status: 'under_construction' as const,
       tagline: 'The Treasure Chest of Luxury Living',
-      hero_image_url: 'https://storage.realtypals.com/projects/irish-platinum/hero.jpg',
+      hero_image_url: 'https://storage.propfyndr.com/projects/irish-platinum/hero.jpg',
       rera_number: 'UPRERAPRJ503189/03/2024',
       total_towers: 4,
       floors: 'G+30',
@@ -201,7 +201,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "Official Irish Platinum Brochure",
-        storage_url: "https://storage.realtypals.com/documents/irish-platinum-brochure.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/irish-platinum-brochure.pdf",
         doc_type: "brochure",
         file_size_bytes: 4850000
       }
@@ -211,7 +211,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "Irish Platinum Floorplots Portfolio",
-        storage_url: "https://storage.realtypals.com/documents/irish-platinum-floorplots.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/irish-platinum-floorplots.pdf",
         doc_type: "floor_plan",
         file_size_bytes: 3520000
       }
@@ -223,14 +223,14 @@ async function seed() {
     await prisma.projectImage.create({
       data: {
         project_id: project.id,
-        url: "https://storage.realtypals.com/projects/irish-platinum-exterior.jpg",
+        url: "https://storage.propfyndr.com/projects/irish-platinum-exterior.jpg",
         type: "exterior"
       }
     })
     await prisma.projectImage.create({
       data: {
         project_id: project.id,
-        url: "https://storage.realtypals.com/projects/irish-platinum-pool.jpg",
+        url: "https://storage.propfyndr.com/projects/irish-platinum-pool.jpg",
         type: "amenity"
       }
     })

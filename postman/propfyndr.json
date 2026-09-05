@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "RealtyPals API",
-    "_postman_id": "realtypals-v1",
-    "description": "RealtyPals API — Sector 150 Noida property search and AI chat",
+    "name": "PropFyndr API",
+    "_postman_id": "propfyndr-v1",
+    "description": "PropFyndr API — Sector 150 Noida property search and AI chat",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

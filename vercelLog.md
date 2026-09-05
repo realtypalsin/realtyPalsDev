@@ -1,6 +1,6 @@
 15:07:53.149 Running build in Washington, D.C., USA (East) – iad1
 15:07:53.149 Build machine configuration: 2 cores, 8 GB
-15:07:53.541 Cloning github.com/realtypalsin/realtyPalsDev (Branch: main, Commit: 803d94a)
+15:07:53.541 Cloning github.com/propfyndrin/propFyndrDev (Branch: main, Commit: 803d94a)
 15:07:56.115 Cloning completed: 2.574s
 15:07:56.344 Restored build cache from previous deployment (Anp75yWiRVAzu9dVGPN9ruS8NjJr)
 15:07:58.053 Running "vercel build"
@@ -25,7 +25,7 @@
 15:08:43.873 Detected Next.js version: 14.2.5
 15:08:43.874 Running "npm run db:generate && npm run build"
 15:08:44.338 
-15:08:44.338 > realtypals@0.1.0 db:generate
+15:08:44.338 > propfyndr@0.1.0 db:generate
 15:08:44.338 > prisma generate
 15:08:44.338 
 15:08:44.783 Prisma schema loaded from prisma/schema.prisma
@@ -37,7 +37,7 @@
 15:08:46.124 Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
 15:08:46.124 
 15:08:46.450 
-15:08:46.451 > realtypals@0.1.0 build
+15:08:46.451 > propfyndr@0.1.0 build
 15:08:46.451 > next build
 15:08:46.451 
 15:08:47.531   ▲ Next.js 14.2.5

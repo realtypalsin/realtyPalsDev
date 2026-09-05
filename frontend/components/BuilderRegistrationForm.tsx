@@ -474,7 +474,7 @@ export default function BuilderRegistrationForm() {
         {/* Left Sidebar Stepper — Seamless Floating Style Without Connecting Lines */}
         <div className="w-full md:w-[340px] bg-zinc-50/80 border-r border-zinc-200/80 p-6 md:p-8 flex flex-col shrink-0 justify-between">
           <div>
-            <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals" width={105} height={26} className="object-contain mb-6 opacity-90" unoptimized />
+            <Image src="/images/icons/ExpandedPropFyndrBlack.png" alt="PropFyndr" width={105} height={26} className="object-contain mb-6 opacity-90" unoptimized />
             
             <h1 className="text-[19px] font-bold text-zinc-900 tracking-tight leading-snug mb-1.5">
               Developer Onboarding

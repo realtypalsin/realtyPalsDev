@@ -1,4 +1,4 @@
-# MEMORY.md — RealtyPals decisions log
+# MEMORY.md — PropFyndr decisions log
 
 ## 2026-06-18 — Demo-hardening pass (partner demo prep)
 

@@ -47,7 +47,7 @@ async function seed() {
       city: 'Noida',
       status: 'ready_to_move' as const,
       tagline: 'Art Deco Inspired Green Living',
-      hero_image_url: 'https://storage.realtypals.com/projects/ace-parkway/hero.jpg',
+      hero_image_url: 'https://storage.propfyndr.com/projects/ace-parkway/hero.jpg',
       rera_number: 'UPRERAPRJ4514',
       total_towers: 11,
       floors: 'G+26',
@@ -202,7 +202,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "Official ACE Parkway Brochure",
-        storage_url: "https://storage.realtypals.com/documents/ace-parkway-brochure.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/ace-parkway-brochure.pdf",
         doc_type: "brochure",
         file_size_bytes: 6120000
       }
@@ -212,7 +212,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "ACE Parkway Unit Blueprints Portfolio",
-        storage_url: "https://storage.realtypals.com/documents/ace-parkway-layouts.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/ace-parkway-layouts.pdf",
         doc_type: "floor_plan",
         file_size_bytes: 4890000
       }
@@ -224,7 +224,7 @@ async function seed() {
     await prisma.projectImage.create({
       data: {
         project_id: project.id,
-        url: "https://storage.realtypals.com/projects/ace-parkway/hero.jpg",
+        url: "https://storage.propfyndr.com/projects/ace-parkway/hero.jpg",
         type: "hero"
       }
     })

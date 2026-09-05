@@ -711,7 +711,7 @@
         "quarter_label": "Q4 2024",
         "completion_pct": 100,
         "source": "RERA Compliance Portal",
-        "verified_by": "RealtyPals Site Inspection Team"
+        "verified_by": "PropFyndr Site Inspection Team"
       }
     ],
     "lifecycle_updates": [
@@ -735,7 +735,7 @@
         "update_date": "2024-05-31T18:30:00.000Z",
         "impact": "Stable Facility Maintenance",
         "source": "Apartment Owners Association (AOA) Resolution",
-        "verified_by": "RealtyPals Data Desk",
+        "verified_by": "PropFyndr Data Desk",
         "affects_pricing": false,
         "affects_recommendation": false,
         "maintenance_fee_monthly_psf": 3.5,
@@ -747,7 +747,7 @@
         "description": "Over 85% of physical unit handovers completed at ATS Homekraft Happy Trails. Active resident community living in the society with functional AOA management.",
         "update_date": "2024-03-14T18:30:00.000Z",
         "impact": "High Positive - Immediate move-in ready status verified",
-        "source": "RealtyPals Field Inspection Desk",
+        "source": "PropFyndr Field Inspection Desk",
         "verified_by": "Senior Real Estate Analyst",
         "affects_pricing": true,
         "affects_recommendation": true,

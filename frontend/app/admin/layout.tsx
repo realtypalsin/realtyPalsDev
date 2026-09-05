@@ -62,7 +62,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     const crumbs = breadcrumb(pathname)
     const titleStr = crumbs.map(c => c.label).join(' · ')
-    document.title = `${titleStr} | RealtyPals`
+    document.title = `${titleStr} | PropFyndr`
   }, [pathname])
 
   useEffect(() => {
@@ -174,7 +174,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {!isCollapsed ? (
             <>
               <div className="flex flex-1 items-center justify-center transition-opacity duration-300">
-                <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals" width={140} height={32} className="object-contain drop-shadow-sm" unoptimized />
+                <Image src="/images/icons/ExpandedPropFyndrBlack.png" alt="PropFyndr" width={140} height={32} className="object-contain drop-shadow-sm" unoptimized />
               </div>
               <div className="absolute right-3 flex items-center justify-center">
                 <button
@@ -191,7 +191,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ) : (
             <div className="relative w-full h-full flex items-center justify-center">
               <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-0 pointer-events-none">
-                <Image src="/images/icons/CollapsedRealtyPalsBlackSqLogo.png" alt="RealtyPals Logo" width={32} height={32} className="object-contain rounded-md drop-shadow-sm" unoptimized />
+                <Image src="/images/icons/CollapsedPropFyndrBlackSqLogo.png" alt="PropFyndr Logo" width={32} height={32} className="object-contain rounded-md drop-shadow-sm" unoptimized />
               </div>
               <button
                 onClick={() => setIsCollapsed(false)}

@@ -1,4 +1,4 @@
-# RealtyPals — Production Readiness Plan
+# PropFyndr — Production Readiness Plan
 _Generated 2026-07-12. Source: deep audit of chat/AI pipeline (complete) + prior session findings. Backend-API, frontend-perf, and config-sync audits were interrupted by token limits — resume them in Phase 5._
 
 ## The Roast (short version)

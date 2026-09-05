@@ -193,19 +193,19 @@ here you go seed the db with this.
 The current local time is: 2026-07-06T02:21:06+05:30.
 
 The user's current state is as follows:
-Active Document: c:\Users\Furqan\Desktop\UiRealtyPals\backend\src\routes\projects.ts (LANGUAGE_TYPESCRIPT)
+Active Document: c:\Users\Furqan\Desktop\UiPropFyndr\backend\src\routes\projects.ts (LANGUAGE_TYPESCRIPT)
 Cursor is on line: 1
 Other open documents:
-- c:\Users\Furqan\Desktop\UiRealtyPals\frontend\components\DiscoveryContent.tsx (LANGUAGE_TSX)
-- c:\Users\Furqan\Desktop\UiRealtyPals\frontend\instrumentation-client.ts (LANGUAGE_TYPESCRIPT)
-- c:\Users\Furqan\Desktop\UiRealtyPals\backend\src\routes\projects.ts (LANGUAGE_TYPESCRIPT)
-- c:\Users\Furqan\Desktop\UiRealtyPals\frontend\prisma\seed-elite-group.ts (LANGUAGE_TYPESCRIPT)
-- c:\Users\Furqan\Desktop\UiRealtyPals\frontend\scripts\seed-elite-x.ts (LANGUAGE_TYPESCRIPT)
+- c:\Users\Furqan\Desktop\UiPropFyndr\frontend\components\DiscoveryContent.tsx (LANGUAGE_TSX)
+- c:\Users\Furqan\Desktop\UiPropFyndr\frontend\instrumentation-client.ts (LANGUAGE_TYPESCRIPT)
+- c:\Users\Furqan\Desktop\UiPropFyndr\backend\src\routes\projects.ts (LANGUAGE_TYPESCRIPT)
+- c:\Users\Furqan\Desktop\UiPropFyndr\frontend\prisma\seed-elite-group.ts (LANGUAGE_TYPESCRIPT)
+- c:\Users\Furqan\Desktop\UiPropFyndr\frontend\scripts\seed-elite-x.ts (LANGUAGE_TYPESCRIPT)
 No browser pages are currently open.
 Running terminal commands:
-- claude (in c:\Users\Furqan\Desktop\UiRealtyPals, running for 8h4m45s)
-- npm run dev (in c:\Users\Furqan\Desktop\UiRealtyPals\backend, running for 6h0m36s)
-- npm run dev (in c:\Users\Furqan\Desktop\UiRealtyPals\frontend, running for 5h47m49s)
+- claude (in c:\Users\Furqan\Desktop\UiPropFyndr, running for 8h4m45s)
+- npm run dev (in c:\Users\Furqan\Desktop\UiPropFyndr\backend, running for 6h0m36s)
+- npm run dev (in c:\Users\Furqan\Desktop\UiPropFyndr\frontend, running for 5h47m49s)
 </ADDITIONAL_METADATA>
 <USER_SETTINGS_CHANGE>
 The user changed setting `Model Selection` from Gemini 3.1 Pro (Low) to Gemini 3.5 Flash (Low). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.

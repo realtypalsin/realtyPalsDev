@@ -42,7 +42,7 @@ export default function AdminLogin() {
             <Lock size={18} className="text-white" />
           </div>
           <div>
-            <p className="text-white font-bold text-base">RealtyPals Admin</p>
+            <p className="text-white font-bold text-base">PropFyndr Admin</p>
             <p className="text-gray-500 text-xs">Internal dashboard</p>
           </div>
         </div>

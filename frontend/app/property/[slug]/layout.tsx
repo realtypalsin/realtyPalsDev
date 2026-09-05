@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
   if (!p) {
     return {
-      title: 'Property on RealtyPals',
+      title: 'Property on PropFyndr',
       description: 'AI-guided home buying in Noida. Compare projects, see RERA status, get honest trade-offs.',
     }
   }
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       title,
       description,
       type: 'website',
-      siteName: 'RealtyPals',
+      siteName: 'PropFyndr',
     },
     twitter: {
       card: 'summary_large_image',

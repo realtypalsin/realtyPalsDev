@@ -33,7 +33,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'storage.realtypals.com',
+        hostname: 'storage.propfyndr.com',
       },
       {
         protocol: 'https',
@@ -49,7 +49,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://realtypalsdev.onrender.com'}/api/:path*`
+        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://propfyndrdev.onrender.com'}/api/:path*`
       },
     ]
   },
@@ -82,7 +82,7 @@ const nextConfig = {
               const isDev = process.env.NODE_ENV !== 'production'
               const connectSrc = isDev
                 ? "'self' http://localhost:* wss://localhost:* https: ws: wss:"
-                : "'self' https://realtypalsdev.onrender.com wss: https: ws:"
+                : "'self' https://propfyndrdev.onrender.com wss: https: ws:"
               return `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.google-analytics.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src ${connectSrc}; frame-ancestors 'none';`
             })(),
           },
@@ -95,8 +95,8 @@ const nextConfig = {
 const isDev = process.env.NODE_ENV !== 'production'
 
 module.exports = isDev ? nextConfig : withSentryConfig(nextConfig, {
-  org: 'realtypals',
-  project: 'realtypals-sentry',
+  org: 'propfyndr',
+  project: 'propfyndr-sentry',
   silent: true,
   widenClientFileUpload: true,
   hideSourceMaps: true,

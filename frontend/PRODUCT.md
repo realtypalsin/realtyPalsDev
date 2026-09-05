@@ -14,7 +14,7 @@ The default register is **product** — the app's centre of gravity is `/discove
 | Builder acquisition | `app/get-listed/page.tsx` |
 | Builder registration | `app/builder-register/page.tsx` |
 
-`/s/[id]` (public shared shortlist) is a **hybrid**: a cold-start surface seen by people who have never used RealtyPals, often a spouse or parent weighing a ₹2 crore decision. It must explain itself like brand and render data like product.
+`/s/[id]` (public shared shortlist) is a **hybrid**: a cold-start surface seen by people who have never used PropFyndr, often a spouse or parent weighing a ₹2 crore decision. It must explain itself like brand and render data like product.
 
 Everything else is product.
 
@@ -56,7 +56,7 @@ Design for the anxiety that comes with that: reassurance at commitment points, h
 
 ## Product Purpose
 
-RealtyPals is an AI advisor that helps Noida home buyers reach a confident decision faster. It replaces hours of scrolling near-identical listings with a small number of reasoned recommendations, each carrying its reason and its primary trade-off.
+PropFyndr is an AI advisor that helps Noida home buyers reach a confident decision faster. It replaces hours of scrolling near-identical listings with a small number of reasoned recommendations, each carrying its reason and its primary trade-off.
 
 The property database exists to serve the advisor. The advisor is the product.
 
@@ -136,7 +136,7 @@ Buyers comparing projects want real data at real density — tables, specs, deli
 
 ### 6. Familiar, not clever
 
-Standard affordances. One component vocabulary across chat, property, saved, and admin. Someone who has used any competent modern tool should never have to learn a RealtyPals-specific idiom. Novelty is a cost the buyer pays — spend it only where it buys clarity.
+Standard affordances. One component vocabulary across chat, property, saved, and admin. Someone who has used any competent modern tool should never have to learn a PropFyndr-specific idiom. Novelty is a cost the buyer pays — spend it only where it buys clarity.
 
 > **Test:** does this control behave the way the same control behaves elsewhere in the app?
 

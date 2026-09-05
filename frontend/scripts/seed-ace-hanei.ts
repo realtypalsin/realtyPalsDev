@@ -47,7 +47,7 @@ async function seed() {
       city: 'Greater Noida',
       status: 'under_construction' as const,
       tagline: 'A New Paradigm of Premium Luxury Residencies',
-      hero_image_url: 'https://storage.realtypals.com/projects/ace-hanei/hero.jpg',
+      hero_image_url: 'https://storage.propfyndr.com/projects/ace-hanei/hero.jpg',
       rera_number: 'UPRERAPRJ677887/10/2024',
       total_towers: 7,
       floors: 'G+25',
@@ -189,7 +189,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "Official ACE Han'ei Brochure",
-        storage_url: "https://storage.realtypals.com/documents/ace-hanei-brochure.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/ace-hanei-brochure.pdf",
         doc_type: "brochure",
         file_size_bytes: 5840000
       }
@@ -199,7 +199,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "ACE Han'ei Unit Blueprints Portfolio",
-        storage_url: "https://storage.realtypals.com/documents/ace-hanei-layouts.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/ace-hanei-layouts.pdf",
         doc_type: "floor_plan",
         file_size_bytes: 4210000
       }
@@ -211,7 +211,7 @@ async function seed() {
     await prisma.projectImage.create({
       data: {
         project_id: project.id,
-        url: "https://storage.realtypals.com/projects/ace-hanei/hero.jpg",
+        url: "https://storage.propfyndr.com/projects/ace-hanei/hero.jpg",
         type: "hero"
       }
     })

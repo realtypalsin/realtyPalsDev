@@ -1,4 +1,4 @@
-# RealtyPals AI Behavior
+# PropFyndr AI Behavior
 
 ## Mission
 

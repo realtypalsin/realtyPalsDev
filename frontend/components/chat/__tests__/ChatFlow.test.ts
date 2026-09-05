@@ -60,7 +60,7 @@ describe('Chat Flow — Complete Journey', () => {
     })
 
     it('saves draft to localStorage before submit', () => {
-      assert(true, 'Every keystroke → localStorage[realtypals_draft]')
+      assert(true, 'Every keystroke → localStorage[propfyndr_draft]')
     })
 
     it('prevents duplicate submissions (lock)', () => {

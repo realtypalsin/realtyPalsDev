@@ -37,10 +37,10 @@ async function testBasicGeneration() {
   try {
     const { text, usage } = await generateText({
       model: groq(MODEL),
-      prompt: 'Say "RealtyPals Groq connected" and nothing else.',
+      prompt: 'Say "PropFyndr Groq connected" and nothing else.',
       maxOutputTokens: 20,
     })
-    if (!text.toLowerCase().includes('realtypals')) {
+    if (!text.toLowerCase().includes('propfyndr')) {
       throw new Error(`Unexpected response: "${text}"`)
     }
     pass('response received', text.trim())
@@ -131,7 +131,7 @@ async function testHindiResponse() {
 
 async function main() {
   console.log('╔══════════════════════════════════════════╗')
-  console.log('║  RealtyPals — Provider Test Suite        ║')
+  console.log('║  PropFyndr — Provider Test Suite        ║')
   console.log('╚══════════════════════════════════════════╝')
   console.log(`Provider : Groq`)
   console.log(`Model    : ${MODEL}`)

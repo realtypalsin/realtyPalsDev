@@ -18,7 +18,7 @@ export default function ShareShortlistModal({ isOpen, shortlist, onClose }: Shar
 
   if (!isOpen || shortlist.length === 0) return null;
 
-  const shortlistText = `🏠 My RealtyPals Shortlist\n\n` +
+  const shortlistText = `🏠 My PropFyndr Shortlist\n\n` +
     shortlist.map((p, i) => `${i + 1}. ${p.name} — ${p.price_range_label ?? 'Price on request'} (${p.sector ?? 'Noida'})`).join('\n') +
     `\n\nResearched with RealtyPal AI`;
 
@@ -75,7 +75,7 @@ export default function ShareShortlistModal({ isOpen, shortlist, onClose }: Shar
             <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg leading-none transition-colors">×</button>
           </div>
           <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-4 border border-gray-100 dark:border-gray-700 text-[12px] text-gray-600 dark:text-gray-300 font-mono leading-relaxed">
-            <div className="font-bold text-gray-800 dark:text-gray-100 mb-1">🏠 My RealtyPals Shortlist</div>
+            <div className="font-bold text-gray-800 dark:text-gray-100 mb-1">🏠 My PropFyndr Shortlist</div>
             {shortlist.map((p, i) => (
               <div key={p.id}>{i + 1}. {p.name} — {p.price_range_label ?? 'Price on request'} ({p.sector ?? 'Noida'})</div>
             ))}

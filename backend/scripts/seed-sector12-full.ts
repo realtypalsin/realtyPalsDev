@@ -21,7 +21,7 @@ interface ProjectData {
 
 async function main() {
   try {
-    const filePath = resolve(__dirname, '../../newProj/75/realtypals_sector12_master_data.json');
+    const filePath = resolve(__dirname, '../../newProj/75/propfyndr_sector12_master_data.json');
     const content = readFileSync(filePath, 'utf-8');
     const data: ProjectData[] = JSON.parse(content);
 

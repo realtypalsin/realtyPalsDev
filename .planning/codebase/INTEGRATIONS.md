@@ -109,7 +109,7 @@
 **Error Tracking:**
 - Sentry (`@sentry/nextjs` 10.56.x)
   - DSN: `NEXT_PUBLIC_SENTRY_DSN`
-  - Org: `realtypals`, Project: `realtypals-sentry`
+  - Org: `propfyndr`, Project: `propfyndr-sentry`
   - Config: `frontend/sentry.client.config.ts`, `frontend/sentry.server.config.ts`, `frontend/sentry.edge.config.ts`
   - Session replay: 5% sessions, 100% on error
   - Trace sampling: 20% in production, 100% in development

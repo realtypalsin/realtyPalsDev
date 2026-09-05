@@ -440,7 +440,7 @@ export default function PropertyCard({ property, userId, autoPlay = true, onAuth
                 const text = property.property_index != null
                   ? `Tell me more about Property ${property.property_index + 1}: ${displayName}`
                   : `Tell me more about ${displayName}`;
-                window.dispatchEvent(new CustomEvent('realtypals:ask-ai', { detail: { text } }));
+                window.dispatchEvent(new CustomEvent('propfyndr:ask-ai', { detail: { text } }));
               }}
               className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
               aria-label="Ask AI about this property"

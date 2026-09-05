@@ -1518,7 +1518,7 @@ router.put('/projects/:id/lifecycle-updates', requireAdmin, async (req: Request,
           update_date: u.update_date ? new Date(u.update_date) : new Date(),
           impact: u.impact || null,
           source: u.source || 'Admin Verification',
-          verified_by: u.verified_by || 'RealtyPals Data Desk',
+          verified_by: u.verified_by || 'PropFyndr Data Desk',
           maintenance_fee_monthly_psf: u.maintenance_fee_monthly_psf ? parseFloat(u.maintenance_fee_monthly_psf) : null,
           note: u.note || null
         }))

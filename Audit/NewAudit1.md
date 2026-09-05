@@ -1,4 +1,4 @@
-# RealtyPals — Comprehensive System Audit & Implementation Plan
+# PropFyndr — Comprehensive System Audit & Implementation Plan
 *DB-aware · Chip-hardened · Security-first · Low-model-executable*
 
 ---
@@ -331,7 +331,7 @@ Add to `outputGuardrail`:
 ```typescript
 // Block responses containing external real estate portal URLs
 const EXTERNAL_URL_PATTERNS = [
-  /https?:\/\/(?!realtypals\.in)[a-z0-9\-]+\.(in|com)\/[\w\-\/]+/i,
+  /https?:\/\/(?!propfyndr\.in)[a-z0-9\-]+\.(in|com)\/[\w\-\/]+/i,
 ]
 for (const p of EXTERNAL_URL_PATTERNS) {
   if (p.test(response)) {

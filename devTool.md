@@ -22,7 +22,7 @@ content.ts-CK3vpF-9.js:5 [BHK] widget sdk 1.0.0
 content.ts-CK3vpF-9.js:5 [BHK] install: missing/invalid publicKey or merchantId — aborting
 S0 @ content.ts-CK3vpF-9.js:5
 content.js:7374 Uncaught (in promise) Object
-warn-once.ts:6 Image with src "/images/icons/ExpandedRealtyPalsWhite.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+warn-once.ts:6 Image with src "/images/icons/ExpandedPropFyndrWhite.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
 (anonymous) @ warn-once.ts:6
 (index):1 Uncaught (in promise) Object
 (index):1 Uncaught (in promise) Object
@@ -30,7 +30,7 @@ warn-once.ts:6 Image with src "/images/icons/ExpandedRealtyPalsWhite.png" has ei
 :3002/api/v1/health:1  Failed to load resource: net::ERR_CONNECTION_REFUSED
 4hot-reloader-client.tsx:297 [Fast Refresh] rebuilding
 11hot-reloader-client.tsx:297 [Fast Refresh] rebuilding
-warn-once.ts:6 Image with src "/images/icons/ExpandedRealtyPalsBlack.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+warn-once.ts:6 Image with src "/images/icons/ExpandedPropFyndrBlack.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
 (anonymous) @ warn-once.ts:6
 parentElement @ image-component.tsx:163
 Promise.then

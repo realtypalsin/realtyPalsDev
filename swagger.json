@@ -1,12 +1,12 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "RealtyPals Backend API",
+    "title": "PropFyndr Backend API",
     "description": "AI-powered real estate advisor backend API. Provides endpoints for chat, property discovery, lead management, analytics, and admin operations.",
     "version": "1.0.0",
     "contact": {
-      "name": "RealtyPals Team",
-      "email": "team@realtypals.com"
+      "name": "PropFyndr Team",
+      "email": "team@propfyndr.com"
     },
     "license": {
       "name": "Private"
@@ -18,7 +18,7 @@
       "description": "Local development server"
     },
     {
-      "url": "https://api.realtypals.com",
+      "url": "https://api.propfyndr.com",
       "description": "Production server"
     }
   ],

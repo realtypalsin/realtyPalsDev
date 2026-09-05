@@ -854,7 +854,7 @@ function MessageBubbleInner({
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => window.dispatchEvent(new CustomEvent('realtypals:open-map'))}
+                  onClick={() => window.dispatchEvent(new CustomEvent('propfyndr:open-map'))}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-white/80 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 hover:border-blue-400 dark:hover:border-blue-500 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-200 transition-all shadow-2xs active:scale-95 cursor-pointer"
                 >
                   <MapPin size={13} className="text-blue-500" />
@@ -937,7 +937,7 @@ function MessageBubbleInner({
                             onToggleSelect={() => onToggleCompareSelect?.(message.id, property)}
                             onDetailOpen={onDetailOpen}
                             onToast={onToast}
-                            onAskAI={() => { /* card dispatches its own realtypals:ask-ai */ }}
+                            onAskAI={() => { /* card dispatches its own propfyndr:ask-ai */ }}
                             onSetSiteVisit={onSetSiteVisit}
                             onCall={onCallback}
                           />
@@ -976,7 +976,7 @@ function MessageBubbleInner({
                             onToggleSelect={() => onToggleCompareSelect?.(message.id, property)}
                             onDetailOpen={onDetailOpen}
                             onToast={onToast}
-                            onAskAI={() => { /* card dispatches its own realtypals:ask-ai */ }}
+                            onAskAI={() => { /* card dispatches its own propfyndr:ask-ai */ }}
                             onSetSiteVisit={onSetSiteVisit}
                             onCall={onCallback}
                           />

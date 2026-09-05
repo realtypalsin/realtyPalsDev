@@ -13,7 +13,7 @@ export async function getWikiSummary(title: string): Promise<WikiSummary | null>
 
   try {
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'RealtyPals/1.0 (contact@realtypals.in)' },
+      headers: { 'User-Agent': 'PropFyndr/1.0 (contact@propfyndr.in)' },
       signal: AbortSignal.timeout(4000),
     })
 

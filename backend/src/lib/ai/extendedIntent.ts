@@ -1,5 +1,5 @@
 // backend/src/lib/ai/extendedIntent.ts
-// Phase 1: Extended Intent Extraction for RealtyPals
+// Phase 1: Extended Intent Extraction for PropFyndr
 // Captures all 11 buyer decision dimensions from natural language
 
 import Groq from 'groq-sdk'

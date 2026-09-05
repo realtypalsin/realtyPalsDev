@@ -70,7 +70,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const router = useRouter();
   const [chatInput, setChatInput] = useState(() => {
     if (typeof window === 'undefined') return '';
-    return localStorage.getItem('realtypals_draft') ?? '';
+    return localStorage.getItem('propfyndr_draft') ?? '';
   });
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [visibleCount, setVisibleCount] = useState(15);
@@ -98,15 +98,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   useEffect(() => {
     const newTitle = (() => {
       if (sessionTitle && sessionTitle.trim()) {
-        return `${sessionTitle.trim()} | RealtyPals`
+        return `${sessionTitle.trim()} | PropFyndr`
       }
       const userMsg = chatHistory.find(m => m.type === 'user')?.content
       if (userMsg && userMsg.trim()) {
         const cleanMsg = userMsg.trim()
         const truncated = cleanMsg.length > 35 ? `${cleanMsg.slice(0, 35)}...` : cleanMsg
-        return `${truncated} | RealtyPals`
+        return `${truncated} | PropFyndr`
       }
-      return `AI Property Advisor | RealtyPals`
+      return `AI Property Advisor | PropFyndr`
     })()
     if (document.title !== newTitle) {
       document.title = newTitle
@@ -134,7 +134,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     setIsRenamingHeader(false);
     try {
       await renameSession(sessionId, newTitle);
-      window.dispatchEvent(new Event('realtypals:session-updated'));
+      window.dispatchEvent(new Event('propfyndr:session-updated'));
     } catch {
       setSessionTitle(oldTitle);
       setToast({ message: 'Failed to rename session' });
@@ -145,7 +145,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     if (!sessionId) return;
     try {
       await deleteSession(sessionId);
-      window.dispatchEvent(new Event('realtypals:session-updated'));
+      window.dispatchEvent(new Event('propfyndr:session-updated'));
       router.push('/discover');
     } catch {
       setToast({ message: 'Failed to delete session' });
@@ -214,9 +214,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (chatInput) {
-        localStorage.setItem('realtypals_draft', chatInput);
+        localStorage.setItem('propfyndr_draft', chatInput);
       } else {
-        localStorage.removeItem('realtypals_draft');
+        localStorage.removeItem('propfyndr_draft');
       }
     }, 500);
     return () => clearTimeout(timeout);
@@ -759,11 +759,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 body: JSON.stringify({ title: smartTitle }),
               })
             ).finally(() => {
-              window.dispatchEvent(new CustomEvent('realtypals:session-updated'))
+              window.dispatchEvent(new CustomEvent('propfyndr:session-updated'))
             }).catch(() => { })
           } else {
             // All other turns: refresh immediately (no PATCH follows).
-            window.dispatchEvent(new CustomEvent('realtypals:session-updated'));
+            window.dispatchEvent(new CustomEvent('propfyndr:session-updated'));
           }
         }
       },
@@ -812,15 +812,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         setTimeout(() => chatInputRef.current?.focus(), 50);
       }
     };
-    window.addEventListener('realtypals:ask-ai', handler);
-    return () => window.removeEventListener('realtypals:ask-ai', handler);
+    window.addEventListener('propfyndr:ask-ai', handler);
+    return () => window.removeEventListener('propfyndr:ask-ai', handler);
   }, [dispatchAction, isSubmitting]);
 
   // ── Sidebar "New Chat" button triggers reset via CustomEvent ──
   useEffect(() => {
     const handler = () => performResetRef.current();
-    window.addEventListener('realtypals:new-chat', handler);
-    return () => window.removeEventListener('realtypals:new-chat', handler);
+    window.addEventListener('propfyndr:new-chat', handler);
+    return () => window.removeEventListener('propfyndr:new-chat', handler);
   }, []);
 
 
@@ -1557,7 +1557,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
           <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative z-10 overflow-y-auto">
             <div className="text-center mb-10 max-w-[880px] animate-fade-in-up flex flex-col items-center">
               <h1 className="text-[4rem] md:text-[5.5rem] font-bold text-gray-900 dark:text-white tracking-tight italic leading-none drop-shadow-sm font-[family-name:var(--font-afacad)]">
-                RealtyPals
+                PropFyndr
               </h1>
               <h2 className="text-2xl md:text-[28px] font-medium text-gray-500 dark:text-gray-400 tracking-wide mt-1 font-[family-name:var(--font-afacad)]">
                 Search Better

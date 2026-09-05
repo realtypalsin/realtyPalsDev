@@ -56,8 +56,8 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
       const detail = (e as CustomEvent<{ id: string; saved: boolean }>).detail
       if (detail?.id === project.id) setSaved(detail.saved)
     }
-    window.addEventListener('realtypals:property-saved', handler)
-    return () => window.removeEventListener('realtypals:property-saved', handler)
+    window.addEventListener('propfyndr:property-saved', handler)
+    return () => window.removeEventListener('propfyndr:property-saved', handler)
   }, [project.id])
 
   const handleSave = async (e: React.MouseEvent) => {
@@ -73,7 +73,7 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
           headers: await authHeaders(),
         })
         if (!res.ok) throw new Error('Delete failed')
-        window.dispatchEvent(new CustomEvent('realtypals:property-saved', { detail: { id: project.id, saved: false } }))
+        window.dispatchEvent(new CustomEvent('propfyndr:property-saved', { detail: { id: project.id, saved: false } }))
         onToast?.('Removed from saved')
       } else {
         const res = await fetch(`${API_BASE}/saved`, {
@@ -83,7 +83,7 @@ export default function PropertyCardWithRecommendation({ project, userId, onDeta
         })
         if (!res.ok) throw new Error('Save failed')
         track('property_saved', { project_slug: project.slug, project_name: project.name })
-        window.dispatchEvent(new CustomEvent('realtypals:property-saved', { detail: { id: project.id, saved: true } }))
+        window.dispatchEvent(new CustomEvent('propfyndr:property-saved', { detail: { id: project.id, saved: true } }))
         onToast?.('Property saved! ✓')
       }
     } catch (err) {

@@ -70,8 +70,8 @@ export default function LandingPage() {
       <header className="relative z-20 w-full max-w-6xl mx-auto flex items-center justify-between shrink-0 py-1">
         <Link href="/" className="group">
           <Image
-            src="/images/icons/ExpandedRealtyPalsWhite.png"
-            alt="RealtyPals"
+            src="/images/icons/ExpandedPropFyndrWhite.png"
+            alt="PropFyndr"
             width={180}
             height={54}
             className="object-contain opacity-95 group-hover:opacity-100 transition-opacity drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)]"
@@ -156,7 +156,7 @@ export default function LandingPage() {
             href="/builder-register"
             className="px-4 py-2 text-[11px] sm:text-xs font-semibold text-white bg-white/5 hover:bg-white/15 border border-white/15 hover:border-white/30 rounded-md transition-all whitespace-nowrap flex items-center gap-1.5 shrink-0 active:scale-95"
           >
-            <span>List with RealtyPals</span>
+            <span>List with PropFyndr</span>
             <ArrowRight size={13} />
           </Link>
         </div>

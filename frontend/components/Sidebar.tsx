@@ -165,7 +165,7 @@ export default function Sidebar({
     e.preventDefault();
     closeMobile();
     onViewChange?.('discovery');
-    window.dispatchEvent(new CustomEvent('realtypals:new-chat'));
+    window.dispatchEvent(new CustomEvent('propfyndr:new-chat'));
     router.push('/discover');
   };
 
@@ -216,8 +216,8 @@ export default function Sidebar({
                 className="flex flex-1 items-center justify-center transition-opacity hover:opacity-80 cursor-pointer"
                 title="Start fresh discovery"
               >
-                <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals Logo" width={140} height={32} className="object-contain block dark:hidden drop-shadow-sm" />
-                <Image src="/images/icons/ExpandedRealtyPalsWhite.png" alt="RealtyPals Logo" width={140} height={32} className="object-contain hidden dark:block drop-shadow-sm" />
+                <Image src="/images/icons/ExpandedPropFyndrBlack.png" alt="PropFyndr Logo" width={140} height={32} className="object-contain block dark:hidden drop-shadow-sm" />
+                <Image src="/images/icons/ExpandedPropFyndrWhite.png" alt="PropFyndr Logo" width={140} height={32} className="object-contain hidden dark:block drop-shadow-sm" />
               </Link>
               <div className="absolute right-3 flex items-center justify-center">
                 <button
@@ -242,8 +242,8 @@ export default function Sidebar({
                 className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-0 cursor-pointer"
                 title="Start fresh discovery"
               >
-                <Image src="/images/icons/CollapsedRealtyPalsBlackSqLogo.png" alt="RealtyPals Logo" width={32} height={32} className="object-contain block dark:hidden drop-shadow-sm" />
-                <Image src="/images/icons/CollapsedRealtyPalsWhiteSqLogo.png" alt="RealtyPals Logo" width={32} height={32} className="object-contain hidden dark:block drop-shadow-sm" />
+                <Image src="/images/icons/CollapsedPropFyndrBlackSqLogo.png" alt="PropFyndr Logo" width={32} height={32} className="object-contain block dark:hidden drop-shadow-sm" />
+                <Image src="/images/icons/CollapsedPropFyndrWhiteSqLogo.png" alt="PropFyndr Logo" width={32} height={32} className="object-contain hidden dark:block drop-shadow-sm" />
               </Link>
               <button
                 onClick={onToggleCollapse}
@@ -266,7 +266,7 @@ export default function Sidebar({
               if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
               closeMobile();
               navigationTimeoutRef.current = setTimeout(() => setIsNavigating(false), 1000);
-              window.dispatchEvent(new CustomEvent('realtypals:new-chat'));
+              window.dispatchEvent(new CustomEvent('propfyndr:new-chat'));
               router.push('/discover');
             }}
             disabled={isNavigating}
