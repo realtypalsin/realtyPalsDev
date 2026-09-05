@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 async function findExtraDbProjects() {
   const jsonFiles = fs.readdirSync(masterDir).filter(f => f.endsWith('.json'));
@@ -56,7 +56,7 @@ async function findExtraDbProjects() {
   }
 
   // Save the full project details for these extras so we can export them into master JSON
-  fs.writeFileSync('c:\\Users\\Furqan\\Desktop\\RealtyPals\\scratch\\extra_db_projects.json', JSON.stringify(extras, null, 2));
+  fs.writeFileSync('c:\\Users\\Furqan\\Desktop\\PropFyndr\\scratch\\extra_db_projects.json', JSON.stringify(extras, null, 2));
 }
 
 findExtraDbProjects()

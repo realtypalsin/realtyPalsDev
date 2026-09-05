@@ -1,12 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Master Residential Project Catalogue for Noida, Greater Noida, and G.N. West
 const fullProjectCatalog: Record<string, any[]> = {
   // SECTOR 100 NOIDA
-  'realtypals_sector100_master_data.json': [
+  'propfyndr_sector100_master_data.json': [
     {
       name: 'Lotus Boulevard',
       slug: 'lotus-boulevard-sector-100',
@@ -48,7 +48,7 @@ const fullProjectCatalog: Record<string, any[]> = {
   ],
 
   // SECTOR 107 NOIDA
-  'realtypals_sector107_master_data.json': [
+  'propfyndr_sector107_master_data.json': [
     {
       name: 'Great Value Sharanam',
       slug: 'great-value-sharanam-sector-107',
@@ -126,7 +126,7 @@ const fullProjectCatalog: Record<string, any[]> = {
   ],
 
   // SECTOR 128 NOIDA (WISH TOWN CORRIDOR)
-  'realtypals_sector128_master_data.json': [
+  'propfyndr_sector128_master_data.json': [
     {
       name: 'Mahagun Manorialle',
       slug: 'mahagun-manorialle-sector-128',
@@ -186,7 +186,7 @@ const fullProjectCatalog: Record<string, any[]> = {
   ],
 
   // SECTOR 137 NOIDA
-  'realtypals_sector137_master_data.json': [
+  'propfyndr_sector137_master_data.json': [
     {
       name: 'Purvanchal Royal Park',
       slug: 'purvanchal-royal-park-sector-137',
@@ -285,7 +285,7 @@ const fullProjectCatalog: Record<string, any[]> = {
   ],
 
   // SECTOR 143 NOIDA
-  'realtypals_sector143_master_data.json': [
+  'propfyndr_sector143_master_data.json': [
     {
       name: 'Gulshan Ikebana',
       slug: 'gulshan-ikebana-sector-143',
@@ -344,7 +344,7 @@ const fullProjectCatalog: Record<string, any[]> = {
   ],
 
   // SECTOR 150 NOIDA (SPORTS CITY HUB)
-  'realtypals_sector150_master_data.json': [
+  'propfyndr_sector150_master_data.json': [
     {
       name: 'Godrej Palm Retreat',
       slug: 'godrej-palm-retreat-sector-150',
@@ -405,7 +405,7 @@ const fullProjectCatalog: Record<string, any[]> = {
   ],
 
   // GREATER NOIDA WEST (SECTOR 16C)
-  'realtypals_sector16c_master_data.json': [
+  'propfyndr_sector16c_master_data.json': [
     {
       name: 'VVIP Homes',
       slug: 'vvip-homes-sector-16c',

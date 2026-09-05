@@ -4,12 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Wave 8 Sector Density Expansion: Adding 15+ Landmark Projects to ensure EVERY sector file has 6-20 projects
 const EXPANSION_DATA: Record<string, any[]> = {
   // SECTOR 16B GREATER NOIDA WEST (Expanding to 8 Projects)
-  'realtypals_sector16b_greaternoidawest_master_data.json': [
+  'propfyndr_sector16b_greaternoidawest_master_data.json': [
     {
       name: 'Panchsheel Greens 1',
       slug: 'panchsheel-greens-1-sector-16b',
@@ -131,7 +131,7 @@ const EXPANSION_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 120 & 121 NOIDA (Expanding to 8 Projects)
-  'realtypals_sector120_noida_master_data.json': [
+  'propfyndr_sector120_noida_master_data.json': [
     {
       name: 'Prateek Laurel',
       slug: 'prateek-laurel-sector-120-noida',
@@ -195,7 +195,7 @@ const EXPANSION_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 121 NOIDA
-  'realtypals_sector121_noida_master_data.json': [
+  'propfyndr_sector121_noida_master_data.json': [
     {
       name: 'Cleo County',
       slug: 'cleo-county-sector-121-noida',

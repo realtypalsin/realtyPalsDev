@@ -4,26 +4,26 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 const targetFiles = [
-  { label: 'Sector 12 (Gr Noida West)', file: 'realtypals_sector12_greaternoidawest_master_data.json' },
-  { label: 'Sector 75 (Noida)', file: 'realtypals_sector75_noida_master_data.json' },
-  { label: 'Sector 77 (Noida)', file: 'realtypals_sector77_noida_master_data.json' },
-  { label: 'Sector 78 (Noida)', file: 'realtypals_sector78_noida_master_data.json' },
-  { label: 'Sector 79 (Noida)', file: 'realtypals_sector79_noida_master_data.json' },
-  { label: 'Sector 10 (Gr Noida West)', file: 'realtypals_sector10_greaternoidawest_master_data.json' },
-  { label: 'Sector 16C (Gr Noida West)', file: 'realtypals_sector16c_greaternoidawest_master_data.json' },
-  { label: 'Sector 1 (Gr Noida West)', file: 'realtypals_sector1_greaternoidawest_master_data.json' },
-  { label: 'Techzone 4 (Gr Noida West)', file: 'realtypals_techzone4_greaternoidawest_master_data.json' },
-  { label: 'Sector 22D (Yamuna Exp)', file: 'realtypals_sector22d_yamunaexpressway_master_data.json' },
-  { label: 'Sector 100 (Noida)', file: 'realtypals_sector100_noida_master_data.json' },
-  { label: 'Sector 107 (Noida)', file: 'realtypals_sector107_noida_master_data.json' },
-  { label: 'Sector 128 (Noida)', file: 'realtypals_sector128_noida_master_data.json' },
-  { label: 'Sector 137 (Noida)', file: 'realtypals_sector137_noida_master_data.json' },
-  { label: 'Sector 143 (Noida)', file: 'realtypals_sector143_noida_master_data.json' },
-  { label: 'Sector 150 (Noida)', file: 'realtypals_sector150_noida_master_data.json' },
-  { label: 'Sector 76 (Noida)', file: 'realtypals_sector76_noida_master_data.json' },
+  { label: 'Sector 12 (Gr Noida West)', file: 'propfyndr_sector12_greaternoidawest_master_data.json' },
+  { label: 'Sector 75 (Noida)', file: 'propfyndr_sector75_noida_master_data.json' },
+  { label: 'Sector 77 (Noida)', file: 'propfyndr_sector77_noida_master_data.json' },
+  { label: 'Sector 78 (Noida)', file: 'propfyndr_sector78_noida_master_data.json' },
+  { label: 'Sector 79 (Noida)', file: 'propfyndr_sector79_noida_master_data.json' },
+  { label: 'Sector 10 (Gr Noida West)', file: 'propfyndr_sector10_greaternoidawest_master_data.json' },
+  { label: 'Sector 16C (Gr Noida West)', file: 'propfyndr_sector16c_greaternoidawest_master_data.json' },
+  { label: 'Sector 1 (Gr Noida West)', file: 'propfyndr_sector1_greaternoidawest_master_data.json' },
+  { label: 'Techzone 4 (Gr Noida West)', file: 'propfyndr_techzone4_greaternoidawest_master_data.json' },
+  { label: 'Sector 22D (Yamuna Exp)', file: 'propfyndr_sector22d_yamunaexpressway_master_data.json' },
+  { label: 'Sector 100 (Noida)', file: 'propfyndr_sector100_noida_master_data.json' },
+  { label: 'Sector 107 (Noida)', file: 'propfyndr_sector107_noida_master_data.json' },
+  { label: 'Sector 128 (Noida)', file: 'propfyndr_sector128_noida_master_data.json' },
+  { label: 'Sector 137 (Noida)', file: 'propfyndr_sector137_noida_master_data.json' },
+  { label: 'Sector 143 (Noida)', file: 'propfyndr_sector143_noida_master_data.json' },
+  { label: 'Sector 150 (Noida)', file: 'propfyndr_sector150_noida_master_data.json' },
+  { label: 'Sector 76 (Noida)', file: 'propfyndr_sector76_noida_master_data.json' },
 ];
 
 async function runAudit() {

@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 async function syncAllDbToJsonBackup() {
   console.log('🔄 Syncing full database state to master JSON files...');
@@ -42,7 +42,7 @@ async function syncAllDbToJsonBackup() {
   // Export Sector 10 specifically with all 13 projects
   const sec10Projects = allProjects.filter(p => p.sector.toLowerCase().includes('sector 10'));
   if (sec10Projects.length > 0) {
-    const sec10File = path.join(masterDir, 'realtypals_sector10_greaternoidawest_master_data.json');
+    const sec10File = path.join(masterDir, 'propfyndr_sector10_greaternoidawest_master_data.json');
     fs.writeFileSync(sec10File, JSON.stringify(sec10Projects, null, 2));
     console.log(`✅ Updated ${sec10File} with ${sec10Projects.length} complete projects.`);
   }

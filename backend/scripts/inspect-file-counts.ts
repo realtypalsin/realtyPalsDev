@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const dir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const dir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'));
 
 const summary = files.map(f => {

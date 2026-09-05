@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Helper templates for missing relation objects
 const STANDARD_SPECS = [
@@ -146,11 +146,11 @@ async function recheckAndSeedAll() {
 
   // Ensure default channel partner exists in DB
   const partner = await prisma.channelPartner.upsert({
-    where: { slug: 'realtypals-direct-partner-network' },
+    where: { slug: 'propfyndr-direct-partner-network' },
     update: {},
     create: {
-      name: 'RealtyPals Verified Partner Network',
-      slug: 'realtypals-direct-partner-network',
+      name: 'PropFyndr Verified Partner Network',
+      slug: 'propfyndr-direct-partner-network',
       type: 'agency',
       description: 'Official verified broker network for NCR developments.',
       operating_cities: ['Noida', 'Greater Noida'],

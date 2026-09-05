@@ -4,12 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Complete Factual Wave 3 Catalogue across 10 Sector Files
 const WAVE3_DATA: Record<string, any[]> = {
   // SECTOR 119 NOIDA
-  'realtypals_sector119_noida_master_data.json': [
+  'propfyndr_sector119_noida_master_data.json': [
     {
       name: 'Eldeco Aamantran',
       slug: 'eldeco-aamantran-sector-119-noida',
@@ -131,7 +131,7 @@ const WAVE3_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 74 NOIDA
-  'realtypals_sector74_noida_master_data.json': [
+  'propfyndr_sector74_noida_master_data.json': [
     {
       name: 'Supertech Capetown',
       slug: 'supertech-capetown-sector-74-noida',

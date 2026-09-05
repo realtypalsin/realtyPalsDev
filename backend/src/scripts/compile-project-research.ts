@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 async function compileProjectResearch() {
-  const jsonPath = path.resolve(__dirname, '../../../realtypals-enrichment-73-projects.json')
+  const jsonPath = path.resolve(__dirname, '../../../propfyndr-enrichment-73-projects.json')
   const raw = fs.readFileSync(jsonPath, 'utf8')
   const projectsList = JSON.parse(raw)
   const ids = projectsList.map((p: any) => p.id)

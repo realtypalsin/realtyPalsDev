@@ -379,7 +379,7 @@ async function checkAdmin() {
 // ─── Report ──────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log(`\nRealtyPals health check — ${new Date().toISOString()}`)
+  console.log(`\nPropFyndr health check — ${new Date().toISOString()}`)
   console.log(`run id ${RUN_ID}`)
 
   await checkDatabase()

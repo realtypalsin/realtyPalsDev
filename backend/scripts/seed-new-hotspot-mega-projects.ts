@@ -29,7 +29,7 @@ const newProjectsData = [
     latitude: 28.5412,
     longitude: 77.3715,
     hero_image_url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/county-107.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/county-107.pdf',
     unit_types: [
       { bhk: 4, name: '4 BHK Luxury Suite', area_sqft: 3500, price_cr: 4.85, price_per_sqft: 13857, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 5, name: '5 BHK Sky Villa', area_sqft: 6500, price_cr: 9.50, price_per_sqft: 14615, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }
@@ -61,7 +61,7 @@ const newProjectsData = [
     latitude: 28.4215,
     longitude: 77.4812,
     hero_image_url: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/mahagun-meadows.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/mahagun-meadows.pdf',
     unit_types: [
       { bhk: 2, name: '2 BHK Golf View', area_sqft: 1425, price_cr: 1.45, price_per_sqft: 10175, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 3, name: '3 BHK Premium', area_sqft: 1945, price_cr: 2.10, price_per_sqft: 10796, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' },
@@ -92,7 +92,7 @@ const newProjectsData = [
     latitude: 28.4230,
     longitude: 77.4835,
     hero_image_url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/samridhi-daksh-avenue.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/samridhi-daksh-avenue.pdf',
     unit_types: [
       { bhk: 3, name: '3 BHK Luxury', area_sqft: 1980, price_cr: 1.85, price_per_sqft: 9343, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 4, name: '4 BHK Grand Suite', area_sqft: 2990, price_cr: 3.90, price_per_sqft: 13043, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }
@@ -124,7 +124,7 @@ const newProjectsData = [
     latitude: 28.5721,
     longitude: 77.3812,
     hero_image_url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/supertech-orb.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/supertech-orb.pdf',
     unit_types: [
       { bhk: 3, name: '3 BHK Circular Suite', area_sqft: 2215, price_cr: 1.65, price_per_sqft: 7449, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 4, name: '4 BHK Duplex Penthouse', area_sqft: 3610, price_cr: 3.20, price_per_sqft: 8864, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }
@@ -156,7 +156,7 @@ const newProjectsData = [
     latitude: 28.5285,
     longitude: 77.3789,
     hero_image_url: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/emerald-court.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/emerald-court.pdf',
     unit_types: [
       { bhk: 3, name: '3 BHK Deluxe', area_sqft: 1750, price_cr: 1.75, price_per_sqft: 10000, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 4, name: '4 BHK Executive', area_sqft: 2850, price_cr: 3.50, price_per_sqft: 12280, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }
@@ -186,7 +186,7 @@ const newProjectsData = [
     latitude: 28.5298,
     longitude: 77.3801,
     hero_image_url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/parsvnath-prestige.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/parsvnath-prestige.pdf',
     unit_types: [
       { bhk: 3, name: '3 BHK Standard', area_sqft: 1695, price_cr: 1.40, price_per_sqft: 8259, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 4, name: '4 BHK Penthouse', area_sqft: 2750, price_cr: 2.85, price_per_sqft: 10363, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }
@@ -216,7 +216,7 @@ const newProjectsData = [
     latitude: 28.5241,
     longitude: 77.3822,
     hero_image_url: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/grand-omaxe.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/grand-omaxe.pdf',
     unit_types: [
       { bhk: 2, name: '2 BHK Luxury', area_sqft: 1210, price_cr: 1.35, price_per_sqft: 11157, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 3, name: '3 BHK Grand', area_sqft: 1940, price_cr: 2.10, price_per_sqft: 10824, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' },
@@ -249,7 +249,7 @@ const newProjectsData = [
     latitude: 28.5912,
     longitude: 77.4385,
     hero_image_url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/gaur-saundaryam.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/gaur-saundaryam.pdf',
     unit_types: [
       { bhk: 3, name: '3 BHK Royal', area_sqft: 2100, price_cr: 1.60, price_per_sqft: 7619, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 4, name: '4 BHK Imperial Suite', area_sqft: 3590, price_cr: 3.40, price_per_sqft: 9470, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }
@@ -279,7 +279,7 @@ const newProjectsData = [
     latitude: 28.6045,
     longitude: 77.4412,
     hero_image_url: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/shri-radha-sky-gardens.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/shri-radha-sky-gardens.pdf',
     unit_types: [
       { bhk: 2, name: '2 BHK Compact', area_sqft: 1180, price_cr: 0.685, price_per_sqft: 5805, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 3, name: '3 BHK Family Suite', area_sqft: 1850, price_cr: 1.35, price_per_sqft: 7297, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }
@@ -309,7 +309,7 @@ const newProjectsData = [
     latitude: 28.6058,
     longitude: 77.4431,
     hero_image_url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/ajnara-le-garden.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/ajnara-le-garden.pdf',
     unit_types: [
       { bhk: 2, name: '2 BHK Smart', area_sqft: 995, price_cr: 0.62, price_per_sqft: 6231, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 3, name: '3 BHK Premium', area_sqft: 1795, price_cr: 1.25, price_per_sqft: 6963, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }
@@ -341,7 +341,7 @@ const newProjectsData = [
     latitude: 28.5612,
     longitude: 77.3485,
     hero_image_url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/godrej-woods.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/godrej-woods.pdf',
     unit_types: [
       { bhk: 3, name: '3 BHK Forest Suite', area_sqft: 1530, price_cr: 2.45, price_per_sqft: 16013, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 4, name: '4 BHK Sky Villa', area_sqft: 2260, price_cr: 4.20, price_per_sqft: 18584, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' },
@@ -372,7 +372,7 @@ const newProjectsData = [
     latitude: 28.4721,
     longitude: 77.4412,
     hero_image_url: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/godrej-tropical-isle.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/godrej-tropical-isle.pdf',
     unit_types: [
       { bhk: 3, name: '3 BHK Resort Suite', area_sqft: 1800, price_cr: 3.20, price_per_sqft: 17777, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 4, name: '4 BHK Tropical Mansion', area_sqft: 3250, price_cr: 6.50, price_per_sqft: 20000, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }
@@ -402,7 +402,7 @@ const newProjectsData = [
     latitude: 28.4112,
     longitude: 77.4912,
     hero_image_url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/ats-picturesque-reprieves.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/ats-picturesque-reprieves.pdf',
     unit_types: [
       { bhk: 3, name: '3 BHK Spanish Suite', area_sqft: 1850, price_cr: 1.90, price_per_sqft: 10270, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 4, name: '4 BHK Grand Estate', area_sqft: 3200, price_cr: 4.25, price_per_sqft: 13281, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }
@@ -434,7 +434,7 @@ const newProjectsData = [
     latitude: 28.4412,
     longitude: 77.5312,
     hero_image_url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/purvanchal-royal-city.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/purvanchal-royal-city.pdf',
     unit_types: [
       { bhk: 3, name: '3 BHK Royal', area_sqft: 1735, price_cr: 1.45, price_per_sqft: 8357, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 4, name: '4 BHK Imperial Penthouse', area_sqft: 3210, price_cr: 3.10, price_per_sqft: 9657, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }
@@ -464,7 +464,7 @@ const newProjectsData = [
     latitude: 28.4435,
     longitude: 77.5338,
     hero_image_url: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/nimbus-express-park-view.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/nimbus-express-park-view.pdf',
     unit_types: [
       { bhk: 2, name: '2 BHK Park Suite', area_sqft: 1040, price_cr: 0.72, price_per_sqft: 6923, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 3, name: '3 BHK Deluxe', area_sqft: 1850, price_cr: 1.45, price_per_sqft: 7837, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }
@@ -494,7 +494,7 @@ const newProjectsData = [
     latitude: 28.4912,
     longitude: 77.5125,
     hero_image_url: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/ats-dolce.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/ats-dolce.pdf',
     unit_types: [
       { bhk: 2, name: '2 BHK Premium', area_sqft: 1250, price_cr: 1.15, price_per_sqft: 9200, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 3, name: '3 BHK Suite', area_sqft: 1800, price_cr: 1.65, price_per_sqft: 9166, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' },
@@ -525,7 +525,7 @@ const newProjectsData = [
     latitude: 28.4712,
     longitude: 77.5012,
     hero_image_url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
-    brochure_url: 'https://realtypals.in/brochures/nri-city.pdf',
+    brochure_url: 'https://propfyndr.in/brochures/nri-city.pdf',
     unit_types: [
       { bhk: 3, name: '3 BHK Tower Suite', area_sqft: 1650, price_cr: 1.25, price_per_sqft: 7575, floor_plan_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
       { bhk: 4, name: '4 BHK Independent Villa', area_sqft: 3100, price_cr: 3.50, price_per_sqft: 11290, floor_plan_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80' }

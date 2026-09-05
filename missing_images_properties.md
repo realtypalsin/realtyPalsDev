@@ -1,4 +1,4 @@
-# RealtyPals Missing Property Images Checklist
+# PropFyndr Missing Property Images Checklist
 
 This document catalogs all properties currently in the database that do not yet have authentic local imagery attached.
 

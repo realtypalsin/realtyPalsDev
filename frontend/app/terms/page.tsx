@@ -18,8 +18,8 @@ import {
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | RealtyPals',
-  description: 'Terms of service, RERA regulatory disclosures, DPDP Act compliance, TRAI DND waivers, and platform usage guidelines for RealtyPals real estate advisory.',
+  title: 'Terms of Service | PropFyndr',
+  description: 'Terms of service, RERA regulatory disclosures, DPDP Act compliance, TRAI DND waivers, and platform usage guidelines for PropFyndr real estate advisory.',
 }
 
 export default function TermsOfService() {
@@ -33,10 +33,10 @@ export default function TermsOfService() {
       content: (
         <div className="space-y-3">
           <p>
-            By accessing, browsing, or using RealtyPals (&quot;Platform&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;), including our AI-assisted advisory engine, multi-dimensional search matrix, property indices, and valuation models, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+            By accessing, browsing, or using PropFyndr (&quot;Platform&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;), including our AI-assisted advisory engine, multi-dimensional search matrix, property indices, and valuation models, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
           </p>
           <p>
-            RealtyPals operates as an analytical technology platform and digital intermediary under Section 79 of the Information Technology Act, 2000 and the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021, as amended. If you do not agree with any part of these terms, you must immediately discontinue use of the platform.
+            PropFyndr operates as an analytical technology platform and digital intermediary under Section 79 of the Information Technology Act, 2000 and the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021, as amended. If you do not agree with any part of these terms, you must immediately discontinue use of the platform.
           </p>
         </div>
       ),
@@ -49,7 +49,7 @@ export default function TermsOfService() {
       content: (
         <div className="space-y-3">
           <p className="font-medium text-slate-900 dark:text-slate-100">
-            RealtyPals provides AI-powered real estate intelligence, historical market trajectory analysis, and comparative project evaluations strictly for informational, educational, and preliminary research purposes.
+            PropFyndr provides AI-powered real estate intelligence, historical market trajectory analysis, and comparative project evaluations strictly for informational, educational, and preliminary research purposes.
           </p>
           <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
             <li>
@@ -70,7 +70,7 @@ export default function TermsOfService() {
       content: (
         <div className="space-y-3">
           <p>
-            RealtyPals indexes and evaluates residential projects registered under the Real Estate (Regulation and Development) Act, 2016 (RERA) and registered with the Uttar Pradesh Real Estate Regulatory Authority (UP-RERA) for Noida, Greater Noida, and Yamuna Expressway micro-markets.
+            PropFyndr indexes and evaluates residential projects registered under the Real Estate (Regulation and Development) Act, 2016 (RERA) and registered with the Uttar Pradesh Real Estate Regulatory Authority (UP-RERA) for Noida, Greater Noida, and Yamuna Expressway micro-markets.
           </p>
           <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
             <li>
@@ -80,7 +80,7 @@ export default function TermsOfService() {
               <strong>Channel Partner &amp; Lead Fulfillment Routing:</strong> When a user requests a site visit, developer callback, brochure, or project cost sheet, lead coordination and site inspections are facilitated either directly by the respective UP-RERA registered developer or via authorized UP-RERA registered Channel Partners (Real Estate Agents), displaying their statutory CP registration numbers where applicable.
             </li>
             <li>
-              <strong>Technology Aggregator Status:</strong> RealtyPals functions strictly as an analytical intelligence layer. We do not solicit investments, underwrite developments, or act as an escrow agent.
+              <strong>Technology Aggregator Status:</strong> PropFyndr functions strictly as an analytical intelligence layer. We do not solicit investments, underwrite developments, or act as an escrow agent.
             </li>
           </ul>
         </div>
@@ -94,17 +94,17 @@ export default function TermsOfService() {
       content: (
         <div className="space-y-3">
           <p>
-            By submitting your contact details (including phone number, email address, or scheduling preference) on RealtyPals for a project inquiry, brochure download, price sheet request, or site inspection:
+            By submitting your contact details (including phone number, email address, or scheduling preference) on PropFyndr for a project inquiry, brochure download, price sheet request, or site inspection:
           </p>
           <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
             <li>
-              <strong>Express Communication Authorization:</strong> You explicitly authorize RealtyPals, the concerned UP-RERA registered developers, and their authorized UP-RERA registered channel partners to contact you via Phone Calls, SMS, WhatsApp messages, and Electronic Mail regarding property updates, inventory availability, and scheduling details.
+              <strong>Express Communication Authorization:</strong> You explicitly authorize PropFyndr, the concerned UP-RERA registered developers, and their authorized UP-RERA registered channel partners to contact you via Phone Calls, SMS, WhatsApp messages, and Electronic Mail regarding property updates, inventory availability, and scheduling details.
             </li>
             <li>
               <strong>TRAI / National DND Registry Waiver:</strong> You expressly agree that this request constitutes an unsolicited commercial communications exemption under the Telecom Commercial Communications Customer Preference Regulations, 2018 (TRAI TCCR). This consent explicitly overrides any existing registration on the National Do Not Call (NDNC / DND) Registry or Telecom Service Provider preference registers for a period of 12 months or until explicit written consent revocation.
             </li>
             <li>
-              <strong>Consent Revocation:</strong> You may withdraw your communication consent at any time by emailing <a href="mailto:privacy@realtypals.in" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">privacy@realtypals.in</a> with your registered phone number.
+              <strong>Consent Revocation:</strong> You may withdraw your communication consent at any time by emailing <a href="mailto:privacy@propfyndr.in" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">privacy@propfyndr.in</a> with your registered phone number.
             </li>
           </ul>
         </div>
@@ -141,7 +141,7 @@ export default function TermsOfService() {
       content: (
         <div className="space-y-3">
           <p>
-            RealtyPals collects anonymous technical data and device telemetry to deliver localized real estate intelligence across Delhi NCR micro-markets:
+            PropFyndr collects anonymous technical data and device telemetry to deliver localized real estate intelligence across Delhi NCR micro-markets:
           </p>
           <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
             <li>
@@ -166,7 +166,7 @@ export default function TermsOfService() {
           </p>
           <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
             <li>
-              <strong>Right to Access:</strong> Obtain a summary of personal data and processing activities executed on RealtyPals.
+              <strong>Right to Access:</strong> Obtain a summary of personal data and processing activities executed on PropFyndr.
             </li>
             <li>
               <strong>Right to Correction &amp; Erasure:</strong> Request the correction of inaccurate data or the complete erasure of your lead history, search trails, and registered profile.
@@ -175,7 +175,7 @@ export default function TermsOfService() {
               <strong>Right to Nominate:</strong> Nominate an individual to manage or exercise your data rights in the event of death or incapacity.
             </li>
             <li>
-              <strong>Consent Withdrawal:</strong> Revoke consent at any time by contacting our Grievance Redressal Cell at <a href="mailto:grievance@realtypals.in" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">grievance@realtypals.in</a>.
+              <strong>Consent Withdrawal:</strong> Revoke consent at any time by contacting our Grievance Redressal Cell at <a href="mailto:grievance@propfyndr.in" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">grievance@propfyndr.in</a>.
             </li>
           </ul>
         </div>
@@ -207,7 +207,7 @@ export default function TermsOfService() {
           </p>
           <ul className="list-disc list-inside space-y-2 ml-2 text-slate-600 dark:text-slate-400">
             <li>Developers reserve the statutory right to modify unit layouts, finishings, and payment milestone structures subject to applicable RERA approvals and buyer consent rules.</li>
-            <li>RealtyPals is not liable for project completion delays, deviation in promised amenities, force majeure disruptions, or contractual disputes between buyers and builders.</li>
+            <li>PropFyndr is not liable for project completion delays, deviation in promised amenities, force majeure disruptions, or contractual disputes between buyers and builders.</li>
           </ul>
         </div>
       ),
@@ -219,7 +219,7 @@ export default function TermsOfService() {
       content: (
         <div className="space-y-3">
           <p>
-            To the maximum extent permitted by applicable Indian law (including the Consumer Protection Act, 2019 and relevant e-commerce guidelines), RealtyPals, its directors, officers, employees, and technology partners shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, property valuation differences, or business interruption arising from your access to or reliance upon platform insights.
+            To the maximum extent permitted by applicable Indian law (including the Consumer Protection Act, 2019 and relevant e-commerce guidelines), PropFyndr, its directors, officers, employees, and technology partners shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, property valuation differences, or business interruption arising from your access to or reliance upon platform insights.
           </p>
         </div>
       ),
@@ -266,7 +266,7 @@ export default function TermsOfService() {
             Terms of Service
           </h1>
           <p className="mt-3 text-base text-slate-600 dark:text-slate-400 max-w-3xl leading-relaxed">
-            Please read these terms carefully before utilizing RealtyPals. They outline the regulatory status of our AI advisory tools, RERA compliance standards, lead routing terms, and mutual responsibilities.
+            Please read these terms carefully before utilizing PropFyndr. They outline the regulatory status of our AI advisory tools, RERA compliance standards, lead routing terms, and mutual responsibilities.
           </p>
         </div>
 
@@ -280,7 +280,7 @@ export default function TermsOfService() {
               RERA Compliant &amp; Independent Real Estate Intelligence
             </h2>
             <p className="text-xs sm:text-sm text-blue-800/80 dark:text-blue-300/80 mt-0.5">
-              RealtyPals indexes verified public UP-RERA records for Noida &amp; Greater Noida. We maintain strict analytical neutrality and transparent statutory compliance.
+              PropFyndr indexes verified public UP-RERA records for Noida &amp; Greater Noida. We maintain strict analytical neutrality and transparent statutory compliance.
             </p>
           </div>
         </div>
@@ -338,7 +338,7 @@ export default function TermsOfService() {
             <div>
               <span className="font-semibold text-slate-900 dark:text-white block mb-1">Grievance &amp; Compliance Officer:</span>
               <p>Legal &amp; Regulatory Cell</p>
-              <p>RealtyPals Technologies Private Limited</p>
+              <p>PropFyndr Technologies Private Limited</p>
               <p className="mt-1 flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                 <MapPin size={13} className="text-blue-500 shrink-0" />
                 Sector 62, Noida, Gautam Buddh Nagar, UP 201301, India
@@ -346,8 +346,8 @@ export default function TermsOfService() {
             </div>
             <div>
               <span className="font-semibold text-slate-900 dark:text-white block mb-1">Resolution SLA &amp; Contact:</span>
-              <p>Official Email: <a href="mailto:grievance@realtypals.in" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">grievance@realtypals.in</a></p>
-              <p>General Legal: <a href="mailto:legal@realtypals.in" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">legal@realtypals.in</a></p>
+              <p>Official Email: <a href="mailto:grievance@propfyndr.in" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">grievance@propfyndr.in</a></p>
+              <p>General Legal: <a href="mailto:legal@propfyndr.in" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">legal@propfyndr.in</a></p>
               <p className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
                 ✓ Acknowledgment within 48 hours · Redressal within 15 days
               </p>

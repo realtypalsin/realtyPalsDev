@@ -227,7 +227,7 @@ async function seedEliteX() {
         project_id: project.id,
         project_slug: project.slug,
         name: "Official Elite X Brochure",
-        storage_url: "https://storage.realtypals.com/documents/elite-x-brochure.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/elite-x-brochure.pdf",
         doc_type: "brochure",
         file_size_bytes: 5120000
       }
@@ -237,7 +237,7 @@ async function seedEliteX() {
         project_id: project.id,
         project_slug: project.slug,
         name: "Elite X Unit Layout Plans",
-        storage_url: "https://storage.realtypals.com/documents/elite-x-layouts.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/elite-x-layouts.pdf",
         doc_type: "floor_plan",
         file_size_bytes: 4190000
       }

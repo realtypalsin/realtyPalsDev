@@ -1,8 +1,8 @@
-Yes. What you are doing with RealtyPals is actually **very close to the right architecture**.
+Yes. What you are doing with PropFyndr is actually **very close to the right architecture**.
 
 The key insight is this:
 
-> **Do not make the LLM responsible for presentation. Make the LLM responsible for meaning/data, and make RealtyPals responsible for presentation.**
+> **Do not make the LLM responsible for presentation. Make the LLM responsible for meaning/data, and make PropFyndr responsible for presentation.**
 
 The table in your screenshot is almost certainly not something you should try to reproduce by asking the model to generate Markdown. The model should return **structured information**, and your frontend should decide that structured information becomes a table, cards, metrics, maps, etc.
 
@@ -89,7 +89,7 @@ horizontal scrolling
 etc.
 ```
 
-That is the important part for RealtyPals.
+That is the important part for PropFyndr.
 
 ---
 
@@ -123,7 +123,7 @@ LLM
  ↓
 Structured data
  ↓
-RealtyPals UI renderer
+PropFyndr UI renderer
  ↓
 Beautiful table
 ```
@@ -143,9 +143,9 @@ Your application decides.
 
 ---
 
-# 3. Think of RealtyPals as having a "UI language"
+# 3. Think of PropFyndr as having a "UI language"
 
-This is the architecture I would recommend for RealtyPals.
+This is the architecture I would recommend for PropFyndr.
 
 Define a small set of **UI primitives**.
 
@@ -202,7 +202,7 @@ That's it.
 
 ---
 
-# 4. But there is an even better approach for RealtyPals
+# 4. But there is an even better approach for PropFyndr
 
 I wouldn't actually let the AI freely choose arbitrary JSON structures for every answer.
 
@@ -265,7 +265,7 @@ Notice something important here.
 
 **Don't make the LLM return the entire property.**
 
-If RealtyPals already has:
+If PropFyndr already has:
 
 ```text
 prop_4821
@@ -286,7 +286,7 @@ That can save a **huge amount of tokens**.
 
 ---
 
-# 5. This is where RealtyPals can become very efficient
+# 5. This is where PropFyndr can become very efficient
 
 Imagine the user asks:
 
@@ -331,7 +331,7 @@ LLM
 Property IDs
  │
  ▼
-REALTY PALS FRONTEND
+PROPFYNDR FRONTEND
  │
  ▼
 Beautiful property cards
@@ -504,7 +504,7 @@ The current OpenAI SDK also supports parsing structured outputs directly into ty
 
 # 9. Separate "content generation" from "UI generation"
 
-This is probably the biggest architectural improvement I would make to RealtyPals.
+This is probably the biggest architectural improvement I would make to PropFyndr.
 
 Think of three layers:
 
@@ -543,7 +543,7 @@ LLM → Markdown → frontend
 
 ---
 
-# 10. For RealtyPals specifically, I'd create these components
+# 10. For PropFyndr specifically, I'd create these components
 
 I'd start with maybe **8 components**.
 
@@ -625,7 +625,7 @@ That's why you can get the **same visual quality every time**.
 
 # 12. You can go one step further: semantic components
 
-For RealtyPals, I would actually avoid generic tables wherever possible.
+For PropFyndr, I would actually avoid generic tables wherever possible.
 
 Suppose the AI returns:
 
@@ -715,13 +715,13 @@ Database
 
 Your LLM becomes a **decision engine**, not a database.
 
-That is exactly how I would think about RealtyPals.
+That is exactly how I would think about PropFyndr.
 
 ---
 
 # 14. Web search should follow the same principle
 
-You mentioned earlier that you want RealtyPals to:
+You mentioned earlier that you want PropFyndr to:
 
 > get data from the database, and if necessary search the web.
 
@@ -763,7 +763,7 @@ And your normalized web data might become:
 }
 ```
 
-Then RealtyPals decides how to display it.
+Then PropFyndr decides how to display it.
 
 ---
 
@@ -771,10 +771,10 @@ Then RealtyPals decides how to display it.
 
 There's another part you should implement.
 
-Your RealtyPals system prompt might contain:
+Your PropFyndr system prompt might contain:
 
 ```text
-You are RealtyPals...
+You are PropFyndr...
 You understand Indian real estate...
 Here are your rules...
 Here are your tools...
@@ -795,7 +795,7 @@ So structure your request roughly as:
 
 ```text
 [STATIC]
-RealtyPals system instructions
+PropFyndr system instructions
 Database schema
 Tool definitions
 UI schema
@@ -852,12 +852,12 @@ Validated structured object
 
 ---
 
-# 17. I would build RealtyPals like this
+# 17. I would build PropFyndr like this
 
 Here is the architecture I'd recommend for your project:
 
 ```text
-                         REALTY PALS
+                         PROPFYNDR
                               │
                               ▼
                     ┌──────────────────┐
@@ -884,7 +884,7 @@ Here is the architecture I'd recommend for your project:
                              │
                              ▼
                 ┌───────────────────────┐
-                │ RealtyPals UI Protocol│
+                │ PropFyndr UI Protocol│
                 └───────────┬───────────┘
                             │
         ┌──────────┬────────┼────────┬──────────┐
@@ -978,9 +978,9 @@ Your application should produce **pixels**.
 
 ---
 
-# 20. The really interesting part: you can make RealtyPals better than ChatGPT here
+# 20. The really interesting part: you can make PropFyndr better than ChatGPT here
 
-Because RealtyPals is domain-specific.
+Because PropFyndr is domain-specific.
 
 ChatGPT needs generic components.
 
@@ -1005,7 +1005,7 @@ PriceBreakdown
 InvestmentVerdict
 ```
 
-Then a RealtyPals response could look like:
+Then a PropFyndr response could look like:
 
 ```text
 ┌─────────────────────────────────────┐
@@ -1106,7 +1106,7 @@ That is another small but useful optimization.
 
 ---
 
-# 22. The architecture I'd recommend for your current RealtyPals build
+# 22. The architecture I'd recommend for your current PropFyndr build
 
 Since you've already moved from:
 
@@ -1119,7 +1119,7 @@ to:
 ```text
 LLM → data
         ↓
-RealtyPals → table
+PropFyndr → table
 ```
 
 **I would keep that direction and take it one step further.**
@@ -1152,7 +1152,7 @@ Move toward:
       │ map              │
       └────────┬─────────┘
                ▼
-       RealtyPals Renderer
+       PropFyndr Renderer
                │
                ▼
          BEAUTIFUL UI
@@ -1166,14 +1166,14 @@ If you're using OpenAI specifically, the current API already supports Structured
 
 ---
 
-## What I would do next for RealtyPals
+## What I would do next for PropFyndr
 
-I think the most useful next step is to **design the actual RealtyPals response protocol**, rather than discussing this abstractly.
+I think the most useful next step is to **design the actual PropFyndr response protocol**, rather than discussing this abstractly.
 
 We can define:
 
 ```text
-RealtyPalsResponse
+PropFyndrResponse
         │
         ├── text
         ├── table
@@ -1186,7 +1186,7 @@ RealtyPalsResponse
         └── sources
 ```
 
-Then I can give you the **exact JSON Schema + backend architecture + prompt + TypeScript renderer architecture** for it, optimized specifically for **minimum output tokens and maximum UI quality**. That would give you something you can directly plug into your existing RealtyPals implementation rather than just a conceptual explanation.
+Then I can give you the **exact JSON Schema + backend architecture + prompt + TypeScript renderer architecture** for it, optimized specifically for **minimum output tokens and maximum UI quality**. That would give you something you can directly plug into your existing PropFyndr implementation rather than just a conceptual explanation.
 
 [1]: https://openai.com/index/introducing-structured-outputs-in-the-api/?utm_source=chatgpt.com "Introducing Structured Outputs in the API | OpenAI"
 [2]: https://github.com/openai/openai-node/blob/main/docs/structured-outputs.md?utm_source=chatgpt.com "openai-node/docs/structured-outputs.md at main · openai/openai-node · GitHub"

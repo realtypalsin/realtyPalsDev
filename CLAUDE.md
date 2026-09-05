@@ -26,7 +26,7 @@
 
 ---
 
-# RealtyPals
+# PropFyndr
 
 AI-powered real estate advisor for Indian home buyers.
 
@@ -50,13 +50,13 @@ The goal:
 ---
 
 ## Product Vision
-RealtyPals is not a listings website. Not a broker marketplace. Not a generic chatbot.
+PropFyndr is not a listings website. Not a broker marketplace. Not a generic chatbot.
 
-RealtyPals is an **AI-powered real estate advisor**.
+PropFyndr is an **AI-powered real estate advisor**.
 
 The product exists to help home buyers make better decisions faster.
 Traditional portals force users to browse hundreds of listings.
-RealtyPals asks users what they want and recommends suitable properties with clear reasoning.
+PropFyndr asks users what they want and recommends suitable properties with clear reasoning.
 
 **The AI advisor is the product. The property database exists to support the advisor.**
 
@@ -113,7 +113,7 @@ Target user increasingly arrives having already lived inside ChatGPT/Claude dail
 8. **Escalation feels like a favor, not a funnel.** When the AI can't go further (site visit, live pricing, negotiation), say so plainly and hand off to a human — don't disguise a lead-capture form as "one more question."
 9. **Tone: capable peer, not sales rep.** No exclamation-mark enthusiasm, no "Great choice!" filler. Match the flat, direct, competent tone the user already expects from a good AI assistant — see [Communication Preferences](#communication-preferences--behaviors) for the bar this codebase already holds itself to; the chat's voice should hold buyers to the same bar.
 
-**Product implication:** every gap between "what ChatGPT would do here" and "what RealtyPals actually does" is a churn risk, not a nice-to-have. When scoping a chat feature, ask: *would a power user notice we're worse at this than their default assistant?* If yes, that's the bar to close first — ahead of anything else on the roadmap.
+**Product implication:** every gap between "what ChatGPT would do here" and "what PropFyndr actually does" is a churn risk, not a nice-to-have. When scoping a chat feature, ask: *would a power user notice we're worse at this than their default assistant?* If yes, that's the bar to close first — ahead of anything else on the roadmap.
 
 ---
 
@@ -918,7 +918,7 @@ Admin: Add number input to project form
 ### Competing with Generic AI (vs Claude)
 
 **Generic Claude:** Answers anything, unreliable for structured domains.
-**RealtyPals:** Specialized AI for home buying decisions.
+**PropFyndr:** Specialized AI for home buying decisions.
 
 **Current Differentiation:**
 ✓ Intent capture (budget, timeline, location, purpose)

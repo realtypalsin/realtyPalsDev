@@ -1,33 +1,33 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Unambiguous Filename Mapping
 const fileRenames: Record<string, string> = {
-  'realtypals_sector10_master_data.json': 'realtypals_sector10_greaternoidawest_master_data.json',
-  'realtypals_sector12_master_data.json': 'realtypals_sector12_greaternoidawest_master_data.json',
-  'realtypals_sector75_master_data.json': 'realtypals_sector75_noida_master_data.json',
-  'realtypals_sector76_master_data.json': 'realtypals_sector76_noida_master_data.json',
-  'realtypals_sector77_master_data.json': 'realtypals_sector77_noida_master_data.json',
-  'realtypals_sector78_master_data.json': 'realtypals_sector78_noida_master_data.json',
-  'realtypals_sector79_master_data.json': 'realtypals_sector79_noida_master_data.json',
-  'realtypals_sector100_master_data.json': 'realtypals_sector100_noida_master_data.json',
-  'realtypals_sector107_master_data.json': 'realtypals_sector107_noida_master_data.json',
-  'realtypals_sector128_master_data.json': 'realtypals_sector128_noida_master_data.json',
-  'realtypals_sector137_master_data.json': 'realtypals_sector137_noida_master_data.json',
-  'realtypals_sector143_master_data.json': 'realtypals_sector143_noida_master_data.json',
-  'realtypals_sector150_master_data.json': 'realtypals_sector150_noida_master_data.json',
-  'realtypals_sector16c_master_data.json': 'realtypals_sector16c_greaternoidawest_master_data.json',
-  'realtypals_sector1greaternoidawest_master_data.json': 'realtypals_sector1_greaternoidawest_master_data.json',
-  'realtypals_sector10greaternoidawest_master_data.json': 'realtypals_sector10_greaternoidawest_master_data.json',
-  'realtypals_sector22dyamunaexpressway_master_data.json': 'realtypals_sector22d_yamunaexpressway_master_data.json',
-  'realtypals_techzone4_master_data.json': 'realtypals_techzone4_greaternoidawest_master_data.json',
+  'propfyndr_sector10_master_data.json': 'propfyndr_sector10_greaternoidawest_master_data.json',
+  'propfyndr_sector12_master_data.json': 'propfyndr_sector12_greaternoidawest_master_data.json',
+  'propfyndr_sector75_master_data.json': 'propfyndr_sector75_noida_master_data.json',
+  'propfyndr_sector76_master_data.json': 'propfyndr_sector76_noida_master_data.json',
+  'propfyndr_sector77_master_data.json': 'propfyndr_sector77_noida_master_data.json',
+  'propfyndr_sector78_master_data.json': 'propfyndr_sector78_noida_master_data.json',
+  'propfyndr_sector79_master_data.json': 'propfyndr_sector79_noida_master_data.json',
+  'propfyndr_sector100_master_data.json': 'propfyndr_sector100_noida_master_data.json',
+  'propfyndr_sector107_master_data.json': 'propfyndr_sector107_noida_master_data.json',
+  'propfyndr_sector128_master_data.json': 'propfyndr_sector128_noida_master_data.json',
+  'propfyndr_sector137_master_data.json': 'propfyndr_sector137_noida_master_data.json',
+  'propfyndr_sector143_master_data.json': 'propfyndr_sector143_noida_master_data.json',
+  'propfyndr_sector150_master_data.json': 'propfyndr_sector150_noida_master_data.json',
+  'propfyndr_sector16c_master_data.json': 'propfyndr_sector16c_greaternoidawest_master_data.json',
+  'propfyndr_sector1greaternoidawest_master_data.json': 'propfyndr_sector1_greaternoidawest_master_data.json',
+  'propfyndr_sector10greaternoidawest_master_data.json': 'propfyndr_sector10_greaternoidawest_master_data.json',
+  'propfyndr_sector22dyamunaexpressway_master_data.json': 'propfyndr_sector22d_yamunaexpressway_master_data.json',
+  'propfyndr_techzone4_master_data.json': 'propfyndr_techzone4_greaternoidawest_master_data.json',
 };
 
 // Deep Additional Reputed Projects for Wave 1 Sectors
 const additionalReputedProjects: Record<string, any[]> = {
-  'realtypals_sector107_noida_master_data.json': [
+  'propfyndr_sector107_noida_master_data.json': [
     {
       name: 'Salcon Verandas Noida',
       slug: 'salcon-verandas-sector-107',
@@ -46,7 +46,7 @@ const additionalReputedProjects: Record<string, any[]> = {
     },
   ],
 
-  'realtypals_sector128_noida_master_data.json': [
+  'propfyndr_sector128_noida_master_data.json': [
     {
       name: 'Jaypee Pavilion Court',
       slug: 'jaypee-pavilion-court-sector-128',
@@ -97,7 +97,7 @@ const additionalReputedProjects: Record<string, any[]> = {
     },
   ],
 
-  'realtypals_sector137_noida_master_data.json': [
+  'propfyndr_sector137_noida_master_data.json': [
     {
       name: 'Logix Blossom County',
       slug: 'logix-blossom-county-sector-137',
@@ -132,7 +132,7 @@ const additionalReputedProjects: Record<string, any[]> = {
     },
   ],
 
-  'realtypals_sector150_noida_master_data.json': [
+  'propfyndr_sector150_noida_master_data.json': [
     {
       name: 'Samridhi Luxuriate',
       slug: 'samridhi-luxuriate-sector-150',
@@ -183,7 +183,7 @@ const additionalReputedProjects: Record<string, any[]> = {
     },
   ],
 
-  'realtypals_sector1_greaternoidawest_master_data.json': [
+  'propfyndr_sector1_greaternoidawest_master_data.json': [
     {
       name: 'Express Astra',
       slug: 'express-astra-sector-1',
@@ -218,7 +218,7 @@ const additionalReputedProjects: Record<string, any[]> = {
     },
   ],
 
-  'realtypals_sector22d_yamunaexpressway_master_data.json': [
+  'propfyndr_sector22d_yamunaexpressway_master_data.json': [
     {
       name: 'ATS Allure',
       slug: 'ats-allure-sector-22d',

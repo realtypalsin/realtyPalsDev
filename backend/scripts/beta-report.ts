@@ -50,7 +50,7 @@ async function main() {
   const cost = Number(spend._sum.cost_usd ?? 0)
   const linkedLeads = leads.filter((l) => l.chat_session_id).length
 
-  console.log(`\n═══ RealtyPals beta — last ${days} day${days === 1 ? '' : 's'} ═══\n`)
+  console.log(`\n═══ PropFyndr beta — last ${days} day${days === 1 ? '' : 's'} ═══\n`)
 
   console.log('USE')
   console.log(`  conversations       ${sessions.length}`)

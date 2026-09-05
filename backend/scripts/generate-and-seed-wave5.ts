@@ -4,12 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Wave 5 Catalogue Data across 5 Sector Master JSON Files
 const WAVE5_DATA: Record<string, any[]> = {
   // SECTOR 4 GREATER NOIDA WEST
-  'realtypals_sector4_greaternoidawest_master_data.json': [
+  'propfyndr_sector4_greaternoidawest_master_data.json': [
     {
       name: 'Gaur City 1 - 5th Avenue',
       slug: 'gaur-city-1-5th-avenue-sector-4',
@@ -73,7 +73,7 @@ const WAVE5_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 16B GREATER NOIDA WEST
-  'realtypals_sector16b_greaternoidawest_master_data.json': [
+  'propfyndr_sector16b_greaternoidawest_master_data.json': [
     {
       name: 'Supertech Eco Village 2',
       slug: 'supertech-eco-village-2-sector-16b',
@@ -137,7 +137,7 @@ const WAVE5_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 45 NOIDA
-  'realtypals_sector45_noida_master_data.json': [
+  'propfyndr_sector45_noida_master_data.json': [
     {
       name: 'Prateek Stylome',
       slug: 'prateek-stylome-sector-45-noida',
@@ -201,7 +201,7 @@ const WAVE5_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 143B NOIDA
-  'realtypals_sector143b_noida_master_data.json': [
+  'propfyndr_sector143b_noida_master_data.json': [
     {
       name: 'Sikka Kaamna Greens',
       slug: 'sikka-kaamna-greens-sector-143b-noida',
@@ -265,7 +265,7 @@ const WAVE5_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 93A NOIDA
-  'realtypals_sector93a_noida_master_data.json': [
+  'propfyndr_sector93a_noida_master_data.json': [
     {
       name: 'ATS Village',
       slug: 'ats-village-sector-93a-noida',

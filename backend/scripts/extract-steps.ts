@@ -8,6 +8,6 @@ for (let i = 200; i < lines.length; i++) {
   if (step.type === 'PLANNER_RESPONSE' && step.content && step.content.includes('50') || (step.content && step.content.includes('YardLyst'))) {
     console.log(`\n=== PLANNER RESPONSE AT STEP ${step.step_index} ===`);
     console.log(step.content.slice(0, 4000));
-    fs.writeFileSync(`c:\\Users\\Furqan\\Desktop\\RealtyPals\\scratch_step_${step.step_index}.md`, step.content, 'utf-8');
+    fs.writeFileSync(`c:\\Users\\Furqan\\Desktop\\PropFyndr\\scratch_step_${step.step_index}.md`, step.content, 'utf-8');
   }
 }

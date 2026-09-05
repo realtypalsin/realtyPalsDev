@@ -4,12 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Wave 3 Factual Master Catalogue
 const WAVE3_DATA: Record<string, any[]> = {
   // SECTOR 121 NOIDA
-  'realtypals_sector121_noida_master_data.json': [
+  'propfyndr_sector121_noida_master_data.json': [
     {
       name: 'Cleo County',
       slug: 'cleo-county-sector-121-noida',
@@ -167,7 +167,7 @@ const WAVE3_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 120 NOIDA
-  'realtypals_sector120_noida_master_data.json': [
+  'propfyndr_sector120_noida_master_data.json': [
     {
       name: 'Prateek Laurel',
       slug: 'prateek-laurel-sector-120-noida',

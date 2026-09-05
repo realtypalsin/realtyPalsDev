@@ -51,10 +51,10 @@ export default function Error({
       <header className="relative z-10 max-w-6xl mx-auto w-full px-6 py-5 flex items-center justify-between border-b border-white/5">
         <Link href="/" className="flex items-center gap-2.5 group shrink-0">
           <Image
-            src="/images/icons/ExpandedRealtyPalsWhite.png"
-            alt="RealtyPals"
-            width={140}
-            height={42}
+            src="/images/icons/logo-wordmark-white.png"
+            alt="PropFyndr"
+            width={648}
+            height={293}
             className="object-contain h-auto opacity-90 group-hover:opacity-100 transition-opacity w-28 sm:w-36"
           />
         </Link>
@@ -137,7 +137,7 @@ export default function Error({
 
       {/* Footer */}
       <footer className="relative z-10 max-w-6xl mx-auto w-full px-6 py-4 border-t border-white/5 text-center text-[11px] text-zinc-600">
-        © {new Date().getFullYear()} RealtyPals · Verified Real Estate Intelligence
+        © {new Date().getFullYear()} PropFyndr · Verified Real Estate Intelligence
       </footer>
     </div>
   )

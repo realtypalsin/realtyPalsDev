@@ -47,7 +47,7 @@ async function seed() {
       city: 'Noida',
       status: 'ready_to_move' as const,
       tagline: 'A Captivating Residential Enclave Mapped with Perfection',
-      hero_image_url: 'https://storage.realtypals.com/projects/jm-aroma/hero.jpg',
+      hero_image_url: 'https://storage.propfyndr.com/projects/jm-aroma/hero.jpg',
       rera_number: 'Rera Not Applicable / Completed Pre-RERA',
       total_towers: 7,
       floors: 'G+17',
@@ -200,7 +200,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "Official JM Aroma Brochure",
-        storage_url: "https://storage.realtypals.com/documents/jm-aroma-brochure.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/jm-aroma-brochure.pdf",
         doc_type: "brochure",
         file_size_bytes: 5120000
       }
@@ -210,7 +210,7 @@ async function seed() {
         project_id: project.id,
         project_slug: project.slug,
         name: "JM Aroma Layout Blueprint Portfolio",
-        storage_url: "https://storage.realtypals.com/documents/jm-aroma-layouts.pdf",
+        storage_url: "https://storage.propfyndr.com/documents/jm-aroma-layouts.pdf",
         doc_type: "floor_plan",
         file_size_bytes: 4120000
       }
@@ -222,7 +222,7 @@ async function seed() {
     await prisma.projectImage.create({
       data: {
         project_id: project.id,
-        url: "https://storage.realtypals.com/projects/jm-aroma/hero.jpg",
+        url: "https://storage.propfyndr.com/projects/jm-aroma/hero.jpg",
         type: "hero"
       }
     })

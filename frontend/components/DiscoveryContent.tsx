@@ -154,7 +154,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   const router = useRouter();
   const [chatInput, setChatInput] = useState(() => {
     if (typeof window === 'undefined') return '';
-    return localStorage.getItem('realtypals_draft') ?? '';
+    return localStorage.getItem('propfyndr_draft') ?? '';
   });
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [visibleCount, setVisibleCount] = useState(15);
@@ -200,15 +200,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   useEffect(() => {
     const newTitle = (() => {
       if (sessionTitle && sessionTitle.trim()) {
-        return `${sessionTitle.trim()} | RealtyPals`
+        return `${sessionTitle.trim()} | PropFyndr`
       }
       const userMsg = chatHistory.find(m => m.type === 'user')?.content
       if (userMsg && userMsg.trim()) {
         const cleanMsg = userMsg.trim()
         const truncated = cleanMsg.length > 35 ? `${cleanMsg.slice(0, 35)}...` : cleanMsg
-        return `${truncated} | RealtyPals`
+        return `${truncated} | PropFyndr`
       }
-      return `AI Property Advisor | RealtyPals`
+      return `AI Property Advisor | PropFyndr`
     })()
     if (document.title !== newTitle) {
       document.title = newTitle
@@ -236,7 +236,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     setIsRenamingHeader(false);
     try {
       await renameSession(sessionId, newTitle);
-      window.dispatchEvent(new Event('realtypals:session-updated'));
+      window.dispatchEvent(new Event('propfyndr:session-updated'));
     } catch {
       setSessionTitle(oldTitle);
       setToast({ message: 'Failed to rename session' });
@@ -247,7 +247,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
     if (!sessionId) return;
     try {
       await deleteSession(sessionId);
-      window.dispatchEvent(new Event('realtypals:session-updated'));
+      window.dispatchEvent(new Event('propfyndr:session-updated'));
       router.push('/discover');
     } catch {
       setToast({ message: 'Failed to delete session' });
@@ -256,7 +256,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   };
 
   const handleNewChat = useCallback(() => {
-    window.dispatchEvent(new CustomEvent('realtypals:new-chat'));
+    window.dispatchEvent(new CustomEvent('propfyndr:new-chat'));
     router.push('/discover');
   }, [router]);
 
@@ -328,9 +328,9 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (chatInput) {
-        localStorage.setItem('realtypals_draft', chatInput);
+        localStorage.setItem('propfyndr_draft', chatInput);
       } else {
-        localStorage.removeItem('realtypals_draft');
+        localStorage.removeItem('propfyndr_draft');
       }
     }, 500);
     return () => clearTimeout(timeout);
@@ -869,11 +869,11 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
                 body: JSON.stringify({ title: smartTitle }),
               })
             ).finally(() => {
-              window.dispatchEvent(new CustomEvent('realtypals:session-updated'))
+              window.dispatchEvent(new CustomEvent('propfyndr:session-updated'))
             }).catch(() => { })
           } else {
             // Every other turn: refresh immediately, no PATCH follows.
-            window.dispatchEvent(new CustomEvent('realtypals:session-updated'));
+            window.dispatchEvent(new CustomEvent('propfyndr:session-updated'));
           }
         }
       },
@@ -918,15 +918,15 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
         setTimeout(() => chatInputRef.current?.focus(), 50);
       }
     };
-    window.addEventListener('realtypals:ask-ai', handler);
-    return () => window.removeEventListener('realtypals:ask-ai', handler);
+    window.addEventListener('propfyndr:ask-ai', handler);
+    return () => window.removeEventListener('propfyndr:ask-ai', handler);
   }, [dispatchAction, isSubmitting]);
 
   // ── Sidebar "New Chat" button triggers reset via CustomEvent ──
   useEffect(() => {
     const handler = () => performResetRef.current();
-    window.addEventListener('realtypals:new-chat', handler);
-    return () => window.removeEventListener('realtypals:new-chat', handler);
+    window.addEventListener('propfyndr:new-chat', handler);
+    return () => window.removeEventListener('propfyndr:new-chat', handler);
   }, []);
 
 
@@ -1460,8 +1460,8 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
   // button was inert — `showMap` is already plumbed into MessageBubble and gates
   // the SectorMap render, so this is the only piece that was missing.
   useEffect(() => {
-    window.addEventListener('realtypals:open-map', handleToggleMap);
-    return () => window.removeEventListener('realtypals:open-map', handleToggleMap);
+    window.addEventListener('propfyndr:open-map', handleToggleMap);
+    return () => window.removeEventListener('propfyndr:open-map', handleToggleMap);
   }, [handleToggleMap]);
 
   const handleSetCarouselIndex = useCallback((msgIdx: number, imgIdx: number) => {
@@ -1737,7 +1737,7 @@ export default function DiscoveryContent({ userId, guestToken, onSessionChange, 
             {/* Clean, iconic brand hero */}
             <div className="text-center mb-10 max-w-[880px] animate-fade-in-up flex flex-col items-center select-none">
               <h1 className="text-[4.2rem] md:text-[5.5rem] font-bold text-gray-900 dark:text-white tracking-tight italic leading-none drop-shadow-sm font-[family-name:var(--font-afacad)]">
-                RealtyPals
+                PropFyndr
               </h1>
               <h2 className="text-2xl md:text-[28px] font-medium text-gray-500 dark:text-gray-400 tracking-wide mt-2 font-[family-name:var(--font-afacad)]">
                 Decide Better

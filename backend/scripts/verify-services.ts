@@ -129,7 +129,7 @@ async function main() {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         api_key: process.env.POSTHOG_API_KEY,
-        batch: [{ event: 'realtypals_service_check', distinct_id: 'verify-services', properties: { automated: true } }],
+        batch: [{ event: 'propfyndr_service_check', distinct_id: 'verify-services', properties: { automated: true } }],
       }),
       signal: t(15_000),
     }))
@@ -167,10 +167,10 @@ async function main() {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'x-sentry-auth': `Sentry sentry_version=7, sentry_key=${publicKey}, sentry_client=realtypals-verify/1.0`,
+        'x-sentry-auth': `Sentry sentry_version=7, sentry_key=${publicKey}, sentry_client=propfyndr-verify/1.0`,
       },
       body: JSON.stringify({
-        message: 'realtypals verify-services connectivity check',
+        message: 'propfyndr verify-services connectivity check',
         level: 'info',
         tags: { automated: 'true', source: 'verify-services' },
         platform: 'node',

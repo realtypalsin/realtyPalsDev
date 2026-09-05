@@ -5,7 +5,7 @@ import * as path from 'path';
 const prisma = new PrismaClient();
 
 async function patch() {
-  const jsonPath = 'C:\\Users\\Furqan\\Downloads\\realtypals-intelligence-patch.json';
+  const jsonPath = 'C:\\Users\\Furqan\\Downloads\\propfyndr-intelligence-patch.json';
   if (!fs.existsSync(jsonPath)) {
     console.error(`File not found: ${jsonPath}`);
     process.exit(1);

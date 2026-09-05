@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 async function main() {
   console.log('===============================================================');
@@ -47,7 +47,7 @@ async function main() {
   for (const p of projects) {
     const rawSector = (p.sector || 'sector75').toLowerCase().replace(/[^a-z0-9]/g, '');
     const rawCity = (p.city || 'noida').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const filename = `realtypals_${rawSector}_${rawCity}_master_data.json`;
+    const filename = `propfyndr_${rawSector}_${rawCity}_master_data.json`;
 
     if (!sectorFileMap.has(filename)) {
       sectorFileMap.set(filename, []);

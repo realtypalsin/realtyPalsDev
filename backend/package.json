@@ -1,7 +1,7 @@
 {
-  "name": "realtypals-backend",
+  "name": "propfyndr-backend",
   "version": "1.0.0",
-  "description": "RealtyPals backend service — lead processing and notifications",
+  "description": "PropFyndr backend service — lead processing and notifications",
   "main": "dist/index.js",
   "private": true,
   "scripts": {
@@ -11,8 +11,8 @@
     "test": "node --require tsx/cjs src/test-runner.ts",
     "eval": "tsx src/lib/eval/eval-runner.ts",
     "eval:local": "tsx src/lib/eval/eval-runner.ts --endpoint=http://localhost:3002",
-    "eval:staging": "tsx src/lib/eval/eval-runner.ts --endpoint=https://staging.realtypals.com",
-    "eval:prod": "tsx src/lib/eval/eval-runner.ts --endpoint=https://realtypals.com",
+    "eval:staging": "tsx src/lib/eval/eval-runner.ts --endpoint=https://staging.propfyndr.com",
+    "eval:prod": "tsx src/lib/eval/eval-runner.ts --endpoint=https://propfyndr.com",
     "lint": "eslint src --ext .ts --max-warnings=0",
     "db:generate": "prisma generate",
     "postinstall": "prisma generate",

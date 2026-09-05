@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 const prisma = new PrismaClient()
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75'
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75'
 
 // Wave 2 Projects Definitions
 const WAVE_2_PROJECTS: Array<{
@@ -12,7 +12,7 @@ const WAVE_2_PROJECTS: Array<{
 }> = [
   // 1. Ace Mahagun Medalleo (Sector 107, Noida)
   {
-    sectorFile: 'realtypals_sector107_noida_master_data.json',
+    sectorFile: 'propfyndr_sector107_noida_master_data.json',
     project: {
       name: 'Ace Mahagun Medalleo',
       slug: 'ace-mahagun-medalleo-sector-107',
@@ -58,7 +58,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 2. Paramount Floraville (Sector 137, Noida)
   {
-    sectorFile: 'realtypals_sector137_noida_master_data.json',
+    sectorFile: 'propfyndr_sector137_noida_master_data.json',
     project: {
       name: 'Paramount Floraville',
       slug: 'paramount-floraville-sector-137',
@@ -104,7 +104,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 3. Ajnara Elements (Sector 137, Noida)
   {
-    sectorFile: 'realtypals_sector137_noida_master_data.json',
+    sectorFile: 'propfyndr_sector137_noida_master_data.json',
     project: {
       name: 'Ajnara Elements',
       slug: 'ajnara-elements-sector-137',
@@ -149,7 +149,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 4. Supertech Eco Suites (Sector 137, Noida)
   {
-    sectorFile: 'realtypals_sector137_noida_master_data.json',
+    sectorFile: 'propfyndr_sector137_noida_master_data.json',
     project: {
       name: 'Supertech Eco Suites',
       slug: 'supertech-eco-suites-sector-137',
@@ -195,7 +195,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 5. Prateek Canary (Sector 150, Noida)
   {
-    sectorFile: 'realtypals_sector150_noida_master_data.json',
+    sectorFile: 'propfyndr_sector150_noida_master_data.json',
     project: {
       name: 'Prateek Canary',
       slug: 'prateek-canary-sector-150',
@@ -241,7 +241,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 6. ATS Le Grandiose (Sector 150, Noida)
   {
-    sectorFile: 'realtypals_sector150_noida_master_data.json',
+    sectorFile: 'propfyndr_sector150_noida_master_data.json',
     project: {
       name: 'ATS Le Grandiose',
       slug: 'ats-le-grandiose-sector-150',
@@ -287,7 +287,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 7. ATS Pious Orchards (Sector 150, Noida)
   {
-    sectorFile: 'realtypals_sector150_noida_master_data.json',
+    sectorFile: 'propfyndr_sector150_noida_master_data.json',
     project: {
       name: 'ATS Pious Orchards',
       slug: 'ats-pious-orchards-sector-150',
@@ -333,7 +333,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 8. ATS Pious Hideaways (Sector 150, Noida)
   {
-    sectorFile: 'realtypals_sector150_noida_master_data.json',
+    sectorFile: 'propfyndr_sector150_noida_master_data.json',
     project: {
       name: 'ATS Pious Hideaways',
       slug: 'ats-pious-hideaways-sector-150',
@@ -378,7 +378,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 9. ATS Kingston Heath (Sector 150, Noida)
   {
-    sectorFile: 'realtypals_sector150_noida_master_data.json',
+    sectorFile: 'propfyndr_sector150_noida_master_data.json',
     project: {
       name: 'ATS Kingston Heath',
       slug: 'ats-kingston-heath-sector-150',
@@ -423,7 +423,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 10. ACE Parkway (Sector 150, Noida)
   {
-    sectorFile: 'realtypals_sector150_noida_master_data.json',
+    sectorFile: 'propfyndr_sector150_noida_master_data.json',
     project: {
       name: 'ACE Parkway',
       slug: 'ace-parkway-sector-150',
@@ -469,7 +469,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 11. ACE Arte (Sector 150, Noida)
   {
-    sectorFile: 'realtypals_sector150_noida_master_data.json',
+    sectorFile: 'propfyndr_sector150_noida_master_data.json',
     project: {
       name: 'ACE Arte',
       slug: 'ace-arte-sector-150',
@@ -514,7 +514,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 12. Godrej Nest (Sector 150, Noida)
   {
-    sectorFile: 'realtypals_sector150_noida_master_data.json',
+    sectorFile: 'propfyndr_sector150_noida_master_data.json',
     project: {
       name: 'Godrej Nest',
       slug: 'godrej-nest-sector-150',
@@ -559,7 +559,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 13. Godrej Nurture (Sector 150, Noida)
   {
-    sectorFile: 'realtypals_sector150_noida_master_data.json',
+    sectorFile: 'propfyndr_sector150_noida_master_data.json',
     project: {
       name: 'Godrej Nurture',
       slug: 'godrej-nurture-sector-150',
@@ -605,7 +605,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 14. Jaypee Kosmos (Sector 128, Noida)
   {
-    sectorFile: 'realtypals_sector128_noida_master_data.json',
+    sectorFile: 'propfyndr_sector128_noida_master_data.json',
     project: {
       name: 'Jaypee Kosmos',
       slug: 'jaypee-kosmos-sector-128',
@@ -651,7 +651,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 15. Jaypee Kensington Boulevard (Sector 128, Noida)
   {
-    sectorFile: 'realtypals_sector128_noida_master_data.json',
+    sectorFile: 'propfyndr_sector128_noida_master_data.json',
     project: {
       name: 'Jaypee Kensington Boulevard',
       slug: 'jaypee-kensington-boulevard-sector-128',
@@ -698,7 +698,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 16. NBCC Aspire Eternia (Techzone 4, Greater Noida West)
   {
-    sectorFile: 'realtypals_techzone4_greaternoidawest_master_data.json',
+    sectorFile: 'propfyndr_techzone4_greaternoidawest_master_data.json',
     project: {
       name: 'NBCC Aspire Eternia',
       slug: 'nbcc-aspire-eternia-techzone-4',
@@ -743,7 +743,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 17. NBCC Aspire Dream Valley (Techzone 4, Greater Noida West)
   {
-    sectorFile: 'realtypals_techzone4_greaternoidawest_master_data.json',
+    sectorFile: 'propfyndr_techzone4_greaternoidawest_master_data.json',
     project: {
       name: 'NBCC Aspire Dream Valley',
       slug: 'nbcc-aspire-dream-valley-techzone-4',
@@ -789,7 +789,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 18. Saviour Greenarch (Techzone 4, Greater Noida West)
   {
-    sectorFile: 'realtypals_techzone4_greaternoidawest_master_data.json',
+    sectorFile: 'propfyndr_techzone4_greaternoidawest_master_data.json',
     project: {
       name: 'Saviour Greenarch',
       slug: 'saviour-greenarch-techzone-4',
@@ -835,7 +835,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 19. Himalaya Pride (Techzone 4, Greater Noida West)
   {
-    sectorFile: 'realtypals_techzone4_greaternoidawest_master_data.json',
+    sectorFile: 'propfyndr_techzone4_greaternoidawest_master_data.json',
     project: {
       name: 'Himalaya Pride',
       slug: 'himalaya-pride-techzone-4',
@@ -881,7 +881,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 20. Amrapali Enchante (Techzone 4, Greater Noida West)
   {
-    sectorFile: 'realtypals_techzone4_greaternoidawest_master_data.json',
+    sectorFile: 'propfyndr_techzone4_greaternoidawest_master_data.json',
     project: {
       name: 'Amrapali Enchante',
       slug: 'amrapali-enchante-techzone-4',
@@ -926,7 +926,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 21. Supercity Mayfair (Techzone 4, Greater Noida West)
   {
-    sectorFile: 'realtypals_techzone4_greaternoidawest_master_data.json',
+    sectorFile: 'propfyndr_techzone4_greaternoidawest_master_data.json',
     project: {
       name: 'Supercity Mayfair',
       slug: 'supercity-mayfair-techzone-4',
@@ -971,7 +971,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 22. ABA Cherry County (Techzone 4, Greater Noida West)
   {
-    sectorFile: 'realtypals_techzone4_greaternoidawest_master_data.json',
+    sectorFile: 'propfyndr_techzone4_greaternoidawest_master_data.json',
     project: {
       name: 'ABA Cherry County',
       slug: 'aba-cherry-county-techzone-4',
@@ -1017,7 +1017,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 23. ACE Divino (Sector 1, Greater Noida West)
   {
-    sectorFile: 'realtypals_sector1_greaternoidawest_master_data.json',
+    sectorFile: 'propfyndr_sector1_greaternoidawest_master_data.json',
     project: {
       name: 'ACE Divino',
       slug: 'ace-divino-sector-1-greater-noida-west',
@@ -1063,7 +1063,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 24. RG Pleiaddes (Sector 1, Greater Noida West)
   {
-    sectorFile: 'realtypals_sector1_greaternoidawest_master_data.json',
+    sectorFile: 'propfyndr_sector1_greaternoidawest_master_data.json',
     project: {
       name: 'RG Pleiaddes',
       slug: 'rg-pleiaddes-sector-1-greater-noida-west',
@@ -1108,7 +1108,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 25. NBCC Leisure Valley (Sector 1, Greater Noida West)
   {
-    sectorFile: 'realtypals_sector1_greaternoidawest_master_data.json',
+    sectorFile: 'propfyndr_sector1_greaternoidawest_master_data.json',
     project: {
       name: 'NBCC Leisure Valley',
       slug: 'nbcc-leisure-valley-sector-1-greater-noida-west',
@@ -1153,7 +1153,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 26. Nirala Diadem (Sector 10, Greater Noida West)
   {
-    sectorFile: 'realtypals_sector10_greaternoidawest_master_data.json',
+    sectorFile: 'propfyndr_sector10_greaternoidawest_master_data.json',
     project: {
       name: 'Nirala Diadem',
       slug: 'nirala-diadem-sector-10-greater-noida-west',
@@ -1198,7 +1198,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 27. Bhutani Astrathum (Sector 12, Greater Noida West)
   {
-    sectorFile: 'realtypals_sector12_greaternoidawest_master_data.json',
+    sectorFile: 'propfyndr_sector12_greaternoidawest_master_data.json',
     project: {
       name: 'Bhutani Astrathum',
       slug: 'bhutani-astrathum-sector-12-greater-noida-west',
@@ -1243,7 +1243,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 28. Eldeco Echoes of Eden (Sector 22D, Yamuna Expressway)
   {
-    sectorFile: 'realtypals_sector22d_yamunaexpressway_master_data.json',
+    sectorFile: 'propfyndr_sector22d_yamunaexpressway_master_data.json',
     project: {
       name: 'Eldeco Echoes of Eden',
       slug: 'eldeco-echoes-of-eden-sector-22d',
@@ -1288,7 +1288,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 29. Purvanchal Sunbliss (Sector 22D, Yamuna Expressway)
   {
-    sectorFile: 'realtypals_sector22d_yamunaexpressway_master_data.json',
+    sectorFile: 'propfyndr_sector22d_yamunaexpressway_master_data.json',
     project: {
       name: 'Purvanchal Sunbliss',
       slug: 'purvanchal-sunbliss-sector-22d',
@@ -1333,7 +1333,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 30. Greenbay The Monarque (Sector 22D, Yamuna Expressway)
   {
-    sectorFile: 'realtypals_sector22d_yamunaexpressway_master_data.json',
+    sectorFile: 'propfyndr_sector22d_yamunaexpressway_master_data.json',
     project: {
       name: 'Greenbay The Monarque',
       slug: 'greenbay-the-monarque-sector-22d',
@@ -1378,7 +1378,7 @@ const WAVE_2_PROJECTS: Array<{
 
   // 31. Arihant Seasons (Sector 22D, Yamuna Expressway)
   {
-    sectorFile: 'realtypals_sector22d_yamunaexpressway_master_data.json',
+    sectorFile: 'propfyndr_sector22d_yamunaexpressway_master_data.json',
     project: {
       name: 'Arihant Seasons',
       slug: 'arihant-seasons-sector-22d',
@@ -1615,7 +1615,7 @@ function fillCompleteWave2Project(p: any): any {
       { title: 'RWA & Resident Welfare Association Formed', update_type: 'rwa_news', update_date: '2024-01-10', headline: 'Active resident welfare association overseeing daily maintenance.' },
     ],
     channel_partners: [
-      { partner_name: 'RealtyPals Premier Partner Network', commission_pct: 2.5, contact_person: 'Senior Advisor', phone: '+91 98765 43210' },
+      { partner_name: 'PropFyndr Premier Partner Network', commission_pct: 2.5, contact_person: 'Senior Advisor', phone: '+91 98765 43210' },
     ],
   }
 }

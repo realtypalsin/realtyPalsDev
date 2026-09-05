@@ -4,15 +4,15 @@ import * as path from 'path'
 
 const prisma = new PrismaClient()
 
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75'
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75'
 const masterFiles = [
-  'realtypals_sector10_master_data.json',
-  'realtypals_sector12_master_data.json',
-  'realtypals_sector75_master_data.json',
-  'realtypals_sector76_master_data.json',
-  'realtypals_sector77_master_data.json',
-  'realtypals_sector78_master_data.json',
-  'realtypals_sector79_master_data.json'
+  'propfyndr_sector10_master_data.json',
+  'propfyndr_sector12_master_data.json',
+  'propfyndr_sector75_master_data.json',
+  'propfyndr_sector76_master_data.json',
+  'propfyndr_sector77_master_data.json',
+  'propfyndr_sector78_master_data.json',
+  'propfyndr_sector79_master_data.json'
 ]
 
 // Build local property image directory lookup
@@ -182,7 +182,7 @@ async function seedAll() {
           possession_score: dnaSrc.possession_score ?? dnaSrc.possession_certainty_score ?? 92,
           overall_score:    dnaSrc.overall_score ?? 92,
           last_verified_at: new Date(),
-          verified_by:      'RealtyPals Audit Desk',
+          verified_by:      'PropFyndr Audit Desk',
         }
         await prisma.projectDna.upsert({
           where:  { project_id: project.id },
@@ -202,7 +202,7 @@ async function seedAll() {
           confidence_sources:     decSrc.confidence_sources ?? ['RERA Filing', 'Site Inspection', 'Sub-Registrar Data'],
           financial_intelligence: decSrc.intelligence_data ?? { investmentReport: {} },
           last_verified_at:       new Date(),
-          verified_by:            'RealtyPals Audit Desk',
+          verified_by:            'PropFyndr Audit Desk',
         }
         await prisma.decisionProfile.upsert({
           where:  { project_id: project.id },
@@ -223,7 +223,7 @@ async function seedAll() {
           timeline_horizon:     perSrc.timeline_horizon ?? '3-5 years',
           motivation_note:      perSrc.motivation_note ?? 'High lifestyle depth and metro connectivity.',
           last_verified_at:     new Date(),
-          verified_by:          'RealtyPals Audit Desk',
+          verified_by:          'PropFyndr Audit Desk',
         }
         await prisma.personaProfile.upsert({
           where:  { project_id: project.id },
@@ -242,7 +242,7 @@ async function seedAll() {
           negotiation_leverage: recSrc.negotiation_leverage ?? ['Leverage resale benchmark pricing'],
           internal_confidence:  recSrc.internal_confidence ?? 'HIGH',
           last_verified_at:     new Date(),
-          verified_by:          'RealtyPals Audit Desk',
+          verified_by:          'PropFyndr Audit Desk',
         }
         await prisma.recommendationProfile.upsert({
           where:  { project_id: project.id },
@@ -265,7 +265,7 @@ async function seedAll() {
                 price_delta_note:       comp.price_delta_note ?? null,
                 sort_order:             comp.sort_order ?? 0,
                 last_verified_at:       new Date(),
-                verified_by:            'RealtyPals Audit Desk',
+                verified_by:            'PropFyndr Audit Desk',
               },
             })
           }
@@ -295,7 +295,7 @@ async function seedAll() {
             electricity_connection: cs.electricity_connection ?? 125000,
             water_sewer_connection: cs.water_sewer_connection ?? 35000,
             verified_at:          new Date(),
-            verified_by:          'RealtyPals Audit Desk',
+            verified_by:          'PropFyndr Audit Desk',
           }
           await prisma.costSheet.upsert({
             where:  { project_id: project.id },
@@ -314,7 +314,7 @@ async function seedAll() {
               milestones: plan.milestones ?? [],
               sort_order: plan.sort_order ?? i,
               verified_at: new Date(),
-              verified_by: 'RealtyPals Audit Desk',
+              verified_by: 'PropFyndr Audit Desk',
             }
             await prisma.paymentPlan.upsert({
               where:  { project_id_plan_type: { project_id: project.id, plan_type: planData.plan_type } },
@@ -422,7 +422,7 @@ async function seedAll() {
                 completion_pct: cu.completion_pct ?? null,
                 photo_urls:     cu.photo_urls ?? [],
                 source:         cu.source ?? 'UP RERA Filing',
-                verified_by:    cu.verified_by ?? 'RealtyPals Audit Team',
+                verified_by:    cu.verified_by ?? 'PropFyndr Audit Team',
               }
             })
           }

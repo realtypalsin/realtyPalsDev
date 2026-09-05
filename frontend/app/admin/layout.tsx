@@ -82,7 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     const crumbs = breadcrumb(pathname)
     const activeSection = crumbs.length > 1 ? crumbs.slice(1).map(c => c.label).join(' | ') : 'Dashboard'
-    document.title = `${activeSection} | Admin RealtyPals`
+    document.title = `${activeSection} | Admin PropFyndr`
   }, [pathname])
 
   useEffect(() => {
@@ -207,7 +207,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {!isCollapsed ? (
             <>
               <div className="flex flex-1 items-center justify-center transition-opacity duration-300">
-                <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals" width={140} height={32} className="object-contain drop-shadow-sm" unoptimized />
+                <Image src="/images/icons/logo-wordmark-black.png" alt="PropFyndr" width={75} height={34} className="object-contain" unoptimized />
               </div>
               <div className="absolute right-3 flex items-center justify-center">
                 <button
@@ -227,7 +227,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ) : (
             <div className="relative w-full h-full flex items-center justify-center">
               <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-0 pointer-events-none">
-                <Image src="/images/icons/CollapsedRealtyPalsBlackSqLogo.png" alt="RealtyPals Logo" width={32} height={32} className="object-contain rounded-md drop-shadow-sm" unoptimized />
+                <Image src="/images/icons/logo-mark-black.png" alt="PropFyndr Logo" width={40} height={40} className="object-contain" unoptimized />
               </div>
               <button
                 type="button"

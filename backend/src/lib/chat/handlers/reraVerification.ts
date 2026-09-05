@@ -18,14 +18,14 @@ import type { ChatTopicHandler } from '../handlerContext'
  */
 export const reraVerificationHandler: ChatTopicHandler = {
   id: 'rera_verification',
-  description: 'How RealtyPals verifies RERA registration and builder legal standing',
+  description: 'How PropFyndr verifies RERA registration and builder legal standing',
 
   matches: ctx => ctx.flags.isReraCheckQuery === true,
 
   handle: async ctx => {
     const text = `### How we verify a project
 
-Every project on RealtyPals is screened against four records before it is listed, and each one is shown on the project page:
+Every project on PropFyndr is screened against four records before it is listed, and each one is shown on the project page:
 
 - **UP RERA registration** — the registration number, its validity date, and whether it has lapsed.
 - **Promoter standing** — whether the developer carries pending recovery certificates or a revoked registration.

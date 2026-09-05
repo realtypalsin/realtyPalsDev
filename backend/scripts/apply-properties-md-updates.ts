@@ -1,12 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Strategic Additions and Rectifications from properties.md
 const updatesData: Record<string, any[]> = {
   // SECTOR 75 NOIDA RECTIFICATIONS
-  'realtypals_sector75_noida_master_data.json': [
+  'propfyndr_sector75_noida_master_data.json': [
     {
       targetSlug: 'ivy-county-sector-75',
       update: {
@@ -43,7 +43,7 @@ const updatesData: Record<string, any[]> = {
   ],
 
   // SECTOR 76 NOIDA RECTIFICATIONS
-  'realtypals_sector76_noida_master_data.json': [
+  'propfyndr_sector76_noida_master_data.json': [
     {
       targetSlug: 'amrapali-crystal-homes-sector-76',
       update: {
@@ -67,7 +67,7 @@ const updatesData: Record<string, any[]> = {
   ],
 
   // SECTOR 77 NOIDA RECTIFICATIONS
-  'realtypals_sector77_noida_master_data.json': [
+  'propfyndr_sector77_noida_master_data.json': [
     {
       targetSlug: 'express-zenith-sector-77',
       update: {
@@ -104,7 +104,7 @@ const updatesData: Record<string, any[]> = {
   ],
 
   // SECTOR 78 NOIDA RECTIFICATIONS
-  'realtypals_sector78_noida_master_data.json': [
+  'propfyndr_sector78_noida_master_data.json': [
     {
       targetSlug: 'mahagun-moderne-sector-78',
       update: {
@@ -141,7 +141,7 @@ const updatesData: Record<string, any[]> = {
   ],
 
   // SECTOR 107 NOIDA ADDITIONS & RECTIFICATIONS
-  'realtypals_sector107_noida_master_data.json': [
+  'propfyndr_sector107_noida_master_data.json': [
     {
       targetSlug: 'NEW',
       newProject: {
@@ -167,7 +167,7 @@ const updatesData: Record<string, any[]> = {
   ],
 
   // SECTOR 137 NOIDA RECTIFICATIONS
-  'realtypals_sector137_noida_master_data.json': [
+  'propfyndr_sector137_noida_master_data.json': [
     {
       targetSlug: 'logix-blossom-county-sector-137',
       update: {
@@ -194,7 +194,7 @@ const updatesData: Record<string, any[]> = {
   ],
 
   // SECTOR 150 NOIDA ADDITIONS & RECTIFICATIONS
-  'realtypals_sector150_noida_master_data.json': [
+  'propfyndr_sector150_noida_master_data.json': [
     {
       targetSlug: 'tata-eureka-park-sector-150',
       update: {
@@ -231,7 +231,7 @@ const updatesData: Record<string, any[]> = {
   ],
 
   // TECHZONE 4 GREATER NOIDA WEST ADDITIONS
-  'realtypals_techzone4_greaternoidawest_master_data.json': [
+  'propfyndr_techzone4_greaternoidawest_master_data.json': [
     {
       targetSlug: 'NEW',
       newProject: {
@@ -281,7 +281,7 @@ const updatesData: Record<string, any[]> = {
   ],
 
   // SECTOR 12 GREATER NOIDA WEST RECTIFICATIONS
-  'realtypals_sector12_greaternoidawest_master_data.json': [
+  'propfyndr_sector12_greaternoidawest_master_data.json': [
     {
       targetSlug: 'godrej-majesty-sector-12',
       update: {

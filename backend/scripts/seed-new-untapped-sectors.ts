@@ -4,12 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Wave 9 Untapped Sector Expansion: 5 Brand New Sectors with 15+ Landmark Residential Societies
 const NEW_SECTOR_DATA: Record<string, any[]> = {
   // SECTOR 144 NOIDA (EXPRESSWAY TECH & RESIDENTIAL HUB)
-  'realtypals_sector144_noida_master_data.json': [
+  'propfyndr_sector144_noida_master_data.json': [
     {
       name: 'Gulshan Botanica',
       slug: 'gulshan-botanica-sector-144-noida',
@@ -131,7 +131,7 @@ const NEW_SECTOR_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 108 NOIDA (EXPRESSWAY GOLF COURSE & LUXURY BELT)
-  'realtypals_sector108_noida_master_data.json': [
+  'propfyndr_sector108_noida_master_data.json': [
     {
       name: 'Divine Meadows',
       slug: 'divine-meadows-sector-108-noida',
@@ -253,7 +253,7 @@ const NEW_SECTOR_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 62 NOIDA (CENTRAL NOIDA IT & TRANSIT HUB)
-  'realtypals_sector62_noida_master_data.json': [
+  'propfyndr_sector62_noida_master_data.json': [
     {
       name: 'Stellar Park',
       slug: 'stellar-park-sector-62-noida',
@@ -316,7 +316,7 @@ const NEW_SECTOR_DATA: Record<string, any[]> = {
   ],
 
   // BETA 2 GREATER NOIDA (GREATER NOIDA URBAN CORE)
-  'realtypals_beta2_greaternoida_master_data.json': [
+  'propfyndr_beta2_greaternoida_master_data.json': [
     {
       name: 'Unitech Horizon',
       slug: 'unitech-horizon-beta-2',

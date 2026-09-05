@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 const prisma = new PrismaClient()
-const sector10JsonPath = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75\\realtypals_sector10_greaternoidawest_master_data.json'
+const sector10JsonPath = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75\\propfyndr_sector10_greaternoidawest_master_data.json'
 
 const RAW_SECTOR_10_PROJECTS = [
   {
@@ -290,7 +290,7 @@ function generateCompleteSector10Project(p: any) {
       { title: 'Active Construction Progress Update', update_type: 'construction_news', update_date: '2024-03-10', headline: 'Structural construction progressing on schedule.' },
     ],
     channel_partners: [
-      { partner_name: 'RealtyPals Premier Partner Network', commission_pct: 2.5, contact_person: 'Senior Advisor', phone: '+91 98765 43210' },
+      { partner_name: 'PropFyndr Premier Partner Network', commission_pct: 2.5, contact_person: 'Senior Advisor', phone: '+91 98765 43210' },
     ],
   }
 }

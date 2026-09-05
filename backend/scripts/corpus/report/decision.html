@@ -376,7 +376,7 @@
 
   <header class="masthead">
     <div class="eyebrow">Build vs Buy · Decision Brief · Plain English</div>
-    <h1>Should RealtyPals run its own AI?</h1>
+    <h1>Should PropFyndr run its own AI?</h1>
     <p class="standfirst">You asked me not to sugarcoat it. Here is the straight answer, the arithmetic behind it, and what I would actually do before you stand in front of investors.</p>
   </header>
 
@@ -473,7 +473,7 @@ own GPU   <b>₹25,080</b> / month floor</div>
     <h2>Where the two documents are right — and already built</h2>
     <p class="sec-note">I am not dismissing them. The architecture they describe is correct, and most of it now exists.</p>
 
-    <p class="prose"><code>realtyPalsAI.md</code> makes exactly the right call in its first line: <em>do not build your own LLM.</em> Its core idea — the AI should be a <strong>presentation layer over a deterministic decision package</strong>, not the thing making the property decision — is the correct architecture, and it is the direction this codebase has been moving all week. Where I part company is only the last step: it suggests self-hosting as the destination. At your traffic, that step costs money and buys risk.</p>
+    <p class="prose"><code>propFyndrAI.md</code> makes exactly the right call in its first line: <em>do not build your own LLM.</em> Its core idea — the AI should be a <strong>presentation layer over a deterministic decision package</strong>, not the thing making the property decision — is the correct architecture, and it is the direction this codebase has been moving all week. Where I part company is only the last step: it suggests self-hosting as the destination. At your traffic, that step costs money and buys risk.</p>
 
     <p class="prose"><code>chatGPT.md</code> is the more immediately useful of the two, and its central claim is one I verified independently before reading it: <em>the AI should not be drawing your tables.</em> I measured it — <strong>54% of our answers contained a table, and tables were 53% of everything the AI wrote.</strong> Since output is about two-thirds of the bill, the AI drawing tables was roughly a third of your entire AI cost, mostly copying back data we had just sent it.</p>
 
@@ -556,11 +556,11 @@ own GPU   <b>₹25,080</b> / month floor</div>
 
   <section>
     <h2>Sources</h2>
-    <p class="prose">Hosting costs verified against <a href="https://kuberns.com/blogs/render-pricing/">Render Pricing 2026</a> (confirms no GPU support), <a href="https://www.gpu-mart.com/best-value-gpu-hosting">Best GPU for LLM Inference 2026</a> and <a href="https://www.aipricing.guru/self-hosted-ai-model-costs/">Self-Hosted AI Model Costs 2026</a>. Google pricing verified directly against the official Gemini API pricing page. Everything about RealtyPals itself is measured from this codebase and from a 50-query run against the live chat.</p>
+    <p class="prose">Hosting costs verified against <a href="https://kuberns.com/blogs/render-pricing/">Render Pricing 2026</a> (confirms no GPU support), <a href="https://www.gpu-mart.com/best-value-gpu-hosting">Best GPU for LLM Inference 2026</a> and <a href="https://www.aipricing.guru/self-hosted-ai-model-costs/">Self-Hosted AI Model Costs 2026</a>. Google pricing verified directly against the official Gemini API pricing page. Everything about PropFyndr itself is measured from this codebase and from a 50-query run against the live chat.</p>
   </section>
 
   <footer>
-    <span>RealtyPals · build vs buy · written for a non-engineer</span>
+    <span>PropFyndr · build vs buy · written for a non-engineer</span>
     <span class="mono">break-even 4,750/day · ₹0.18 per chat · verdict: stay on the API</span>
   </footer>
 

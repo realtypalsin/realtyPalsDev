@@ -48,7 +48,7 @@ Format: What was decided / Why / What was rejected and why.
 
 ### Decision: CLAUDE.md Premium Doc Pass + Chat Design Philosophy
 **What:** Reframed CLAUDE.md's Purpose section as a working asset, not a rulebook. Added new top-level section "Chat Experience: Meeting the ChatGPT Power-User" (9 concrete expectations: no form-filling, persistent memory, correction without restart, meta-awareness, any-DB-fact answered, reasoning shown not asserted, proactive follow-ups, escalation as favor not funnel, capable-peer tone).
-**Why:** User explicitly asked to design the chat from the lens of a ChatGPT power-user encountering RealtyPals while property-hunting — bar is "would this user notice we're worse than their default assistant," not "is this a fine real-estate chatbot."
+**Why:** User explicitly asked to design the chat from the lens of a ChatGPT power-user encountering PropFyndr while property-hunting — bar is "would this user notice we're worse than their default assistant," not "is this a fine real-estate chatbot."
 **Rejected:** Nothing removed — additive doc pass only.
 **Note:** This section is the standard for scoring future chat-feature priority; use it when deciding what to build next in the chat interface.
 

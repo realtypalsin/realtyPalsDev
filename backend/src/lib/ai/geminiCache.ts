@@ -75,7 +75,7 @@ export async function getCachedPrefix(
       config: {
         systemInstruction: head,
         ttl: `${TTL_SECONDS}s`,
-        displayName: 'realtypals-system-prompt',
+        displayName: 'propfyndr-system-prompt',
       },
     })
     if (!created?.name) return null

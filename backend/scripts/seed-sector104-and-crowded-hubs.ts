@@ -4,12 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Wave 10 Sector 104 & Crowded Hub Expansion: Real Factual Data for Major Gated Societies
 const CROWDED_SECTOR_DATA: Record<string, any[]> = {
   // SECTOR 104 NOIDA (STARLING HUB & GOLF COURSE CORRIDOR)
-  'realtypals_sector104_noida_master_data.json': [
+  'propfyndr_sector104_noida_master_data.json': [
     {
       name: 'ATS One Hamlet',
       slug: 'ats-one-hamlet-sector-104-noida',
@@ -132,7 +132,7 @@ const CROWDED_SECTOR_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 70 NOIDA (CENTRAL NOIDA TRANSIT HUB)
-  'realtypals_sector70_noida_master_data.json': [
+  'propfyndr_sector70_noida_master_data.json': [
     {
       name: 'Pan Oasis',
       slug: 'pan-oasis-sector-70-noida',

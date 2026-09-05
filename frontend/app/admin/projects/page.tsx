@@ -740,7 +740,7 @@ export default function AdminProjects() {
   // ── Session Storage Persistence ──────────────────────────────────────────
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem('realtypals_admin_projects_filters')
+      const saved = sessionStorage.getItem('propfyndr_admin_projects_filters')
       if (saved) {
         const parsed = JSON.parse(saved)
         if (parsed.query !== undefined) setQuery(parsed.query)
@@ -758,7 +758,7 @@ export default function AdminProjects() {
   useEffect(() => {
     try {
       const stateToSave = { query, activeTokens, statusFilter, partialThreshold, healthFilter, priceFilter, sortField, sortOrder }
-      sessionStorage.setItem('realtypals_admin_projects_filters', JSON.stringify(stateToSave))
+      sessionStorage.setItem('propfyndr_admin_projects_filters', JSON.stringify(stateToSave))
     } catch { }
   }, [query, activeTokens, statusFilter, partialThreshold, healthFilter, priceFilter, sortField, sortOrder])
 
@@ -1012,7 +1012,7 @@ Provide structured JSON with the exact verified data for each project so it can 
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(targetAgentProjects, null, 2))
     const downloadAnchor = document.createElement('a')
     downloadAnchor.setAttribute("href", dataStr)
-    downloadAnchor.setAttribute("download", `realtypals-enrichment-${targetAgentProjects.length}-projects.json`)
+    downloadAnchor.setAttribute("download", `propfyndr-enrichment-${targetAgentProjects.length}-projects.json`)
     document.body.appendChild(downloadAnchor)
     downloadAnchor.click()
     downloadAnchor.remove()
@@ -1036,7 +1036,7 @@ Provide structured JSON with the exact verified data for each project so it can 
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `realtypals-enrichment-${targetAgentProjects.length}-projects.csv`
+    a.download = `propfyndr-enrichment-${targetAgentProjects.length}-projects.csv`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)

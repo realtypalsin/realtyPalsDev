@@ -8,7 +8,7 @@ async function searchHistory() {
     crlfDelay: Infinity
   });
 
-  const terms = ['trademark', 'domain', 'brand', 'seo', 'availability', 'naming', 'realtypals'];
+  const terms = ['trademark', 'domain', 'brand', 'seo', 'availability', 'naming', 'propfyndr'];
 
   let count = 0;
   for await (const line of rl) {

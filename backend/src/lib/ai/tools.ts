@@ -21,7 +21,7 @@ export interface NeutralTool {
 export const NEUTRAL_TOOLS: NeutralTool[] = [
   {
     name: 'payment_plan_lookup',
-    description: 'Look up verified payment plan milestones and cost sheet parameters for a project from the RealtyPals database (e.g. Booking %, Agreement %, Registry %, CLP/DP plans). Use whenever the user asks about payment plans, payment schedules, offers, or cost sheet breakdown for a specific project.',
+    description: 'Look up verified payment plan milestones and cost sheet parameters for a project from the PropFyndr database (e.g. Booking %, Agreement %, Registry %, CLP/DP plans). Use whenever the user asks about payment plans, payment schedules, offers, or cost sheet breakdown for a specific project.',
     parameters: {
       type: 'object',
       properties: { project_name: { type: 'string', description: 'Name of the project, e.g. "Ivy County", "Elite X", "Godrej Woods"' } },
@@ -30,7 +30,7 @@ export const NEUTRAL_TOOLS: NeutralTool[] = [
   },
   {
     name: 'builder_lookup',
-    description: 'Look up VERIFIED facts about a builder from the RealtyPals database — founding year, delivered units, projects, RERA, CREDAI membership, awards. Use when the user asks about a builder\'s reputation, track record, or projects. Never invent builder stats; use this.',
+    description: 'Look up VERIFIED facts about a builder from the PropFyndr database — founding year, delivered units, projects, RERA, CREDAI membership, awards. Use when the user asks about a builder\'s reputation, track record, or projects. Never invent builder stats; use this.',
     parameters: {
       type: 'object',
       properties: { name: { type: 'string', description: 'Builder name, e.g. "Godrej", "ATS", "Gaur"' } },
@@ -39,7 +39,7 @@ export const NEUTRAL_TOOLS: NeutralTool[] = [
   },
   {
     name: 'web_search',
-    description: 'Search the live web for current information: builder news/controversies, RERA status, market/price trends, metro expansion, school/hospital quality, or anything time-sensitive RealtyPals does not store. Returns source-attributed snippets. Cite sources in your answer.',
+    description: 'Search the live web for current information: builder news/controversies, RERA status, market/price trends, metro expansion, school/hospital quality, or anything time-sensitive PropFyndr does not store. Returns source-attributed snippets. Cite sources in your answer.',
     parameters: {
       type: 'object',
       properties: { query: { type: 'string', description: 'Specific search query, e.g. "ATS Noida delivery track record complaints 2025"' } },
@@ -148,7 +148,7 @@ export const NEUTRAL_TOOLS: NeutralTool[] = [
   // do not call them to pad an answer.
   {
     name: 'buyer_fit_analysis',
-    description: 'Get detailed buyer-fit analysis for a project from the RealtyPals database: target persona (income, family stage, work location, risk appetite, timeline), and deal conditions (walk-away criteria, timing advice, negotiation leverage). Use for "is this right for a young family", "what income level", "when should I buy", "can I negotiate on price".',
+    description: 'Get detailed buyer-fit analysis for a project from the PropFyndr database: target persona (income, family stage, work location, risk appetite, timeline), and deal conditions (walk-away criteria, timing advice, negotiation leverage). Use for "is this right for a young family", "what income level", "when should I buy", "can I negotiate on price".',
     parameters: {
       type: 'object',
       properties: { project_name: { type: 'string', description: 'Project name as the user referred to it' } },
@@ -157,7 +157,7 @@ export const NEUTRAL_TOOLS: NeutralTool[] = [
   },
   {
     name: 'floor_plans_lookup',
-    description: 'Get every unit configuration (floor plan) for a project from the RealtyPals database: carpet/super/balcony area, carpet efficiency, bathrooms, towers, price per configuration, availability, inclusions and views. Use whenever the user asks about floor plans, layouts, configurations, sizes, carpet area, or "what BHK options are there". Two different layouts of the same BHK are returned separately — keep them distinct.',
+    description: 'Get every unit configuration (floor plan) for a project from the PropFyndr database: carpet/super/balcony area, carpet efficiency, bathrooms, towers, price per configuration, availability, inclusions and views. Use whenever the user asks about floor plans, layouts, configurations, sizes, carpet area, or "what BHK options are there". Two different layouts of the same BHK are returned separately — keep them distinct.',
     parameters: {
       type: 'object',
       properties: { project_name: { type: 'string', description: 'Project name as the user referred to it, e.g. "Elite X"' } },
@@ -184,7 +184,7 @@ export const NEUTRAL_TOOLS: NeutralTool[] = [
   },
   {
     name: 'project_intelligence',
-    description: 'Get RealtyPals verified analysis for a project. Topics: financial (EMI, wealth projection, opportunity cost), market (supply/demand, appreciation, infrastructure), builder (track record, delivery), property (space utilisation, sun exposure, floor recommendation), comparative (price vs competitors), resources (available documents). Use for "is this a good investment", "should I buy", "how is the layout", "which floor". Returns why_buy and why_avoid together — always give both sides.',
+    description: 'Get PropFyndr verified analysis for a project. Topics: financial (EMI, wealth projection, opportunity cost), market (supply/demand, appreciation, infrastructure), builder (track record, delivery), property (space utilisation, sun exposure, floor recommendation), comparative (price vs competitors), resources (available documents). Use for "is this a good investment", "should I buy", "how is the layout", "which floor". Returns why_buy and why_avoid together — always give both sides.',
     parameters: {
       type: 'object',
       properties: {
@@ -214,7 +214,7 @@ export const NEUTRAL_TOOLS: NeutralTool[] = [
   },
   {
     name: 'project_images',
-    description: 'Get all photos for a project grouped by type (marketing renderings, construction progress, etc.) from the RealtyPals database. Use when the user asks to see project images, construction progress, or wants to understand what the project looks like.',
+    description: 'Get all photos for a project grouped by type (marketing renderings, construction progress, etc.) from the PropFyndr database. Use when the user asks to see project images, construction progress, or wants to understand what the project looks like.',
     parameters: {
       type: 'object',
       properties: { project_name: { type: 'string', description: 'Project name as the user referred to it' } },
@@ -223,7 +223,7 @@ export const NEUTRAL_TOOLS: NeutralTool[] = [
   },
   {
     name: 'builder_news',
-    description: 'Get published news and announcements from a builder from the RealtyPals database: recent project launches, completions, awards, partnerships. Use when the user asks what the builder has been doing, to give context on builder activity and momentum.',
+    description: 'Get published news and announcements from a builder from the PropFyndr database: recent project launches, completions, awards, partnerships. Use when the user asks what the builder has been doing, to give context on builder activity and momentum.',
     parameters: {
       type: 'object',
       properties: { builder_name: { type: 'string', description: 'Builder name as the user referred to it, e.g. "Godrej", "DLF", "Prestige"' } },
@@ -241,7 +241,7 @@ export const NEUTRAL_TOOLS: NeutralTool[] = [
   },
   {
     name: 'sector_projects',
-    description: 'List projects in a sector or city ranked by RealtyPals verified score, optionally filtered by BHK and budget. Use for "top properties in Sector 79", "what is available in Noida under 2 crore", "best projects in this area". Ranking is by our verified score then entry price — never describe it as a market ranking.',
+    description: 'List projects in a sector or city ranked by PropFyndr verified score, optionally filtered by BHK and budget. Use for "top properties in Sector 79", "what is available in Noida under 2 crore", "best projects in this area". Ranking is by our verified score then entry price — never describe it as a market ranking.',
     parameters: {
       type: 'object',
       properties: {

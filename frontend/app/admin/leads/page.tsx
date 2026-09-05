@@ -754,7 +754,7 @@ export default function BuilderLeadsPage() {
                           <Copy className="w-3.5 h-3.5" />
                         </button>
                         <a
-                          href={`https://wa.me/91${selectedLead.phone.replace(/^\+91/, '')}?text=${encodeURIComponent(`Hi ${selectedLead.name}, reaching out regarding your inquiry on RealtyPals.`)}`}
+                          href={`https://wa.me/91${selectedLead.phone.replace(/^\+91/, '')}?text=${encodeURIComponent(`Hi ${selectedLead.name}, reaching out regarding your inquiry on PropFyndr.`)}`}
                           target="_blank"
                           rel="noreferrer"
                           className="text-emerald-600 hover:bg-emerald-50 p-1 rounded-md"

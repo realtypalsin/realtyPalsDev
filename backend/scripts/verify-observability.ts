@@ -69,7 +69,7 @@ async function checkSentry(): Promise<void> {
   try {
     Sentry.init({ dsn, environment: process.env.NODE_ENV ?? 'development', tracesSampleRate: 0 })
     const eventId = Sentry.captureException(
-      new Error(`RealtyPals observability smoke test — ${RUN_ID} (safe to ignore)`),
+      new Error(`PropFyndr observability smoke test — ${RUN_ID} (safe to ignore)`),
     )
     await Sentry.flush(5000)
     record('Sentry (backend)', true, `captured event ${eventId}`)
@@ -98,7 +98,7 @@ function checkFrontendKeys(): void {
 }
 
 async function main(): Promise<void> {
-  console.log(`\nRealtyPals observability check — run id ${RUN_ID}\n`)
+  console.log(`\nPropFyndr observability check — run id ${RUN_ID}\n`)
   await checkPostHog()
   await checkSentry()
   checkFrontendKeys()

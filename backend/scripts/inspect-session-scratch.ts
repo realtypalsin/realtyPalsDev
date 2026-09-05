@@ -22,7 +22,7 @@ for (let i = lines.length - 1; i >= 0; i--) {
   if (step.type === 'PLANNER_RESPONSE' && step.content) {
     console.log(`\n=== LAST PLANNER RESPONSE (Step ${step.step_index}) ===`);
     console.log(step.content.slice(0, 3000));
-    fs.writeFileSync('c:\\Users\\Furqan\\Desktop\\RealtyPals\\scratch_recovered_response.md', step.content, 'utf-8');
+    fs.writeFileSync('c:\\Users\\Furqan\\Desktop\\PropFyndr\\scratch_recovered_response.md', step.content, 'utf-8');
     console.log('\nSaved full response to scratch_recovered_response.md');
     break;
   }

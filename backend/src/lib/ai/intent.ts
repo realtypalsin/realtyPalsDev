@@ -300,7 +300,7 @@ function heuristicIsSufficient(message: string, extracted: Intent, previous: Int
  */
 const CAPITALISED_NOISE = new Set([
   'i', 'noida', 'greater', 'delhi', 'ncr', 'india', 'up', 'rera', 'gst', 'emi',
-  'bhk', 'sqft', 'rtm', 'nri', 'oc', 'cc', 'realtypals', 'ai', 'okay', 'ok',
+  'bhk', 'sqft', 'rtm', 'nri', 'oc', 'cc', 'propfyndr', 'ai', 'okay', 'ok',
   'hi', 'hello', 'hey', 'thanks', 'thank', 'you', 'yes', 'no', 'what', 'why',
   'how', 'when', 'where', 'which', 'who', 'is', 'are', 'do', 'does', 'can',
   'should', 'the', 'a', 'an', 'my', 'me', 'we', 'it', 'and', 'or', 'but',

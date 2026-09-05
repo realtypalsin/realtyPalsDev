@@ -85,7 +85,7 @@ export function beautifyResponse(text: string): string {
   beautified = beautified.replace(/\b(actually|basically|just|simply|really|literally|sort of|kind of)\b/gi, '')
   beautified = beautified.replace(/[^\S\r\n]{2,}/g, ' ')  // Re-collapse horizontal spaces after cleanup
 
-  // ── Phase 9: Enforce RealtyPals tone ──
+  // ── Phase 9: Enforce PropFyndr tone ──
   // Convert weak language to confident advisor voice while preserving uncertainty signals
   beautified = beautified
     .replace(/\b(might be|could be)\s+/gi, 'is likely ')

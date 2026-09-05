@@ -4,25 +4,25 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Ensure standard channel partner exists
 async function getOrCreateChannelPartner() {
   let partner = await prisma.channelPartner.findFirst({
-    where: { slug: 'realtypals-authorized-partner' }
+    where: { slug: 'propfyndr-authorized-partner' }
   });
 
   if (!partner) {
     partner = await prisma.channelPartner.create({
       data: {
-        name: 'RealtyPals Authorized Channel Partner',
-        slug: 'realtypals-authorized-partner',
+        name: 'PropFyndr Authorized Channel Partner',
+        slug: 'propfyndr-authorized-partner',
         type: 'broker',
-        description: 'Verified RealtyPals Partner Advisory Network',
+        description: 'Verified PropFyndr Partner Advisory Network',
         phone: '+91-9876543210',
-        email: 'partners@realtypals.in',
+        email: 'partners@propfyndr.in',
         operating_cities: ['Noida', 'Greater Noida', 'Yamuna Expressway'],
-        primary_contact: 'RealtyPals Advisory Team',
+        primary_contact: 'PropFyndr Advisory Team',
         is_verified: true,
         rera_compliant: true,
         credai_member: true,

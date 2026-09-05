@@ -24,7 +24,7 @@ async function inspectAndEnrichAll() {
   console.log(`[city-fix] Fixed city to 'Noida' for ${updatedCity.count} projects`)
 
   // 2. Fetch full relations for the 73 projects from DB
-  const jsonPath = path.resolve(__dirname, '../../../realtypals-enrichment-73-projects.json')
+  const jsonPath = path.resolve(__dirname, '../../../propfyndr-enrichment-73-projects.json')
   const raw = fs.readFileSync(jsonPath, 'utf8')
   const projectsList = JSON.parse(raw)
   const ids = projectsList.map((p: any) => p.id)
@@ -141,7 +141,7 @@ async function inspectAndEnrichAll() {
   console.log(`[file] Updated ${jsonPath} with fully enriched objects (0 missing fields)`)
 
   // Also write to scratch and public if needed
-  const downloadPath = 'C:\\Users\\Furqan\\Downloads\\realtypals-enrichment-73-projects.json'
+  const downloadPath = 'C:\\Users\\Furqan\\Downloads\\propfyndr-enrichment-73-projects.json'
   try {
     fs.writeFileSync(downloadPath, JSON.stringify(fullyEnrichedList, null, 2))
     console.log(`[file] Also synchronized to Downloads folder: ${downloadPath}`)
@@ -159,7 +159,7 @@ async function inspectAndEnrichAll() {
     orderBy: [{ city: 'asc' }, { sector: 'asc' }, { name: 'asc' }]
   })
 
-  let mdContent = `# RealtyPals Missing Property Images Checklist\n\n`
+  let mdContent = `# PropFyndr Missing Property Images Checklist\n\n`
   mdContent += `This document catalogs all properties currently in the database that do not yet have authentic local imagery attached.\n\n`
   mdContent += `### Instructions to Add Images:\n`
   mdContent += `1. Create a folder inside \`frontend/public/images/properties/\` named with the suggested folder slug below.\n`

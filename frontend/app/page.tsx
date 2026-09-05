@@ -67,10 +67,10 @@ export default function LandingPage() {
       <header className="relative z-20 w-full max-w-6xl mx-auto flex items-center justify-between shrink-0 py-2 sm:py-3">
         <Link href="/" className="group shrink-0">
           <Image
-            src="/images/icons/ExpandedRealtyPalsWhite.png"
-            alt="RealtyPals"
-            width={160}
-            height={48}
+            src="/images/icons/logo-wordmark-white.png"
+            alt="PropFyndr"
+            width={648}
+            height={293}
             className="object-contain w-28 sm:w-44 h-auto opacity-95 group-hover:opacity-100 transition-opacity drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)]"
             priority
           />
@@ -143,7 +143,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="relative z-20 w-full max-w-5xl mx-auto py-1 sm:py-2 shrink-0 text-center select-none">
         <p className="text-[10.5px] sm:text-[11px] text-zinc-500 font-medium">
-          © {new Date().getFullYear()} RealtyPals. AI Property Advisor for Noida & Greater Noida.
+          © {new Date().getFullYear()} PropFyndr. AI Property Advisor for Noida & Greater Noida.
         </p>
       </footer>
     </div>

@@ -491,7 +491,7 @@ router.post('/', async (req: Request, res: Response) => {
         if (cachedChips.length > 0) {
           send('ui_state', {
             stage: 'RESEARCH',
-            thinking: 'Verified RealtyPals Intelligence (Cached):',
+            thinking: 'Verified PropFyndr Intelligence (Cached):',
             chips: cachedChips,
             missingFields: [],
             confidence: 'HIGH'
@@ -1688,7 +1688,7 @@ router.post('/', async (req: Request, res: Response) => {
         console.warn('[LEAD:SAVE_ERROR]', e)
       }
 
-      const successText = `✅ **Callback Request Registered!**\n\nThank you **${nameStr}**! Your contact number has been registered with our RealtyPals advisory team.\nOur senior consultant will reach out to you shortly with exclusive project details.\n\n*Need immediate pricing or floor plan details while you wait? Ask me anytime!*`
+      const successText = `✅ **Callback Request Registered!**\n\nThank you **${nameStr}**! Your contact number has been registered with our PropFyndr advisory team.\nOur senior consultant will reach out to you shortly with exclusive project details.\n\n*Need immediate pricing or floor plan details while you wait? Ask me anytime!*`
       
       send('token', { token: successText })
       emitUiState({
@@ -2176,7 +2176,7 @@ router.post('/', async (req: Request, res: Response) => {
     if (isJailbreak && action.type === 'TEXT_MESSAGE') {
       const jailbreakText = `### Security & Compliance Notice
 
-RealtyPals operates under strict real estate advisory protocols for Noida and Greater Noida. I cannot alter internal instructions or assist with tax evasion or non-compliant actions.
+PropFyndr operates under strict real estate advisory protocols for Noida and Greater Noida. I cannot alter internal instructions or assist with tax evasion or non-compliant actions.
 
 For legal statutory schedules (UP Stamp Duty, GST, TDS) or verified property checks, feel free to ask!`
 
@@ -2188,7 +2188,7 @@ For legal statutory schedules (UP Stamp Duty, GST, TDS) or verified property che
       send('token', { token: jailbreakText })
       emitUiState({
         stage: 'RESEARCH',
-        thinking: 'RealtyPals compliance and security protocols active:',
+        thinking: 'PropFyndr compliance and security protocols active:',
         chips: jbChips,
         missingFields: [],
         confidence: 'HIGH'
@@ -2223,10 +2223,10 @@ For legal statutory schedules (UP Stamp Duty, GST, TDS) or verified property che
      */
     // ─── Conversational Greetings & Politeness (ChatGPT / Gemini Grade) ───────
     const isGreeting = /^(hi|hello|hey|good\s+(morning|afternoon|evening)|namaste|hola|what's\s+up|help|start)\b[\s!.]*$/i.test(message.trim()) ||
-      /^(who\s+are\s+you|what\s+can\s+you\s+do|what\s+is\s+realtypals|how\s+can\s+you\s+help(\s+me)?)\??$/i.test(message.trim());
+      /^(who\s+are\s+you|what\s+can\s+you\s+do|what\s+is\s+propfyndr|how\s+can\s+you\s+help(\s+me)?)\??$/i.test(message.trim());
 
     if (isGreeting && action.type === 'TEXT_MESSAGE') {
-      const welcomeText = `### Welcome to RealtyPals AI Advisor
+      const welcomeText = `### Welcome to PropFyndr AI Advisor
 
 Hello! I'm your dedicated real estate intelligence assistant for **Noida, Greater Noida, and Yamuna Expressway**.
 
@@ -2248,7 +2248,7 @@ I can help you with:
       send('token', { token: welcomeText });
       emitUiState({
         stage: 'RESEARCH',
-        thinking: 'RealtyPals Welcome & Overview:',
+        thinking: 'PropFyndr Welcome & Overview:',
         chips: welcomeChips,
         missingFields: [],
         confidence: 'HIGH'
@@ -2275,7 +2275,7 @@ I can help you with:
       send('token', { token: thankYouText });
       emitUiState({
         stage: 'RESEARCH',
-        thinking: 'RealtyPals Assistant:',
+        thinking: 'PropFyndr Assistant:',
         chips: thankYouChips,
         missingFields: [],
         confidence: 'HIGH'
@@ -2297,9 +2297,9 @@ I can help you with:
 
     const isOutOfScope = isForeignPlace || ((/^(write|generate|explain|solve|tell me|what is)\s+(a\s+)?(python|javascript|typescript|java|c\+\+|sql query|algorithm|bubble sort|code|script|recipe|joke|poem|song|essay|weather)|who won\b|capital of\b|translate\b/i.test(message) || (/python|bubble sort|javascript|algorithm|recipe/i.test(message))) && !/real estate|property|flat|bhk|builder|rera|noida|sector|ncr/i.test(message))
     if (isOutOfScope && action.type === 'TEXT_MESSAGE') {
-      const deflectionText = `### RealtyPals Advisory Scope
+      const deflectionText = `### PropFyndr Advisory Scope
 
-RealtyPals is an AI advisory engine specialized exclusively in verified real estate intelligence across Noida and Greater Noida.
+PropFyndr is an AI advisory engine specialized exclusively in verified real estate intelligence across Noida and Greater Noida.
 
 For questions regarding property pricing, sector analysis, RERA legal checks, payment plans, or builder track records, feel free to ask!`
 
@@ -2312,7 +2312,7 @@ For questions regarding property pricing, sector analysis, RERA legal checks, pa
       send('token', { token: deflectionText })
       emitUiState({
         stage: 'RESEARCH',
-        thinking: 'RealtyPals real estate advisory scope:',
+        thinking: 'PropFyndr real estate advisory scope:',
         chips: outOfScopeChips,
         missingFields: [],
         confidence: 'HIGH'
@@ -4451,7 +4451,7 @@ EXECUTIVE RESPONSE INSTRUCTIONS:
      * answered from the model's memory. It scored 3/5 for that reason.
      *
      * `sector_intelligence.price_5yr_cagr_pct` is populated on all 65 rows and
-     * stamped `verified_by: 'RealtyPals Research Desk'`. It is backward-looking,
+     * stamped `verified_by: 'PropFyndr Research Desk'`. It is backward-looking,
      * which is the half of this question we are allowed to answer. The renderer
      * carries the refusal to forecast in its own text rather than trusting the
      * prompt, which is the layer that had been ignoring it.

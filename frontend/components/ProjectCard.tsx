@@ -352,7 +352,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
                             track('ask_ai_tapped', { project_slug: project.slug, prompt_type: p.type })
                             trackPropertyEvent(project.id, 'ask_ai', sessionId, userId).catch(() => {})
                             window.dispatchEvent(
-                              new CustomEvent('realtypals:ask-ai', { detail: { text: p.text, autoSend: true } }),
+                              new CustomEvent('propfyndr:ask-ai', { detail: { text: p.text, autoSend: true } }),
                             )
                             onAskAI(project)
                           }}
@@ -752,7 +752,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
                             track('ask_ai_tapped', { project_slug: project.slug, prompt_type: p.type })
                             trackPropertyEvent(project.id, 'ask_ai', sessionId, userId).catch(() => {})
                             window.dispatchEvent(
-                              new CustomEvent('realtypals:ask-ai', { detail: { text: p.text, autoSend: true } }),
+                              new CustomEvent('propfyndr:ask-ai', { detail: { text: p.text, autoSend: true } }),
                             )
                             onAskAI(project)
                           }}
@@ -771,7 +771,7 @@ export default function ProjectCard({ project, userId, sessionId, index = 0, isS
                           setAskMenuOpen(false)
                           track('ask_ai_tapped', { project_slug: project.slug, prompt_type: 'freeform' })
                           window.dispatchEvent(
-                            new CustomEvent('realtypals:ask-ai', { detail: { text: `Tell me more about ${project.name}`, autoSend: false } }),
+                            new CustomEvent('propfyndr:ask-ai', { detail: { text: `Tell me more about ${project.name}`, autoSend: false } }),
                           )
                           onAskAI(project)
                         }}

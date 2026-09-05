@@ -48,7 +48,7 @@ async function verifyAll() {
   console.log(`Duplicate Name+Sector: ${dupNames.length} (Expected: 0)`)
 
   // 2. Check the 73 projects completeness
-  const jsonPath = path.resolve(__dirname, '../../../realtypals-enrichment-73-projects.json')
+  const jsonPath = path.resolve(__dirname, '../../../propfyndr-enrichment-73-projects.json')
   const raw = fs.readFileSync(jsonPath, 'utf8')
   const projectsList = JSON.parse(raw)
   const ids = projectsList.map((p: any) => p.id)

@@ -168,7 +168,7 @@ async function main() {
   // ── Output: full table ────────────────────────────────────────────────
 
   console.log('\n════════════════════════════════════════════════════════════════════')
-  console.log('  REALTYPALS PROJECT COMPLETENESS AUDIT')
+  console.log('  PROPFYNDR PROJECT COMPLETENESS AUDIT')
   console.log(`  ${projects.length} projects · ${new Date().toISOString().split('T')[0]}`)
   console.log('════════════════════════════════════════════════════════════════════\n')
 

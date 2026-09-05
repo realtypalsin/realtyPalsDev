@@ -218,7 +218,7 @@ export default function Sidebar({
     e.preventDefault();
     closeMobile();
     onViewChange?.('discovery');
-    window.dispatchEvent(new CustomEvent('realtypals:new-chat'));
+    window.dispatchEvent(new CustomEvent('propfyndr:new-chat'));
     router.push('/discover');
   };
 
@@ -229,7 +229,7 @@ export default function Sidebar({
     if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
     closeMobile();
     navigationTimeoutRef.current = setTimeout(() => setIsNavigating(false), 1000);
-    window.dispatchEvent(new CustomEvent('realtypals:new-chat'));
+    window.dispatchEvent(new CustomEvent('propfyndr:new-chat'));
     router.push('/discover');
   }, [isNavigating, router]);
 
@@ -291,8 +291,8 @@ export default function Sidebar({
               className="flex items-center transition-opacity hover:opacity-80 cursor-pointer"
               title="Start fresh discovery"
             >
-              <Image src="/images/icons/ExpandedRealtyPalsBlack.png" alt="RealtyPals Logo" width={136} height={30} style={{ width: 'auto', height: 'auto' }} className="object-contain block dark:hidden drop-shadow-xs" priority />
-              <Image src="/images/icons/ExpandedRealtyPalsWhite.png" alt="RealtyPals Logo" width={136} height={30} style={{ width: 'auto', height: 'auto' }} className="object-contain hidden dark:block drop-shadow-xs" priority />
+              <Image src="/images/icons/logo-wordmark-black.png" alt="PropFyndr Logo" width={75} height={34} className="object-contain block dark:hidden" priority />
+              <Image src="/images/icons/logo-wordmark-white.png" alt="PropFyndr Logo" width={75} height={34} className="object-contain hidden dark:block" priority />
             </Link>
             <button
               type="button"
@@ -316,21 +316,21 @@ export default function Sidebar({
               title="Expand sidebar"
               aria-label="Expand sidebar"
             >
-              {/* Default RealtyPals Logo Mark */}
+              {/* Default PropFyndr Logo Mark */}
               <div className="flex items-center justify-center transition-opacity duration-200 group-hover:opacity-0 pointer-events-none">
                 <Image
-                  src="/images/icons/CollapsedRealtyPalsBlackSqLogo.png"
-                  alt="RealtyPals Logo"
-                  width={28}
-                  height={28}
-                  className="object-contain block dark:hidden drop-shadow-xs"
+                  src="/images/icons/logo-mark-black.png"
+                  alt="PropFyndr Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain block dark:hidden"
                 />
                 <Image
-                  src="/images/icons/CollapsedRealtyPalsWhiteSqLogo.png"
-                  alt="RealtyPals Logo"
-                  width={28}
-                  height={28}
-                  className="object-contain hidden dark:block drop-shadow-xs"
+                  src="/images/icons/logo-mark-white.png"
+                  alt="PropFyndr Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain hidden dark:block"
                 />
               </div>
 

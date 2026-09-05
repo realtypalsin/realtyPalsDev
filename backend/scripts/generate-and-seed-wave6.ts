@@ -4,12 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Wave 6 Catalogue: 10 Mega Residential Societies in Greater Noida West (Noida Extension)
 const WAVE6_DATA: Record<string, any[]> = {
   // SECTOR 4 GREATER NOIDA WEST
-  'realtypals_sector4_greaternoidawest_master_data.json': [
+  'propfyndr_sector4_greaternoidawest_master_data.json': [
     {
       name: 'Gaur City 1 - 1st Avenue',
       slug: 'gaur-city-1-1st-avenue-sector-4',
@@ -193,7 +193,7 @@ const WAVE6_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 16C GREATER NOIDA WEST
-  'realtypals_sector16c_greaternoidawest_master_data.json': [
+  'propfyndr_sector16c_greaternoidawest_master_data.json': [
     {
       name: 'Gaur City 2 - 10th Avenue',
       slug: 'gaur-city-2-10th-avenue-sector-16c',
@@ -557,7 +557,7 @@ const WAVE6_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 16B GREATER NOIDA WEST
-  'realtypals_sector16b_greaternoidawest_master_data.json': [
+  'propfyndr_sector16b_greaternoidawest_master_data.json': [
     {
       name: 'Panchsheel Greens 2',
       slug: 'panchsheel-greens-2-sector-16b',

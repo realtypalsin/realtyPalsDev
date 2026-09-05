@@ -57,7 +57,7 @@ export default function PropertyListingForm() {
             <CheckCircle2 size={40} className="text-emerald-500" strokeWidth={2.5} />
           </div>
           <h2 className="text-2xl font-bold text-zinc-900 tracking-tight mb-2">Listing Submitted!</h2>
-          <p className="text-[15px] text-zinc-500 mb-8 leading-relaxed">Our team will review your property details. Once approved, it will be live on RealtyPals.</p>
+          <p className="text-[15px] text-zinc-500 mb-8 leading-relaxed">Our team will review your property details. Once approved, it will be live on PropFyndr.</p>
           <button onClick={() => window.location.href = '/'} className="px-8 py-3.5 text-[14px] font-bold text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-xl transition-all shadow-sm active:scale-95">
             Return Home
           </button>

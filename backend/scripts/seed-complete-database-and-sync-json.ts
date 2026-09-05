@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Master Construction & Material Specs (7 per project matching SpecEditor schema)
 function getProjectSpecs() {
@@ -219,25 +219,25 @@ async function seedCompleteDatabaseAndSyncJson() {
   const fileGroups: Record<string, any[]> = {};
   for (const p of fullProjects) {
     const sec = p.sector.toLowerCase().replace(/[^a-z0-9]/g, '');
-    let fileName = `realtypals_${sec}_master_data.json`;
+    let fileName = `propfyndr_${sec}_master_data.json`;
 
-    if (sec.includes('75')) fileName = 'realtypals_sector75_noida_master_data.json';
-    else if (sec.includes('76')) fileName = 'realtypals_sector76_noida_master_data.json';
-    else if (sec.includes('77')) fileName = 'realtypals_sector77_noida_master_data.json';
-    else if (sec.includes('78')) fileName = 'realtypals_sector78_noida_master_data.json';
-    else if (sec.includes('79')) fileName = 'realtypals_sector79_noida_master_data.json';
-    else if (sec.includes('100')) fileName = 'realtypals_sector100_noida_master_data.json';
-    else if (sec.includes('107')) fileName = 'realtypals_sector107_noida_master_data.json';
-    else if (sec.includes('128')) fileName = 'realtypals_sector128_noida_master_data.json';
-    else if (sec.includes('137')) fileName = 'realtypals_sector137_noida_master_data.json';
-    else if (sec.includes('143')) fileName = 'realtypals_sector143_noida_master_data.json';
-    else if (sec.includes('150')) fileName = 'realtypals_sector150_noida_master_data.json';
-    else if (sec.includes('10')) fileName = 'realtypals_sector10_greaternoidawest_master_data.json';
-    else if (sec.includes('12')) fileName = 'realtypals_sector12_greaternoidawest_master_data.json';
-    else if (sec.includes('16c')) fileName = 'realtypals_sector16c_greaternoidawest_master_data.json';
-    else if (sec.includes('1')) fileName = 'realtypals_sector1_greaternoidawest_master_data.json';
-    else if (sec.includes('22d')) fileName = 'realtypals_sector22d_yamunaexpressway_master_data.json';
-    else if (sec.includes('techzone')) fileName = 'realtypals_techzone4_greaternoidawest_master_data.json';
+    if (sec.includes('75')) fileName = 'propfyndr_sector75_noida_master_data.json';
+    else if (sec.includes('76')) fileName = 'propfyndr_sector76_noida_master_data.json';
+    else if (sec.includes('77')) fileName = 'propfyndr_sector77_noida_master_data.json';
+    else if (sec.includes('78')) fileName = 'propfyndr_sector78_noida_master_data.json';
+    else if (sec.includes('79')) fileName = 'propfyndr_sector79_noida_master_data.json';
+    else if (sec.includes('100')) fileName = 'propfyndr_sector100_noida_master_data.json';
+    else if (sec.includes('107')) fileName = 'propfyndr_sector107_noida_master_data.json';
+    else if (sec.includes('128')) fileName = 'propfyndr_sector128_noida_master_data.json';
+    else if (sec.includes('137')) fileName = 'propfyndr_sector137_noida_master_data.json';
+    else if (sec.includes('143')) fileName = 'propfyndr_sector143_noida_master_data.json';
+    else if (sec.includes('150')) fileName = 'propfyndr_sector150_noida_master_data.json';
+    else if (sec.includes('10')) fileName = 'propfyndr_sector10_greaternoidawest_master_data.json';
+    else if (sec.includes('12')) fileName = 'propfyndr_sector12_greaternoidawest_master_data.json';
+    else if (sec.includes('16c')) fileName = 'propfyndr_sector16c_greaternoidawest_master_data.json';
+    else if (sec.includes('1')) fileName = 'propfyndr_sector1_greaternoidawest_master_data.json';
+    else if (sec.includes('22d')) fileName = 'propfyndr_sector22d_yamunaexpressway_master_data.json';
+    else if (sec.includes('techzone')) fileName = 'propfyndr_techzone4_greaternoidawest_master_data.json';
 
     if (!fileGroups[fileName]) fileGroups[fileName] = [];
     fileGroups[fileName].push(p);

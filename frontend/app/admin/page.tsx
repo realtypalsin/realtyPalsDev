@@ -536,7 +536,7 @@ export default function AdminDashboard() {
               <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
               <span className="text-xs font-semibold text-zinc-400 ml-2 font-sans flex items-center gap-1.5">
                 <TerminalWindow size={14} weight="duotone" className="text-zinc-500" />
-                <span>bash — realty-pals-server</span>
+                <span>bash — propfyndr-server</span>
               </span>
             </div>
             <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">CLI Helper</span>

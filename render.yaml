@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: realtypals-backend
+    name: propfyndr-backend
     env: node
     nodeVersion: 22
     plan: starter

@@ -7,7 +7,7 @@ export default function ThemeToggle() {
   const [dark, setDark] = useState(false);
 
   const updateFavicon = (isDark: boolean) => {
-    const iconUrl = isDark ? '/images/icons/faviconWhite.svg' : '/images/icons/faviconBlack.svg';
+    const iconUrl = isDark ? '/images/icons/logo-mark-white.png' : '/images/icons/logo-mark-black.png';
     document.querySelectorAll("link[rel*='icon']").forEach((link) => {
       (link as HTMLLinkElement).href = iconUrl;
     });

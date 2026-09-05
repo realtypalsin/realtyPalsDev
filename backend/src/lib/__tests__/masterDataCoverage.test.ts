@@ -9,7 +9,7 @@ import { stripRelationInternals, isPublished } from '../projectExposure'
 // master JSON that was loaded into the database — rather than a hand-written
 // fixture, so the assertions track the shape the app actually sees.
 
-const MASTER = join(__dirname, '../../../../newProj/75/realtypals_sector150_noida_master_data.json')
+const MASTER = join(__dirname, '../../../../newProj/75/propfyndr_sector150_noida_master_data.json')
 const available = existsSync(MASTER)
 
 function firstProject(): Record<string, unknown> {
@@ -203,7 +203,7 @@ describe('publish gate', () => {
       primary_thesis: 'solid',
       internal_confidence: 'medium — thin comparables',
       admin_notes: 'call the desk before quoting',
-      verified_by: 'analyst@realtypals',
+      verified_by: 'analyst@propfyndr',
       id: 'r1',
       project_id: 'p1',
     })

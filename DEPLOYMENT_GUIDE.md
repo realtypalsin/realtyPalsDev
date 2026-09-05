@@ -1,4 +1,4 @@
-# RealtyPals Phase 0-5: Deployment & Validation Guide
+# PropFyndr Phase 0-5: Deployment & Validation Guide
 
 Commit: `43951fc` — all code changes complete. This guide covers manual steps to measure impact, deploy to staging, and push to production.
 
@@ -74,7 +74,7 @@ Expected: `idx_project_name_trgm`, `idx_builder_name_trgm`, `idx_project_sector_
 
 ```bash
 # If using Vercel
-vercel deploy --prod --scope=realtypals-staging
+vercel deploy --prod --scope=propfyndr-staging
 
 # If using other platform (render, railway, fly)
 git push staging main
@@ -87,7 +87,7 @@ Wait for build + deploy complete (~3-5 min). Check deployment logs for errors.
 
 **Chat flow test:**
 ```
-1. Open https://staging.realtypals.com
+1. Open https://staging.propfyndr.com
 2. Message: "3BHK in Sector 150 under 1.5 crore"
 3. Expected: Response within 3s, projects returned, early "status: thinking" event visible
 4. Check browser DevTools → Network → observe SSE stream includes "status" event first

@@ -207,7 +207,7 @@ export const citywideQueryHandler: ChatTopicHandler = {
         `#### Key Highlights & Operating Model:\n` +
         `- **Channel Partner Model**: For primary (new launch) builder projects, registered channel partners do not charge buyers a brokerage fee — their commission is paid by the developer.\n` +
         `- **Resale & Leasing**: For secondary market transactions (resale or rental), standard market brokerage fees (typically 1% to 2%) apply.\n\n` +
-        `#### RealtyPals Advisory Guide for Working with Advisory Firms:\n` +
+        `#### PropFyndr Advisory Guide for Working with Advisory Firms:\n` +
         `1. **Verify UP-RERA Agent Registration**: Always verify that the individual advisor and the firm have an active UP-RERA agent license.\n` +
         `2. **Cross-Check Official Builder Cost Sheets**: Channel partner quotes should be verified directly against the developer's official price list, including basic selling price (BSP), floor rise, PLC, and statutory taxes.\n` +
         `3. **Escrow Bank Payments Only**: Never make booking payments or token deposits to an agency account. All cheques and transfers must be drawn directly in favor of the developer's RERA-registered Escrow Account.\n` +
@@ -1806,7 +1806,7 @@ However, **pure builder-funded Possession-Linked Plans (PLP)** — where you pay
 
 ---
 
-#### 4. RealtyPals Advisory Checklist Before Signing
+#### 4. PropFyndr Advisory Checklist Before Signing
 1. **Never sign an upfront bank disbursement mandate**: Never allow a lender to disburse loan funds ahead of certified physical slab construction.
 2. **Demand Builder PLP without Loan**: If you want a 20:80 or 10:90 structure, insist on a **Builder-Direct PLP agreement** recorded in your registered BBA (Builder Buyer Agreement) with zero bank loan involvement until the Occupancy Certificate (OC).
 3. **Verify Escrow Deposit**: Confirm that your 20% booking payment is routed directly to the project's **UP RERA Designated Escrow Account**, not a developer general operations account.

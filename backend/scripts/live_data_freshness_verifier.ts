@@ -4,13 +4,13 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 /**
- * RealtyPals Live Data Freshness & Veracity Verifier
+ * PropFyndr Live Data Freshness & Veracity Verifier
  * Run weekly or on-demand: npx tsx scripts/live_data_freshness_verifier.ts
  */
 export async function runLiveDataFreshnessAudit() {
   const timestamp = new Date().toISOString()
   console.log(`======================================================================`)
-  console.log(`🛡️  REALTYPALS LIVE DATA FRESHNESS & VERACITY AUDIT REPORT`)
+  console.log(`🛡️  PROPFYNDR LIVE DATA FRESHNESS & VERACITY AUDIT REPORT`)
   console.log(`📅 Timestamp: ${timestamp}`)
   console.log(`======================================================================\n`)
 

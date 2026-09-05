@@ -220,7 +220,7 @@ export default function BuilderNewsPage() {
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
     const link = document.createElement('a')
     link.setAttribute('href', encodeURI(csvContent))
-    link.setAttribute('download', `realtypals_news_${filter}_${Date.now()}.csv`)
+    link.setAttribute('download', `propfyndr_news_${filter}_${Date.now()}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

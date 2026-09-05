@@ -581,7 +581,7 @@ function MessageBubbleInner({
         <MobileCardShelf
           projects={shelfProjects}
           sector={shelfProjects[0]?.sector ?? null}
-          onMap={() => window.dispatchEvent(new CustomEvent('realtypals:open-map'))}
+          onMap={() => window.dispatchEvent(new CustomEvent('propfyndr:open-map'))}
           canCompare={shelfProjects.length >= 2}
           compareActive={comparingMessageId === message.id}
           onCompare={() => {
@@ -605,7 +605,7 @@ function MessageBubbleInner({
                   index={pi}
                   onDetailOpen={onDetailOpen}
                   onToast={onToast}
-                  onAskAI={() => { /* card dispatches its own realtypals:ask-ai */ }}
+                  onAskAI={() => { /* card dispatches its own propfyndr:ask-ai */ }}
                   onSetSiteVisit={onSetSiteVisit}
                   onCall={onCallback}
                 />
@@ -713,7 +713,7 @@ function MessageBubbleInner({
                         <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                           <span className="flex items-center gap-1 font-medium">
                             <ShieldCheck size={14} weight="fill" className="text-blue-600 dark:text-blue-400" />
-                            Verified by RealtyPals Data
+                            Verified by PropFyndr Data
                           </span>
                         </div>
 
@@ -1199,7 +1199,7 @@ function MessageBubbleInner({
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => window.dispatchEvent(new CustomEvent('realtypals:open-map'))}
+                  onClick={() => window.dispatchEvent(new CustomEvent('propfyndr:open-map'))}
                   aria-pressed={showMap}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all shadow-2xs active:scale-95 cursor-pointer border ${
                     showMap
@@ -1294,7 +1294,7 @@ function MessageBubbleInner({
                             onToggleSelect={() => onToggleCompareSelect?.(message.id, property)}
                             onDetailOpen={onDetailOpen}
                             onToast={onToast}
-                            onAskAI={() => { /* card dispatches its own realtypals:ask-ai */ }}
+                            onAskAI={() => { /* card dispatches its own propfyndr:ask-ai */ }}
                             onSetSiteVisit={onSetSiteVisit}
                             onCall={onCallback}
                           />
@@ -1351,7 +1351,7 @@ function MessageBubbleInner({
                             onToggleSelect={() => onToggleCompareSelect?.(message.id, property)}
                             onDetailOpen={onDetailOpen}
                             onToast={onToast}
-                            onAskAI={() => { /* card dispatches its own realtypals:ask-ai */ }}
+                            onAskAI={() => { /* card dispatches its own propfyndr:ask-ai */ }}
                             onSetSiteVisit={onSetSiteVisit}
                             onCall={onCallback}
                           />

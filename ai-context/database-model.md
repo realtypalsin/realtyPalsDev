@@ -1,4 +1,4 @@
-# RealtyPals — Database Model
+# PropFyndr — Database Model
 
 ## Builder
 

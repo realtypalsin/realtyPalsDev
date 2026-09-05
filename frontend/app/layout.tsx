@@ -3,7 +3,7 @@ import "./globals.css";
 
 import { Outfit, Playfair_Display, Afacad, Inter } from "next/font/google";
 
-// RealtyPals App Root Layout — PostHog & Telemetry Enabled
+// PropFyndr App Root Layout — PostHog & Telemetry Enabled
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { Toaster } from "sonner";
 import { PingBackend } from "@/components/PingBackend";
@@ -42,23 +42,23 @@ const afacad = Afacad({
 });
 
 export const metadata: Metadata = {
-  // TODO: confirm production domain — no NEXT_PUBLIC_SITE_URL/similar env var found in this codebase; using realtypals.com as a placeholder (matches storage.realtypals.com already referenced in next.config.js).
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://realtypals.com'),
+  // TODO: confirm production domain — no NEXT_PUBLIC_SITE_URL/similar env var found in this codebase; using propfyndr.com as a placeholder (matches storage.propfyndr.com already referenced in next.config.js).
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://propfyndr.com'),
   title: {
-    default: "RealtyPals — AI Property Advisor for Noida",
-    template: "%s | RealtyPals",
+    default: "PropFyndr — AI Property Advisor for Noida",
+    template: "%s | PropFyndr",
   },
   description: "Find, compare, and evaluate Noida real estate with AI. Get honest project analysis, EMI calculations, and builder track records — in plain language.",
   keywords: ["Noida real estate", "property advisor", "AI property search", "buy flat Noida", "Sector 150", "RERA registered"],
   openGraph: {
-    title: "RealtyPals — AI Property Advisor for Noida",
+    title: "PropFyndr — AI Property Advisor for Noida",
     description: "Find, compare, and evaluate Noida real estate with AI.",
     type: "website",
   },
   icons: {
-    icon: "/images/icons/faviconBlack.svg",
-    shortcut: "/images/icons/faviconBlack.svg",
-    apple: "/images/icons/faviconBlack.svg",
+    icon: "/images/icons/logo-mark-black.png",
+    shortcut: "/images/icons/logo-mark-black.png",
+    apple: "/images/icons/apple-icon.png",
   },
   formatDetection: {
     telephone: false,
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'RealtyPals',
+    title: 'PropFyndr',
   },
 };
 

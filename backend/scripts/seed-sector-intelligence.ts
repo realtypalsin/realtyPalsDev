@@ -239,7 +239,7 @@ async function main() {
         $6, $7, $8, $9,
         $10, $11, $12, $13, $14,
         $15::jsonb, $16::jsonb, $17::jsonb, $18::jsonb,
-        NOW(), 'RealtyPals Research Desk', NOW(), NOW()
+        NOW(), 'PropFyndr Research Desk', NOW(), NOW()
       )
       ON CONFLICT ("city", "sector") DO UPDATE SET
         "micro_market" = EXCLUDED."micro_market",

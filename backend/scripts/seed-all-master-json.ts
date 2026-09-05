@@ -3,26 +3,26 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 const filesToSeed = [
-  'realtypals_sector10_greaternoidawest_master_data.json',
-  'realtypals_sector12_greaternoidawest_master_data.json',
-  'realtypals_sector75_noida_master_data.json',
-  'realtypals_sector76_noida_master_data.json',
-  'realtypals_sector77_noida_master_data.json',
-  'realtypals_sector78_noida_master_data.json',
-  'realtypals_sector79_noida_master_data.json',
-  'realtypals_sector100_noida_master_data.json',
-  'realtypals_sector107_noida_master_data.json',
-  'realtypals_sector128_noida_master_data.json',
-  'realtypals_sector137_noida_master_data.json',
-  'realtypals_sector143_noida_master_data.json',
-  'realtypals_sector150_noida_master_data.json',
-  'realtypals_sector16c_greaternoidawest_master_data.json',
-  'realtypals_sector1_greaternoidawest_master_data.json',
-  'realtypals_sector22d_yamunaexpressway_master_data.json',
-  'realtypals_techzone4_greaternoidawest_master_data.json',
+  'propfyndr_sector10_greaternoidawest_master_data.json',
+  'propfyndr_sector12_greaternoidawest_master_data.json',
+  'propfyndr_sector75_noida_master_data.json',
+  'propfyndr_sector76_noida_master_data.json',
+  'propfyndr_sector77_noida_master_data.json',
+  'propfyndr_sector78_noida_master_data.json',
+  'propfyndr_sector79_noida_master_data.json',
+  'propfyndr_sector100_noida_master_data.json',
+  'propfyndr_sector107_noida_master_data.json',
+  'propfyndr_sector128_noida_master_data.json',
+  'propfyndr_sector137_noida_master_data.json',
+  'propfyndr_sector143_noida_master_data.json',
+  'propfyndr_sector150_noida_master_data.json',
+  'propfyndr_sector16c_greaternoidawest_master_data.json',
+  'propfyndr_sector1_greaternoidawest_master_data.json',
+  'propfyndr_sector22d_yamunaexpressway_master_data.json',
+  'propfyndr_techzone4_greaternoidawest_master_data.json',
 ];
 
 async function seedAllMasterFiles() {

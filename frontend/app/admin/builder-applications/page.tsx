@@ -796,7 +796,7 @@ export default function BuilderApplicationsPage() {
                               <Copy className="w-3.5 h-3.5" />
                             </button>
                             <a
-                              href={`https://wa.me/91${selectedApp.phone.replace(/^\+91/, '')}?text=${encodeURIComponent(`Hi ${selectedApp.name}, following up regarding your builder registration application on RealtyPals.`)}`}
+                              href={`https://wa.me/91${selectedApp.phone.replace(/^\+91/, '')}?text=${encodeURIComponent(`Hi ${selectedApp.name}, following up regarding your builder registration application on PropFyndr.`)}`}
                               target="_blank"
                               rel="noreferrer"
                               className="text-emerald-600 hover:bg-emerald-50 p-1 rounded-md"
@@ -1030,7 +1030,7 @@ export default function BuilderApplicationsPage() {
                       <span>
                         {selectedApp.status === 'new' && 'Awaiting initial compliance check'}
                         {selectedApp.status === 'reviewing' && 'Under active admin verification'}
-                        {selectedApp.status === 'approved' && 'Verified partner active on RealtyPals'}
+                        {selectedApp.status === 'approved' && 'Verified partner active on PropFyndr'}
                         {selectedApp.status === 'rejected' && 'Application declined'}
                       </span>
                     </span>

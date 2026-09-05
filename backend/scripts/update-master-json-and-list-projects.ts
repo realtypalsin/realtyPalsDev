@@ -6,7 +6,7 @@ import { PrismaClient } from '@prisma/client';
 const url = process.env.DIRECT_URL || process.env.DATABASE_URL;
 const prisma = new PrismaClient({ datasources: { db: { url } } });
 
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 async function main() {
   console.log('=== STEP 1: AUDITING AND UPDATING MASTER JSON FILES ===');

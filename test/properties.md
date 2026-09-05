@@ -1,6 +1,6 @@
-# RealtyPals Database & Property Schema Catalog
+# PropFyndr Database & Property Schema Catalog
 
-Comprehensive specification of all database entities, relational models, column schemas, business rules, and population status across the entire RealtyPals ecosystem.
+Comprehensive specification of all database entities, relational models, column schemas, business rules, and population status across the entire PropFyndr ecosystem.
 
 ---
 

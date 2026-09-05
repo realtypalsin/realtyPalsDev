@@ -8,7 +8,7 @@ for (let i = 205; i < lines.length; i++) {
   if (step.type === 'PLANNER_RESPONSE' && step.content) {
     console.log(`Step ${step.step_index}: length = ${step.content.length}`);
     if (step.content.includes('YardLyst') || step.content.includes('50') || step.content.includes('Acres') || step.content.includes('Table')) {
-      fs.writeFileSync(`c:\\Users\\Furqan\\Desktop\\RealtyPals\\scratch_step_${step.step_index}.md`, step.content, 'utf-8');
+      fs.writeFileSync(`c:\\Users\\Furqan\\Desktop\\PropFyndr\\scratch_step_${step.step_index}.md`, step.content, 'utf-8');
       console.log(`Saved step ${step.step_index}`);
     }
   }

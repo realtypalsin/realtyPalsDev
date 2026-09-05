@@ -102,23 +102,23 @@ The following **73 projects** exist in the active production database, but are n
 
 ## 3. Projects in Local Master Files but MISSING from Live Database
 
-1. **Parx Laureate** (`parx-laureate-sector-108-noida`) — Source file: `realtypals_sector10_greaternoidawest_master_data.json`
-2. **Gaur Grandeur** (`gaur-grandeur-sector-119-noida`) — Source file: `realtypals_sector1_greaternoidawest_master_data.json`
-3. **Eldeco Aamantran** (`eldeco-aamantran-sector-119-noida`) — Source file: `realtypals_sector1_greaternoidawest_master_data.json`
-4. **RG Residency** (`rg-residency-sector-120-noida`) — Source file: `realtypals_sector12_greaternoidawest_master_data.json`
-5. **Prateek Laurel** (`prateek-laurel-sector-120-noida`) — Source file: `realtypals_sector12_greaternoidawest_master_data.json`
-6. **Homes 121** (`homes-121-sector-121-noida`) — Source file: `realtypals_sector12_greaternoidawest_master_data.json`
-7. **Paras Tierea** (`paras-tierea-sector-137`) — Source file: `realtypals_sector137_noida_master_data.json`
-8. **Supertech Ecociti** (`supertech-ecociti-sector-137`) — Source file: `realtypals_sector137_noida_master_data.json`
-9. **Gulshan Ikebana** (`gulshan-ikebana-sector-143`) — Source file: `realtypals_sector143_noida_master_data.json`
-10. **Gaur City 2 - 16th Avenue** (`gaur-city-2-16th-avenue`) — Source file: `realtypals_sector16c_greaternoidawest_master_data.json`
-11. **ACE Divino** (`ace-divino-sector-1-greater-noida-west`) — Source file: `realtypals_sector1_greaternoidawest_master_data.json`
-12. **ATS Dolce** (`ats-dolce-zeta-1`) — Source file: `realtypals_zeta1_greaternoida_master_data.json`
-13. **Stellar Jeevan** (`stellar-jeevan-sector-1`) — Source file: `realtypals_sector1_greaternoidawest_master_data.json`
-14. **Prateek Stylome** (`prateek-stylome-sector-45-noida`) — Source file: `realtypals_sector45_noida_master_data.json`
-15. **Pan Oasis** (`pan-oasis-sector-70-noida`) — Source file: `realtypals_sector70_noida_master_data.json`
-16. **Supertech Capetown** (`supertech-capetown-sector-74-noida`) — Source file: `realtypals_sector74_noida_master_data.json`
-17. **Sethi Max Royal** (`sethi-max-royal-sector-76-noida`) — Source file: `realtypals_sector76_noida_master_data.json`
+1. **Parx Laureate** (`parx-laureate-sector-108-noida`) — Source file: `propfyndr_sector10_greaternoidawest_master_data.json`
+2. **Gaur Grandeur** (`gaur-grandeur-sector-119-noida`) — Source file: `propfyndr_sector1_greaternoidawest_master_data.json`
+3. **Eldeco Aamantran** (`eldeco-aamantran-sector-119-noida`) — Source file: `propfyndr_sector1_greaternoidawest_master_data.json`
+4. **RG Residency** (`rg-residency-sector-120-noida`) — Source file: `propfyndr_sector12_greaternoidawest_master_data.json`
+5. **Prateek Laurel** (`prateek-laurel-sector-120-noida`) — Source file: `propfyndr_sector12_greaternoidawest_master_data.json`
+6. **Homes 121** (`homes-121-sector-121-noida`) — Source file: `propfyndr_sector12_greaternoidawest_master_data.json`
+7. **Paras Tierea** (`paras-tierea-sector-137`) — Source file: `propfyndr_sector137_noida_master_data.json`
+8. **Supertech Ecociti** (`supertech-ecociti-sector-137`) — Source file: `propfyndr_sector137_noida_master_data.json`
+9. **Gulshan Ikebana** (`gulshan-ikebana-sector-143`) — Source file: `propfyndr_sector143_noida_master_data.json`
+10. **Gaur City 2 - 16th Avenue** (`gaur-city-2-16th-avenue`) — Source file: `propfyndr_sector16c_greaternoidawest_master_data.json`
+11. **ACE Divino** (`ace-divino-sector-1-greater-noida-west`) — Source file: `propfyndr_sector1_greaternoidawest_master_data.json`
+12. **ATS Dolce** (`ats-dolce-zeta-1`) — Source file: `propfyndr_zeta1_greaternoida_master_data.json`
+13. **Stellar Jeevan** (`stellar-jeevan-sector-1`) — Source file: `propfyndr_sector1_greaternoidawest_master_data.json`
+14. **Prateek Stylome** (`prateek-stylome-sector-45-noida`) — Source file: `propfyndr_sector45_noida_master_data.json`
+15. **Pan Oasis** (`pan-oasis-sector-70-noida`) — Source file: `propfyndr_sector70_noida_master_data.json`
+16. **Supertech Capetown** (`supertech-capetown-sector-74-noida`) — Source file: `propfyndr_sector74_noida_master_data.json`
+17. **Sethi Max Royal** (`sethi-max-royal-sector-76-noida`) — Source file: `propfyndr_sector76_noida_master_data.json`
 
 ---
 

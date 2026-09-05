@@ -402,7 +402,7 @@ function getUpdatesForProject(p: ExportProject) {
 
 async function main() {
   const fileData: ExportProject[] = JSON.parse(
-    fs.readFileSync('C:/Users/Furqan/Desktop/RealtyPals/realtypals-enrichment-190-projects.json', 'utf-8')
+    fs.readFileSync('C:/Users/Furqan/Desktop/PropFyndr/propfyndr-enrichment-190-projects.json', 'utf-8')
   )
   console.log(`Starting enrichment for ${fileData.length} projects...`)
 

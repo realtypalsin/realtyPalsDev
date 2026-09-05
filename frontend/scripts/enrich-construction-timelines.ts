@@ -108,7 +108,7 @@ async function main() {
             quarter_label: `Q4 ${possYear - 1}`,
             completion_pct: 100,
             source: 'RERA Compliance Portal',
-            verified_by: 'RealtyPals Site Inspection Team'
+            verified_by: 'PropFyndr Site Inspection Team'
           }
         })
         updatesAdded++
@@ -122,7 +122,7 @@ async function main() {
             quarter_label: `Q4 2025`,
             completion_pct: 78,
             source: 'Site Verification & Engineer Declaration',
-            verified_by: 'RealtyPals RERA Verification Desk'
+            verified_by: 'PropFyndr RERA Verification Desk'
           }
         })
         updatesAdded++

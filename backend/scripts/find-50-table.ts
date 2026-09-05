@@ -8,7 +8,7 @@ for (let i = 200; i < lines.length; i++) {
   if (step.type === 'PLANNER_RESPONSE' && step.content) {
     if (step.content.includes('|') && step.content.includes('.com') && step.content.length > 3000) {
       console.log(`\nFound Table in step ${step.step_index} (Length: ${step.content.length})`);
-      fs.writeFileSync(`c:\\Users\\Furqan\\Desktop\\RealtyPals\\master_50_names_table.md`, step.content, 'utf-8');
+      fs.writeFileSync(`c:\\Users\\Furqan\\Desktop\\PropFyndr\\master_50_names_table.md`, step.content, 'utf-8');
       console.log(`Saved to master_50_names_table.md`);
       break;
     }

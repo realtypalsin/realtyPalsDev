@@ -4,12 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Wave 7 Catalogue: 14 High-Density Residential Societies across 5 Populated Sectors
 const WAVE7_DATA: Record<string, any[]> = {
   // SECTOR 168 NOIDA (EXPRESSWAY IT CORRIDOR)
-  'realtypals_sector168_noida_master_data.json': [
+  'propfyndr_sector168_noida_master_data.json': [
     {
       name: 'Golden Palms',
       slug: 'golden-palms-sector-168-noida',
@@ -193,7 +193,7 @@ const WAVE7_DATA: Record<string, any[]> = {
   ],
 
   // ZETA 1 GREATER NOIDA CORE
-  'realtypals_zeta1_greaternoida_master_data.json': [
+  'propfyndr_zeta1_greaternoida_master_data.json': [
     {
       name: 'Purvanchal Royal City',
       slug: 'purvanchal-royal-city-zeta-1',
@@ -317,7 +317,7 @@ const WAVE7_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 110 NOIDA (CENTRAL NOIDA HUB)
-  'realtypals_sector110_noida_master_data.json': [
+  'propfyndr_sector110_noida_master_data.json': [
     {
       name: '3C Lotus Panache',
       slug: '3c-lotus-panache-sector-110-noida',
@@ -381,7 +381,7 @@ const WAVE7_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 1 GREATER NOIDA WEST
-  'realtypals_sector1_greaternoidawest_master_data.json': [
+  'propfyndr_sector1_greaternoidawest_master_data.json': [
     {
       name: 'Stellar Jeevan',
       slug: 'stellar-jeevan-sector-1',

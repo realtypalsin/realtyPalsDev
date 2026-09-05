@@ -103,7 +103,7 @@ async function main() {
             'Cite competitor price delta in same sector for 3-5% BSP discount.'
           ],
           internal_confidence: 'High (Verified)',
-          admin_notes: 'Fully verified by RealtyPals Data Desk.'
+          admin_notes: 'Fully verified by PropFyndr Data Desk.'
         }
       })
       recCreated++

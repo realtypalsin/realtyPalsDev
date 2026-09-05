@@ -4,12 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const prisma = new PrismaClient();
-const masterDir = 'c:\\Users\\Furqan\\Desktop\\RealtyPals\\newProj\\75';
+const masterDir = 'c:\\Users\\Furqan\\Desktop\\PropFyndr\\newProj\\75';
 
 // Wave 4 Catalogue Data across 6 Sector Master JSON Files
 const WAVE4_DATA: Record<string, any[]> = {
   // SECTOR 137 NOIDA (EXPANSION)
-  'realtypals_sector137_noida_wave4_master_data.json': [
+  'propfyndr_sector137_noida_wave4_master_data.json': [
     {
       name: 'Paras Tierea',
       slug: 'paras-tierea-sector-137-noida',
@@ -133,7 +133,7 @@ const WAVE4_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 143 NOIDA (EXPANSION)
-  'realtypals_sector143_noida_wave4_master_data.json': [
+  'propfyndr_sector143_noida_wave4_master_data.json': [
     {
       name: 'Gulshan Ikebana',
       slug: 'gulshan-ikebana-sector-143-noida',
@@ -196,7 +196,7 @@ const WAVE4_DATA: Record<string, any[]> = {
   ],
 
   // SECTOR 1 GREATER NOIDA WEST (EXPANSION)
-  'realtypals_sector1_greaternoidawest_wave4_master_data.json': [
+  'propfyndr_sector1_greaternoidawest_wave4_master_data.json': [
     {
       name: 'Stellar Jeevan',
       slug: 'stellar-jeevan-sector-1-greaternoidawest',
