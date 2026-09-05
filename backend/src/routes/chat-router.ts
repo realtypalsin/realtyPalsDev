@@ -1737,6 +1737,64 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     /**
+     * A project we do not hold gets the honest answer, whatever lane would
+     * otherwise have taken the turn.
+     *
+     * `buildUnknownProjectReply` existed, was tested, and was reachable from
+     * exactly one place — the PROJECT_DETAIL lane, keyed on
+     * `plan.projectIds[0]`. "What is X?" classifies OPEN ("Definitional
+     * who/what is X lookup") and is answered by the grounded lane long before
+     * that, so the guard never ran on the shape of question most likely to name
+     * something we have never heard of.
+     *
+     * Measured: asked about an invented project, the reply was "Skyline Verdant
+     * Quartz Residency is a prominent high-rise residential development in
+     * Noida, crafted by **Supertech Limited**" — a building that does not exist,
+     * attributed to a real developer, one that HARD RULES separately forbids
+     * recommending. The web grounding found nothing and the model wrote around
+     * the hole; the lane logged `grounded: true, fromWeb: true` regardless.
+     *
+     * The check runs before classification because every lane is downstream of
+     * it. `resolveProjectNames` has already asked the database, so this costs
+     * nothing extra — the answer was being computed and thrown away.
+     *
+     * The name must appear in THIS message: extraction carries `projectNames`
+     * forward across turns, and a stale name must not hijack a question that
+     * has moved on.
+     */
+    {
+      const guessed = ((intent as Intent).projectNames ?? []).filter(
+        (n): n is string => typeof n === 'string' && n.trim().length >= 5,
+      )
+      const namedHere = guessed.find(n => (message ?? '').toLowerCase().includes(n.toLowerCase()))
+      if (namedHere && !hasVerifiedProjectNames) {
+        console.log('[CHAT:UNKNOWN_PROJECT]', { name: namedHere })
+        const unknown = await buildUnknownProjectReply(namedHere, {
+          city: DEFAULT_CITY,
+          userId,
+          sessionId: currentSessionId,
+        })
+        send('token', { token: unknown.text })
+        emitUiState({
+          stage: 'RESEARCH',
+          thinking: unknown.fromWeb
+            ? 'Not in our records — reporting what public sources say:'
+            : 'Not in our records:',
+          chips: [
+            { id: `chip_verify_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Get it verified', icon: 'shield-check', analyticsId: 'chip_unknown_verify', priority: 1, payload: { text: `Can your advisory team verify ${namedHere} for me?` } },
+            { id: `chip_alt_${Date.now()}`, actionType: 'TEXT_MESSAGE', label: 'Show what we do cover', icon: 'building', analyticsId: 'chip_unknown_alt', priority: 2, payload: { text: 'Show me projects you have verified data on' } },
+          ],
+          missingFields: [],
+          confidence: 'HIGH',
+        }, { skipDedup: true })
+        send('done', { sessionId: currentSessionId, intentState, intent, responseMode: 'chat' })
+        persistEarlyTurn('unknown-project', lastAnswerText)
+        res.end()
+        return
+      }
+    }
+
+    /**
      * A resolved sector pointer is classified as the question it stands for.
      *
      * "The second one." carries no subject, so it classified OPEN and the

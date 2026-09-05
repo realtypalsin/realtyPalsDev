@@ -2195,3 +2195,33 @@ returned Sector 150's row.
 and rolls on is indistinguishable from a slow provider. Three of these had been
 live since the code was written. Reading the transcript found the routing bugs;
 only running the thing and reading the log found these.
+
+### 9. An invented project got a confident description and a real builder's name
+
+Asked "What is Skyline Verdant Quartz Residency?" — a name that does not exist —
+the reply was "a prominent high-rise residential development in Noida, crafted
+by **Supertech Limited**". A building we have never heard of, attributed to a
+developer HARD RULES separately forbids recommending.
+
+`buildUnknownProjectReply` was written for exactly this, is tested, and was
+reachable from **one** place: the PROJECT_DETAIL lane, keyed on
+`plan.projectIds[0]`. "What is X?" classifies OPEN — "Definitional who/what is X
+lookup" — and the grounded lane answers it long before that. So the guard never
+ran on the shape of question most likely to name something we do not hold.
+
+The check now runs immediately after `resolveProjectNames`, before
+classification, because every lane is downstream of it — and it costs nothing,
+since the database answer was already being computed and thrown away. It fires
+only when the name appears in THIS message: `projectNames` carries forward
+across turns and a stale name must not hijack a question that has moved on.
+
+**Still open, noted not fixed:** the unknown-project reply still carries a
+paragraph of web-sourced description for a building that does not exist. It is
+correctly labelled unverified and leads with "isn't in our verified database",
+so it does not violate the fact tiers — but a reply that says nothing after the
+disclaimer would be better than a fluent one.
+
+**Also noted not fixed:** "Is Amrapali Silicon City a good buy?" opens with "a
+high-conviction residential asset" before disclosing the Supreme Court
+receivership. The disclosure happens, so HARD RULE 6c is met on the letter; the
+lead framing is not what that rule intends.
