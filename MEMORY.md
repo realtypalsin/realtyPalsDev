@@ -2349,3 +2349,55 @@ salience risk tonight. **Deciding not to do the small one is part of the job.**
 its first variable byte. Nothing about this was visible in the code — it needed
 a hash of the prefix across turns. `promptPrefixStability.test.ts` pins it and
 fails on the pre-fix code, which is the only reason to trust it.
+
+## 6 Sep 2026 — the handler lanes, and a dead handler found while doing them
+
+### Prefix work finished
+
+`costSheet`, `paymentPlans` and `sectorComparison` all opened with their facts
+JSON on line 2: **13–14% stable prefix** on an ~900-character prompt, so the
+whole instruction block was re-billed every turn. Facts moved to the end →
+**98%** on all three.
+
+`sectorComparison` also had `${s1}`/`${s2}` woven through its rules three times.
+Those now come from the facts block, with an explicit instruction to name both
+sectors in full and never write "the first"/"the second" — without that, a
+de-parameterised rule invites the model to echo the placeholder wording.
+Verified live: both sectors named in full, three-paragraph structure intact.
+
+`generalPrompt.ts` needed nothing (4,640 of 4,642 chars already shared).
+`ghostPool.ts` and `buyerNarrative.ts` have the same shape but run from the
+leads/admin route, not per chat turn — left alone.
+
+The new test reads the **source**, not a rendered prompt, because these are
+template literals inside handler bodies. It names offenders with exact
+positions and fails on the pre-fix code:
+
+    costSheet.ts: first ${} at char 121 of 932
+    paymentPlans.ts: first ${} at char 122 of 948
+    sectorComparison.ts: first ${} at char 116 of 819
+
+### 14. `sectorComparisonHandler` had never been running
+
+Found while verifying the prompt edit: "Compare Sector 150 and Sector 137"
+never reached it. `classifyQueryDeterministic`'s COMPARISON rule requires
+**two PROJECT names**, and a sector comparison has none — so it fell through
+every branch to `queryKind: 'OPEN'`, reason "No property-search signal". The
+open lane answered from general knowledge: no table, not one figure from our
+rows, and the purpose-built renderer never ran.
+
+Worse, extraction returned `{}` on that turn, so no intent field could have
+saved it. **The classifier must not depend on a field that is empty exactly
+when the question is hardest to place** — the new rule reads the sectors off the
+message with `extractSectorMentions`.
+
+It needed its own trigger, not `comparePattern`: that pattern wants keyword,
+content, joiner, so it matches "compare A with B" but not "Sector 150 vs Sector
+137", where the keyword IS the joiner.
+
+After: table renders with **19 projects in Sector 150 and 10 in Sector 137** —
+against the 154 / 50 that started this whole thread.
+
+**The lesson:** optimising a code path is a good excuse to check it runs at all.
+This handler had been dead on its headline query, and nothing in the tests, the
+logs or the types said so — the turn still produced a fluent answer.

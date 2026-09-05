@@ -15,6 +15,7 @@
  */
 
 import type { Intent } from './types'
+import { extractSectorMentions } from './sectorMentions'
 import { inferRankingProfile, type RankingProfile } from './rankingProfiles'
 import { detectOpenQuery, hasPropertySearchSignal } from './openQuery'
 
@@ -95,6 +96,37 @@ export function classifyQueryDeterministic(
       renderTarget: 'both',
       confidence: 'HIGH',
       reason: 'Explicit comparison request with 2+ project names',
+    }
+  }
+
+  /**
+   * Two sectors named outright is a comparison too.
+   *
+   * The rule above requires two PROJECT names, and a sector comparison has
+   * none — so "Compare Sector 150 and Sector 137" matched nothing here, fell
+   * through every later branch, and landed on `queryKind: 'OPEN'` with the
+   * reason "No property-search signal". Measured 5 Sep: the open lane answered
+   * it from general knowledge with no rendered table and not one figure from
+   * our own rows, and `sectorComparisonHandler` — which exists precisely for
+   * this question, and renders inventory counts, price bands and the landmark
+   * societies in each — never ran at all.
+   *
+   * Read off the message rather than the extracted intent, because on this turn
+   * extraction returned `{}`: the classifier cannot depend on a field that is
+   * empty exactly when the question is hardest to place.
+   */
+  // Its own trigger, not `comparePattern`. That pattern needs a keyword, then
+  // content, then a joiner — so it matches "compare A with B" but not
+  // "Sector 150 vs Sector 137", where the keyword IS the joiner. Two sectors
+  // plus any comparison word is the whole test here; the sector extractor
+  // already refuses to read "between 1 and 2 crore" as two sectors.
+  const sectorCompareWord = /\b(compare|vs\.?|versus|better|difference|between|which\s+sector)\b/i
+  if (sectorCompareWord.test(userMessage) && extractSectorMentions(userMessage, []).length >= 2) {
+    return {
+      queryKind: 'COMPARISON',
+      renderTarget: 'both',
+      confidence: 'HIGH',
+      reason: 'Explicit comparison request naming two sectors',
     }
   }
 

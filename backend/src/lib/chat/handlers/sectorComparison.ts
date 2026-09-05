@@ -86,18 +86,35 @@ export const sectorComparisonHandler: ChatTopicHandler = {
 
     const sectorFactsJson = JSON.stringify({ [s1]: s1Stats, [s2]: s2Stats }, null, 2)
 
+    /**
+     * Rules first, data last — and the sector names come from the data.
+     *
+     * This prompt interpolated the facts JSON on line 2 and then `${s1}` and
+     * `${s2}` three more times through the instructions, so its stable prefix
+     * was 116 of 819 characters. Everything after the first per-turn value is
+     * uncacheable, and here that was the whole instruction block.
+     *
+     * The names are still required in the answer; they are just sourced from
+     * the facts below rather than baked into the rules, which is where they
+     * were coming from anyway. The one thing that has to be explicit is the ban
+     * on "the first"/"the second" — without it a de-parameterised instruction
+     * invites the model to echo the placeholder wording back at the buyer.
+     */
     const systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
-Verified Sector Database Facts: ${sectorFactsJson}
 
 THE TABLE IS ALREADY ON SCREEN.
-A comparison of ${s1} and ${s2} has just been rendered for the buyer from our own rows — inventory counts, price bands and the landmark societies in each. Do not draw a table and do not restate its figures.
+A comparison of the two sectors named in the verified facts below has just been rendered for the buyer from our own rows — inventory counts, price bands and the landmark societies in each. Do not draw a table and do not restate its figures.
+
+Always write both sectors by their full names exactly as the facts spell them. Never call them "the first" or "the second".
 
 Write three short paragraphs and nothing else:
 1. The verdict. Which of the two, and the single distinction that decides it.
 2. What the buyer trades away by taking that one. Every choice here costs something; name it.
-3. "Choose ${s1} if … choose ${s2} if …" — the condition that flips the answer.
+3. The condition that flips the answer, in the form "Choose X if … choose Y if …", where X and Y are the two sector names.
 
-Rows reading "Not recorded" are gaps in our data, not zeros. You may say so; never fill one. No headings, no emoji, around 140 words.`
+Rows reading "Not recorded" are gaps in our data, not zeros. You may say so; never fill one. No headings, no emoji, around 140 words.
+
+Verified Sector Database Facts: ${sectorFactsJson}`
 
     const systemMsgHistory = [{ role: 'user' as const, content: ctx.message }]
     const fallbackResult = await executeWithFallbackChain({

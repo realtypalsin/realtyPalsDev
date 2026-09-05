@@ -96,8 +96,9 @@ Name a project and I'll pull whichever of these we hold verified for it.`
       unit_types: costProject?.unit_types.map(u => `${u.bhk} BHK (${u.super_area_sqft} sq ft): ₹${u.price_min_cr}–${u.price_max_cr} Cr`)
     }, null, 2)
 
+    // Rules first, data last — the facts JSON used to sit on line 2, which made
+    // everything after it uncacheable. See `promptPrefixStability.test.ts`.
     const systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
-Verified Pricing & Cost Sheet Facts: ${costFactsJson}
 
 THE TABLE IS ALREADY ON SCREEN.
 The cost breakdown has just been rendered for the buyer from this project's own cost sheet. Do not draw a table and do not restate its rows.
@@ -108,7 +109,9 @@ Write two short paragraphs and nothing else:
 
 Charges we do not hold are absent from the table on purpose. You may say they sit in the developer's booking cost sheet; never supply a typical figure for one. Statutory rates are the only numbers you may state without support in the data, because UP law fixes them.
 
-No headings. No emoji. Around 120 words.`
+No headings. No emoji. Around 120 words.
+
+Verified Pricing & Cost Sheet Facts: ${costFactsJson}`
 
     const systemMsgHistory = [{ role: 'user' as const, content: ctx.message }]
     const fallbackResult = await executeWithFallbackChain({

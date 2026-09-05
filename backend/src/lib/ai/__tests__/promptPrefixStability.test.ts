@@ -1,6 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'crypto'
+import { readdirSync, readFileSync } from 'fs'
+import { join } from 'path'
 import { getBaseSystemPrompt, splitSystemPrompt } from '../prompts/base'
 import { buildGeneralConversationalPrompt } from '../prompts/generalPrompt'
 
@@ -95,5 +97,56 @@ test('the general lane keeps its variable content last', () => {
   assert.ok(
     lcp / shortest > 0.95,
     `only ${(lcp / shortest * 100).toFixed(0)}% of this lane is a shared prefix — per-turn content moved above it`,
+  )
+})
+
+/**
+ * The same rule, enforced on the handler prompts by reading the source.
+ *
+ * Those prompts are template literals inside handler bodies, so there is no
+ * function to call and compare — but the property that matters is visible in
+ * the source: where the FIRST `${...}` sits. All three chat handlers put their
+ * facts JSON on line 2, which left 13–14% of an ~900-character prompt cacheable
+ * and re-billed the instruction block every turn.
+ *
+ * This reads the files rather than the rendered prompt on purpose: it catches
+ * the next handler somebody writes by copying an old one, which is how all
+ * three came to have the same defect.
+ */
+test('chat handler prompts put their data last, not their data first', () => {
+  const dir = join(__dirname, '..', '..', 'chat', 'handlers')
+  const offenders: string[] = []
+
+  for (const file of readdirSync(dir).filter(f => f.endsWith('.ts') && !f.includes('.test.'))) {
+    const src = readFileSync(join(dir, file), 'utf8')
+    const re = /(?:const|let)\s+\w*(?:[Pp]rompt|systemMsg)\w*\s*=\s*`/g
+    let m: RegExpExecArray | null
+    while ((m = re.exec(src)) !== null) {
+      const start = re.lastIndex
+      let i = start
+      let depth = 0
+      while (i < src.length) {
+        const c = src[i]
+        if (c === '\\') { i += 2; continue }
+        if (c === '$' && src[i + 1] === '{') { depth++; i += 2; continue }
+        if (c === '}' && depth > 0) { depth--; i++; continue }
+        if (c === '`' && depth === 0) break
+        i++
+      }
+      const body = src.slice(start, i)
+      // Short templates carry too little stable text for the position to matter.
+      if (body.length < 600) continue
+      const firstVar = body.search(/\$\{/)
+      if (firstVar >= 0 && firstVar < body.length * 0.5) {
+        offenders.push(`${file}: first \${} at char ${firstVar} of ${body.length}`)
+      }
+    }
+  }
+
+  assert.deepEqual(
+    offenders,
+    [],
+    'a handler prompt interpolates per-turn data in its first half — everything after it is uncacheable:\n  ' +
+    offenders.join('\n  '),
   )
 })

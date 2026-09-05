@@ -524,15 +524,28 @@ the saving above is arithmetic on a measured prefix, not an observed bill. Verif
 with `DEBUG_PROMPT_STABILITY=1` once the balance is topped up: a repeated head
 hash plus a non-zero `[gemini:cache]` ratio is the proof.
 
-**The other lanes were checked and left alone, deliberately.**
-`generalPrompt.ts` already keeps `stateBrief` and `webContext` last — 4,640 of
-4,642 characters are a shared prefix, so it is optimal already. The three topic
-handlers (`costSheet`, `paymentPlans`, `sectorComparison`) put their facts JSON
-at character ~120 of an ~900-character template, so ~200 tokens per turn sit
-behind a per-turn value. Reordering them is correct and worth roughly a
-thirtieth of what the main lane was worth; it is not worth the salience risk on
-a prompt nobody has re-measured. `promptPrefixStability.test.ts` pins the main
-lane and the general lane, and fails on the pre-fix code.
+**The handler lanes have the same rule now: instructions first, data last.**
+`costSheet`, `paymentPlans` and `sectorComparison` all put their facts JSON on
+line 2, so 13–14% of an ~900-character prompt was cacheable and the instruction
+block was re-billed every turn. Moving the JSON to the end takes all three to
+**98%**. `sectorComparison` also interpolated `${s1}` and `${s2}` three times
+through its rules; those now come from the facts block, with an explicit ban on
+"the first"/"the second" so a de-parameterised instruction cannot leak back into
+the answer as placeholder wording.
+
+`generalPrompt.ts` needed nothing — `stateBrief` and `webContext` are already
+last, and 4,640 of its 4,642 characters are a shared prefix.
+
+`promptPrefixStability.test.ts` pins all of it and fails on the pre-fix code.
+The handler check reads the **source** rather than a rendered prompt, because
+these prompts are template literals inside handler bodies and the property that
+matters — where the first `${...}` sits — is visible there. That also catches
+the next handler written by copying an old one, which is how all three came to
+share the defect.
+
+**Not on the chat path and left alone:** `ghostPool.ts` (10% stable) and
+`buyerNarrative.ts` (14%) have the same shape but run from the leads/admin route,
+not per turn.
 
 **`GEMINI_DAILY_BUDGET_USD` defaults to $2** and is enforced across every
 caller. On a topped-up account that is roughly 130 turns before every Gemini leg

@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test'
+import { describe, it, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { classifyQueryDeterministic, classifyQuery, getRenderTarget } from './queryClassifier'
 import type { Intent } from './types'
@@ -142,4 +142,29 @@ describe('Query Classifier', () => {
       assert.equal(result.renderTarget, 'text', 'cards are for buyers who are shopping')
     })
   })
+})
+
+test('two named sectors is a comparison even when extraction returned nothing', () => {
+  // The project rule needs two PROJECT names; a sector comparison has none. So
+  // "Compare Sector 150 and Sector 137" used to fall through to OPEN with the
+  // reason "No property-search signal", the open lane answered it from general
+  // knowledge with no table and no figure from our rows, and
+  // sectorComparisonHandler never ran.
+  for (const q of [
+    'Compare Sector 150 and Sector 137',
+    'Compare Sector 75 with Sector 78',
+    'Sector 150 vs Sector 137',
+    'which is better, Sector 76 or Sector 75?',
+  ]) {
+    const r = classifyQueryDeterministic(q, {})
+    assert.equal(r?.queryKind, 'COMPARISON', `${q} -> ${r?.queryKind ?? 'null'}`)
+    assert.equal(r?.renderTarget, 'both')
+  }
+})
+
+test('a budget range is still not two sectors', () => {
+  // Guards the same collision the sector extractor was fixed for: "between 1
+  // and 2 crore" must not read as Sector 1 versus Sector 2.
+  const r = classifyQueryDeterministic('compare options between 1 and 2 crore', {})
+  assert.notEqual(r?.reason, 'Explicit comparison request naming two sectors')
 })

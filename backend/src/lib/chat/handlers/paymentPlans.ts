@@ -113,8 +113,9 @@ export const paymentPlansHandler: ChatTopicHandler = {
       payment_plans: paymentPlans,
     }, null, 2)
 
+    // Rules first, data last — the facts JSON used to sit on line 2, which made
+    // everything after it uncacheable. See `promptPrefixStability.test.ts`.
     const systemPrompt = `You are RealtyPal, a professional real estate advisor for Noida and Greater Noida.
-Verified Payment Plan Database Facts: ${planFactsJson}
 
 THE TABLE IS ALREADY ON SCREEN.
 The plans have just been rendered for the buyer from our own rows — the instalment schedule of each, stage by stage, with the share and rupee amount due at every stage, plus any watch-out. Do not draw a table and do not restate its numbers.
@@ -123,7 +124,9 @@ Write two short paragraphs and nothing else:
 1. The cash-flow trade-off across these schedules. Which one costs less in total, which one keeps more cash free, and why that difference matters for someone buying at this price.
 2. Which to choose, and the condition that changes the answer — "take the down-payment plan if you have the cash idle; take construction-linked if you are still saving."
 
-No headings. No emoji. Around 120 words. If a cell said "Not recorded", you may say we do not hold that figure; never supply one.`
+No headings. No emoji. Around 120 words. If a cell said "Not recorded", you may say we do not hold that figure; never supply one.
+
+Verified Payment Plan Database Facts: ${planFactsJson}`
 
     const systemMsgHistory = [{ role: 'user' as const, content: ctx.message }]
     let proseText = ''
