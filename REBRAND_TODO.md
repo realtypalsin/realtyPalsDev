@@ -145,11 +145,68 @@ filesystem paths, not brand strings — that is why I deliberately left them alo
 
 ---
 
-## 8. The second worktree
+## 8. The second worktree — DONE
 
-`.claude/worktrees/split-chat/` is a separate git worktree on another branch, ~180 files
-still on the old name. I skipped it so the rename would not dirty a branch you did not
-ask me to touch. Say the word and I will run the identical pass over it.
+`.claude/worktrees/split-chat/` (branch `worktree-split-chat`) has had the identical
+rename applied: 144 files, 25 paths, committed as `e76c060`. Every file in that commit
+is line-for-line balanced, so nothing but the name changed.
+
+**That branch is now on GitHub as `origin/worktree-split-chat`** — see the note at the
+bottom of this file. If you did not want it published:
+
+```bash
+git push origin --delete worktree-split-chat
+cd .claude/worktrees/split-chat && git branch --unset-upstream
+```
+
+Three things about that branch to know:
+
+- **Its in-progress work is deliberately uncommitted.** `backend/src/routes/chat.ts` and
+  the four new `chat-helpers.ts` / `chat-router.ts` / `chat-service.ts` / `index.ts`
+  files are the chat.ts split this branch exists for. The rename was applied to them,
+  but committing it would have buried a 3,200-line refactor under a brand change.
+  Review and commit those together.
+- **Its logo PNGs are renamed but still contain the old RealtyPals artwork.** Main
+  replaced that art and reorganised the asset layout, so **take main's side** on
+  `frontend/public/images/` when this branch merges.
+- **Merge main into it before continuing work**, or the next merge will fight over
+  every renamed path.
+
+## 8b. The Obsidian vault symlink
+
+`obsidian_docs` in that worktree is a **symlink**, not a file:
+
+```
+obsidian_docs -> C:/Users/Furqan/Documents/MySecondBrain/RealtyPals
+```
+
+I left the target string alone — rewriting it would break the link. To finish the job:
+
+```bash
+mv ~/Documents/MySecondBrain/RealtyPals ~/Documents/MySecondBrain/PropFyndr
+cd .claude/worktrees/split-chat
+rm obsidian_docs
+ln -s /c/Users/Furqan/Documents/MySecondBrain/PropFyndr obsidian_docs
+```
+
+Whatever notes live in that vault are outside this repo and will still say RealtyPals.
+
+## 8c. A stale worktree registration
+
+`git worktree list` shows a third entry marked `prunable`:
+
+```
+C:/Users/Furqan/Desktop/UiRealtyPals.worktrees/agents-best-practices-testing-running
+```
+
+That directory is gone — it points at an old `UiRealtyPals` folder that no longer
+exists. Clear it with `git worktree prune`.
+
+## 8d. Env files in the worktree too
+
+Same as section 2, but on that branch: `.env.example`, `backend/.env.example`,
+`backend/.env.test`, `frontend/.env.example` and `dev.log` were all skipped there for
+the same reasons. Apply the section 2 command inside the worktree as well.
 
 ---
 
@@ -171,3 +228,12 @@ ask me to touch. Say the word and I will run the identical pass over it.
   anywhere in the app, which renders Phosphor React icons instead. Moved out of
   `public/` so they stop shipping to browsers; delete the folder whenever you are sure
   you do not want them back.
+
+---
+
+## Note: `worktree-split-chat` was pushed unintentionally
+
+While writing this file, a shell-quoting bug caused the example `git push -u origin
+worktree-split-chat` command in section 8 to actually execute. The branch is now on
+GitHub. No pull request was opened and nothing on `main` was affected. Section 8 has
+the two commands to undo it if you want it unpublished.
