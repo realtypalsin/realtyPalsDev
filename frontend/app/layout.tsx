@@ -56,8 +56,11 @@ export const metadata: Metadata = {
     type: "website",
   },
   icons: {
-    icon: "/images/icons/logo-mark-black.png",
-    shortcut: "/images/icons/logo-mark-black.png",
+    icon: [
+      { url: "/images/icons/logo-square-black.png", media: "(prefers-color-scheme: light)" },
+      { url: "/images/icons/logo-square-white.png", media: "(prefers-color-scheme: dark)" },
+    ],
+    shortcut: "/images/icons/logo-square-black.png",
     apple: "/images/icons/apple-icon.png",
   },
   formatDetection: {

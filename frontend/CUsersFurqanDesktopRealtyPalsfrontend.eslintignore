@@ -1,4 +1,0 @@
-# Allow unescaped entities in JSX text
-components/admin/DemandIntelligence.tsx
-components/admin/GhostPoolDashboard.tsx
-components/admin/LeadDossier.tsx

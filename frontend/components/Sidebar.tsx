@@ -319,14 +319,14 @@ export default function Sidebar({
               {/* Default PropFyndr Logo Mark */}
               <div className="flex items-center justify-center transition-opacity duration-200 group-hover:opacity-0 pointer-events-none">
                 <Image
-                  src="/images/icons/logo-mark-black.png"
+                  src="/images/icons/logo-square-black.png"
                   alt="PropFyndr Logo"
                   width={40}
                   height={40}
                   className="object-contain block dark:hidden"
                 />
                 <Image
-                  src="/images/icons/logo-mark-white.png"
+                  src="/images/icons/logo-square-white.png"
                   alt="PropFyndr Logo"
                   width={40}
                   height={40}

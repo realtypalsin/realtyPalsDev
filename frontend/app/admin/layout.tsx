@@ -207,7 +207,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {!isCollapsed ? (
             <>
               <div className="flex flex-1 items-center justify-center transition-opacity duration-300">
-                <Image src="/images/icons/logo-wordmark-black.png" alt="PropFyndr" width={75} height={34} className="object-contain" unoptimized />
+                <Image src="/images/icons/logo-wordmark-black.png" alt="PropFyndr" width={75} height={34} className="object-contain block dark:hidden" unoptimized />
+                <Image src="/images/icons/logo-wordmark-white.png" alt="PropFyndr" width={75} height={34} className="object-contain hidden dark:block" unoptimized />
               </div>
               <div className="absolute right-3 flex items-center justify-center">
                 <button
@@ -227,7 +228,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ) : (
             <div className="relative w-full h-full flex items-center justify-center">
               <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-0 pointer-events-none">
-                <Image src="/images/icons/logo-mark-black.png" alt="PropFyndr Logo" width={40} height={40} className="object-contain" unoptimized />
+                <Image src="/images/icons/logo-square-black.png" alt="PropFyndr Logo" width={40} height={40} className="object-contain block dark:hidden" unoptimized />
+                <Image src="/images/icons/logo-square-white.png" alt="PropFyndr Logo" width={40} height={40} className="object-contain hidden dark:block" unoptimized />
               </div>
               <button
                 type="button"
